@@ -1,4 +1,4 @@
-const GITHUB_REPO = "https://github.com/mikebuoy/philmont-2026";
+const GITHUB_REPO = "https://github.com/mikebuoy/241-philmont-2026";
 
 export function Footer() {
   const sha = process.env.NEXT_PUBLIC_BUILD_SHA ?? "dev";
