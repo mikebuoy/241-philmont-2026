@@ -5,6 +5,7 @@ import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Panel } from "@/components/primitives/Panel";
 import { Box } from "@/components/primitives/Box";
+import { Stat } from "@/components/primitives/Stat";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { ITINERARY, GPX_COVERAGE, isoToSlug } from "@/data/itinerary";
 import type { ItineraryDay, CampType } from "@/data/itinerary";
@@ -69,14 +70,6 @@ export default async function DayDetailPage({
 
   const hasMetrics =
     d.miles != null || d.gain != null || d.loss != null || d.elevation != null;
-  const hasFlag =
-    d.flags.dryCamp ||
-    d.flags.burroPickup ||
-    d.flags.burroDropoff ||
-    d.flags.summit ||
-    d.flags.conservation ||
-    d.flags.longestDay ||
-    d.flags.hardestDescent;
 
   return (
     <Page
@@ -121,6 +114,59 @@ export default async function DayDetailPage({
         const sections: { title: string; render: () => React.ReactNode }[] = [];
         const hasTrailContext = d.type !== "travel" && d.type !== "acclimation";
 
+        if (hasMetrics) {
+          sections.push({
+            title: "Trail metrics",
+            render: () => (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {d.miles != null && (
+                    <Stat value={`${d.miles} mi`} label="DISTANCE" />
+                  )}
+                  {d.gain != null && (
+                    <Stat
+                      value={`+${d.gain.toLocaleString()}`}
+                      label="GAIN (FT)"
+                      tone="gain"
+                    />
+                  )}
+                  {d.loss != null && (
+                    <Stat
+                      value={`−${d.loss.toLocaleString()}`}
+                      label="LOSS (FT)"
+                      tone="loss"
+                    />
+                  )}
+                  {d.elevation != null && (
+                    <Stat
+                      value={d.elevation.toLocaleString()}
+                      label="CAMP ELEV (FT)"
+                    />
+                  )}
+                </div>
+                {(d.cumMiles != null || d.cumGain != null) && (
+                  <p className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em] mt-2">
+                    Cumulative{" "}
+                    {d.cumMiles != null && `· ${d.cumMiles} mi`}
+                    {d.cumGain != null && d.cumLoss != null && (
+                      <>
+                        {" · "}
+                        <span className="text-[var(--color-gain)]">
+                          +{d.cumGain.toLocaleString()}
+                        </span>
+                        {" / "}
+                        <span className="text-[var(--color-loss)]">
+                          −{d.cumLoss.toLocaleString()}
+                        </span>{" "}
+                        ft
+                      </>
+                    )}
+                  </p>
+                )}
+              </>
+            ),
+          });
+        }
         if (hasTrailContext) {
           sections.push({
             title: "Elevation profile",
@@ -130,70 +176,6 @@ export default async function DayDetailPage({
                 partial={gpxMeta?.partial}
                 partialNote={gpxMeta?.note}
               />
-            ),
-          });
-        }
-        if (hasMetrics) {
-          sections.push({
-            title: "Trail metrics",
-            render: () => (
-              <Panel>
-                <ul className="text-[12px] space-y-1.5">
-                  {d.miles != null && (
-                    <Row label="Distance" value={`${d.miles} mi`} />
-                  )}
-                  {(d.gain != null || d.loss != null) && (
-                    <Row
-                      label="Gain / Loss"
-                      value={
-                        <>
-                          {d.gain != null && (
-                            <span className="text-[var(--color-gain)]">
-                              +{d.gain.toLocaleString()}
-                            </span>
-                          )}
-                          {d.gain != null && d.loss != null && " / "}
-                          {d.loss != null && (
-                            <span className="text-[var(--color-loss)]">
-                              −{d.loss.toLocaleString()}
-                            </span>
-                          )}{" "}
-                          ft
-                        </>
-                      }
-                    />
-                  )}
-                  {(d.cumMiles != null || d.cumGain != null) && (
-                    <Row
-                      label="Cumulative"
-                      value={
-                        <>
-                          {d.cumMiles != null && `${d.cumMiles} mi`}
-                          {d.cumGain != null && d.cumLoss != null && (
-                            <>
-                              {" · "}
-                              <span className="text-[var(--color-gain)]">
-                                +{d.cumGain.toLocaleString()}
-                              </span>
-                              {" / "}
-                              <span className="text-[var(--color-loss)]">
-                                −{d.cumLoss.toLocaleString()}
-                              </span>{" "}
-                              ft
-                            </>
-                          )}
-                        </>
-                      }
-                    />
-                  )}
-                  {d.elevation != null && (
-                    <Row
-                      label="Camp elevation"
-                      value={`${d.elevation.toLocaleString()} ft`}
-                    />
-                  )}
-                </ul>
-              </Panel>
             ),
           });
         }
@@ -260,11 +242,37 @@ export default async function DayDetailPage({
           sections.push({
             title: "Map",
             render: () => (
-              <RouteMap
-                track={track}
-                partial={gpxMeta?.partial}
-                partialNote={gpxMeta?.note}
-              />
+              <>
+                <RouteMap
+                  track={track}
+                  partial={gpxMeta?.partial}
+                  partialNote={gpxMeta?.note}
+                />
+                {track && (
+                  <a
+                    href={`/gpx/${d.iso}.gpx`}
+                    download={`philmont-2026-${isoToSlug(d.iso)}.gpx`}
+                    className="inline-flex items-center gap-2 mt-2 px-3.5 py-2 bg-surface border border-border rounded-md text-[12px] font-medium text-ink hover:border-ink-muted transition-colors"
+                    style={{ borderWidth: "0.5px" }}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download .gpx file
+                  </a>
+                )}
+              </>
             ),
           });
         }
@@ -322,27 +330,6 @@ export default async function DayDetailPage({
         )}
       </nav>
 
-      {/* Flag context */}
-      {hasFlag && (
-        <p className="text-[11px] text-ink-faint text-center pt-2">
-          {/* Padding for layout — flags are surfaced above via badges */}
-        </p>
-      )}
     </Page>
-  );
-}
-
-function Row({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <li className="flex items-baseline justify-between gap-3">
-      <span className="text-ink-muted">{label}</span>
-      <span className="font-mono text-ink">{value}</span>
-    </li>
   );
 }

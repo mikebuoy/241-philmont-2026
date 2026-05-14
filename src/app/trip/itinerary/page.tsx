@@ -127,6 +127,11 @@ function DayRow({ day: d }: { day: ItineraryDay }) {
                 </span>
               )}
             </div>
+            {d.programs.length > 0 && (
+              <div className="text-[11px] text-ink-muted mt-1 truncate leading-snug">
+                {d.programs.join(" · ")}
+              </div>
+            )}
           </div>
           <StatusBadge tone={TYPE_TONE[d.type]}>
             {TYPE_LABEL[d.type]}
