@@ -1,6 +1,3 @@
-import fs from "fs";
-import path from "path";
-
 export type GpxPoint = {
   lat: number;
   lon: number;
@@ -43,16 +40,26 @@ function haversineMiles(
   return 2 * EARTH_RADIUS_MI * Math.asin(Math.sqrt(a));
 }
 
-/** Parse a GPX file by ISO date slug. Returns null if file doesn't exist. */
-export function loadGpxByIso(iso: string): GpxTrack | null {
-  const filePath = path.join(process.cwd(), "public", "gpx", `${iso}.gpx`);
-  if (!fs.existsSync(filePath)) return null;
-  const xml = fs.readFileSync(filePath, "utf8");
-  return parseGpx(xml);
+/**
+ * Fetch and parse a GPX file from Supabase Storage by path.
+ * `path` is the object path inside the `gpx` bucket (e.g. "2026-06-18.gpx").
+ */
+export async function loadGpxFromStorage(
+  path: string | null,
+): Promise<GpxTrack | null> {
+  if (!path) return null;
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/gpx/${path}`;
+  try {
+    const res = await fetch(url, { cache: "force-cache" });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    return parseGpx(xml);
+  } catch {
+    return null;
+  }
 }
 
 function parseGpx(xml: string): GpxTrack {
-  // Lightweight regex-based parsing — GPX format is stable and we control the input.
   const nameMatch = xml.match(/<trk>\s*<name>([^<]+)<\/name>/);
   const name = nameMatch ? nameMatch[1] : null;
 

@@ -4,8 +4,9 @@ import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { SubNav } from "@/components/nav/SubNav";
 import { TRIP_SUB } from "@/components/nav/navItems";
-import { ITINERARY, isoToSlug } from "@/data/itinerary";
+import { isoToSlug } from "@/data/itinerary";
 import type { ItineraryDay, CampType } from "@/data/itinerary";
+import { getItinerary } from "@/lib/itinerary";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 
 export const metadata: Metadata = { title: "Itinerary" };
@@ -33,14 +34,15 @@ const TYPE_TONE: Record<
   layover: "warn",
 };
 
-export default function ItineraryIndexPage() {
+export default async function ItineraryIndexPage() {
   const RANCH_START = "2026-06-16";
   const RANCH_END = "2026-06-27";
-  const preTrek = ITINERARY.filter(
+  const days = await getItinerary();
+  const preTrek = days.filter(
     (d) => d.philmontDay === null && d.iso < RANCH_START,
   );
-  const onTrek = ITINERARY.filter((d) => d.philmontDay !== null);
-  const postTrek = ITINERARY.filter(
+  const onTrek = days.filter((d) => d.philmontDay !== null);
+  const postTrek = days.filter(
     (d) => d.philmontDay === null && d.iso > RANCH_END,
   );
 

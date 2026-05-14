@@ -7,16 +7,18 @@ import { Panel } from "@/components/primitives/Panel";
 import { Box } from "@/components/primitives/Box";
 import { Stat } from "@/components/primitives/Stat";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
-import { ITINERARY, GPX_COVERAGE, isoToSlug } from "@/data/itinerary";
-import type { ItineraryDay, CampType } from "@/data/itinerary";
-import { loadGpxByIso } from "@/lib/gpx";
+import { isoToSlug } from "@/data/itinerary";
+import type { CampType } from "@/data/itinerary";
+import { getItinerary } from "@/lib/itinerary";
+import { loadGpxFromStorage } from "@/lib/gpx";
 import { ElevationProfile } from "@/components/ElevationProfile";
 import { RouteMap } from "@/components/RouteMap";
 
 type Params = { day: string };
 
-export function generateStaticParams(): Params[] {
-  return ITINERARY.map((d) => ({ day: isoToSlug(d.iso) }));
+export async function generateStaticParams(): Promise<Params[]> {
+  const days = await getItinerary();
+  return days.map((d) => ({ day: isoToSlug(d.iso) }));
 }
 
 export async function generateMetadata({
@@ -25,7 +27,8 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { day } = await params;
-  const found = ITINERARY.find((d) => isoToSlug(d.iso) === day);
+  const days = await getItinerary();
+  const found = days.find((d) => isoToSlug(d.iso) === day);
   if (!found) return { title: "Day not found" };
   return { title: `${found.label} · ${found.dateShort}` };
 }
@@ -59,14 +62,15 @@ export default async function DayDetailPage({
   params: Promise<Params>;
 }) {
   const { day } = await params;
-  const idx = ITINERARY.findIndex((d) => isoToSlug(d.iso) === day);
+  const allDays = await getItinerary();
+  const idx = allDays.findIndex((d) => isoToSlug(d.iso) === day);
   if (idx === -1) notFound();
-  const d: ItineraryDay = ITINERARY[idx];
-  const prev = idx > 0 ? ITINERARY[idx - 1] : null;
-  const next = idx < ITINERARY.length - 1 ? ITINERARY[idx + 1] : null;
+  const d = allDays[idx];
+  const prev = idx > 0 ? allDays[idx - 1] : null;
+  const next = idx < allDays.length - 1 ? allDays[idx + 1] : null;
 
-  const gpxMeta = GPX_COVERAGE[d.iso];
-  const track = loadGpxByIso(d.iso);
+  const gpxMeta = d.gpx;
+  const track = await loadGpxFromStorage(d.gpx?.path ?? null);
 
   const hasMetrics =
     d.miles != null || d.gain != null || d.loss != null || d.elevation != null;
@@ -250,7 +254,7 @@ export default async function DayDetailPage({
                 />
                 {track && (
                   <a
-                    href={`/gpx/${d.iso}.gpx`}
+                    href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/gpx/${d.gpx!.path}`}
                     download={`philmont-2026-${isoToSlug(d.iso)}.gpx`}
                     className="inline-flex items-center gap-2 mt-2 px-3.5 py-2 bg-surface border border-border rounded-md text-[12px] font-medium text-ink hover:border-ink-muted transition-colors"
                     style={{ borderWidth: "0.5px" }}
