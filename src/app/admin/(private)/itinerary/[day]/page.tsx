@@ -197,12 +197,20 @@ export default async function EditDayPage({
           )}
         </section>
 
-        {/* Save */}
-        <div className="flex items-center justify-between gap-3 pt-2">
+        {/* Cancel + Save */}
+        <div className="flex items-center justify-between gap-3 pt-2 flex-wrap">
           <p className="text-[11px] text-ink-faint">
             Saving rebuilds the site (~60–90 sec).
           </p>
-          <SaveButton />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/trip/itinerary/${isoToSlug(d.iso)}`}
+              className="text-[12px] font-medium text-ink-muted hover:text-ink px-3 py-2 rounded-md hover:bg-surface-2 transition-colors"
+            >
+              Cancel
+            </Link>
+            <SaveButton />
+          </div>
         </div>
       </form>
     </div>

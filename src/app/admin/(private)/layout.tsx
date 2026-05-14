@@ -20,24 +20,20 @@ export default async function AdminLayout({
 
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) {
-    // Signed in but not in admins table — sign out & block
     await supabase.auth.signOut();
     redirect("/admin/signin?error=forbidden");
   }
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="bg-surface border-b border-border">
-        <div className="max-w-[900px] mx-auto px-6 py-3 flex items-center justify-between">
-          <Link href="/admin" className="flex items-baseline gap-2">
-            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
+      <header className="bg-surface border-b border-border sticky top-0 z-50">
+        <div className="max-w-[900px] mx-auto px-6 py-3 flex items-center justify-between gap-3">
+          <Link href="/admin" className="flex items-baseline gap-2 min-w-0">
+            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted truncate">
               Trek 12-23 · Admin
             </span>
-            <span className="text-[13px] font-semibold tracking-tight">
-              Philmont 2026
-            </span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/"
               className="text-[11px] font-mono text-ink-muted hover:text-ink"
