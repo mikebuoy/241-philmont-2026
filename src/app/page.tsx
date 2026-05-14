@@ -35,6 +35,13 @@ export default function Home() {
             tone="loss"
           />
         </div>
+        <p className="font-mono text-[11px] text-ink-muted mt-2 text-center">
+          ≈{" "}
+          <span className="text-[var(--color-gain)] font-medium">
+            1.2× Mount Everest
+          </span>{" "}
+          in cumulative ascent (Everest = 29,032 ft)
+        </p>
       </Section>
 
       <Section num="01" title="Sister crews">
