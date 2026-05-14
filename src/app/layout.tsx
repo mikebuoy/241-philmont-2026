@@ -3,6 +3,7 @@ import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import TopNav from "@/components/nav/TopNav";
 import BottomNav from "@/components/nav/BottomNav";
+import { Footer } from "@/components/Footer";
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -32,7 +33,8 @@ export default function RootLayout({
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <TopNav />
-        <main className="flex-1 pb-20 sm:pb-0">{children}</main>
+        <main className="flex-1">{children}</main>
+        <Footer />
         <BottomNav />
       </body>
     </html>
