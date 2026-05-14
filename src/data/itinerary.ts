@@ -7,6 +7,16 @@ export type CampType =
   | "dry"
   | "layover";
 
+/** Convert an ISO date (YYYY-MM-DD) into a friendly slug (jun-14, jun-27, etc.). */
+const MONTHS = [
+  "jan", "feb", "mar", "apr", "may", "jun",
+  "jul", "aug", "sep", "oct", "nov", "dec",
+];
+export function isoToSlug(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return `${MONTHS[Number(m) - 1]}-${String(Number(d))}`;
+}
+
 export type ItineraryDay = {
   /** Internal Philmont 1–12 numbering. null for the two pre-trek days. */
   philmontDay: number | null;
@@ -49,6 +59,14 @@ export type ItineraryDay = {
     longestDay?: boolean;
     hardestDescent?: boolean;
   };
+};
+
+/** Days with GPX coverage. File served from public/gpx/<iso>.gpx. */
+export const GPX_COVERAGE: Record<string, { partial: boolean; note: string }> = {
+  "2026-06-18": {
+    partial: true,
+    note: "Partial coverage — Cimarron River → Mistletoe segment. Trail continues to Santa Claus.",
+  },
 };
 
 export const ITINERARY: ItineraryDay[] = [
