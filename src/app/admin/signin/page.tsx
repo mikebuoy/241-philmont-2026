@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignInPage() {
@@ -15,7 +15,19 @@ export default function SignInPage() {
 function SignInInner() {
   const [loading, setLoading] = useState(false);
   const params = useSearchParams();
+  const router = useRouter();
   const error = params.get("error");
+  const next = params.get("next") || "/";
+
+  // If already signed in, skip straight to wherever they were going
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        router.replace(next);
+      }
+    });
+  }, [next, router]);
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -23,7 +35,7 @@ function SignInInner() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/admin`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
   }
@@ -97,8 +109,7 @@ function SignInShell({
         )}
 
         <p className="text-[11px] text-ink-faint mt-4 leading-relaxed">
-          Edits go live ~60–90 seconds after you save, after Vercel rebuilds
-          the static site.
+          You&apos;ll return to the page you were on after signing in.
         </p>
       </div>
     </div>

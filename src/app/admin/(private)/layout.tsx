@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { SignOutButton } from "@/components/admin/SignOutButton";
@@ -14,14 +15,18 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
+  const h = await headers();
+  const currentPath = h.get("x-pathname") || "/";
+  const nextParam = `?next=${encodeURIComponent(currentPath)}`;
+
   if (!user) {
-    redirect("/admin/signin");
+    redirect(`/admin/signin${nextParam}`);
   }
 
   const isAdmin = await isCurrentUserAdmin();
   if (!isAdmin) {
     await supabase.auth.signOut();
-    redirect("/admin/signin?error=forbidden");
+    redirect(`/admin/signin?error=forbidden&next=${encodeURIComponent(currentPath)}`);
   }
 
   return (
