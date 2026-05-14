@@ -34,14 +34,21 @@ const TYPE_TONE: Record<
 };
 
 export default function ItineraryIndexPage() {
-  const preTrek = ITINERARY.filter((d) => d.philmontDay === null);
+  const RANCH_START = "2026-06-16";
+  const RANCH_END = "2026-06-27";
+  const preTrek = ITINERARY.filter(
+    (d) => d.philmontDay === null && d.iso < RANCH_START,
+  );
   const onTrek = ITINERARY.filter((d) => d.philmontDay !== null);
+  const postTrek = ITINERARY.filter(
+    (d) => d.philmontDay === null && d.iso > RANCH_END,
+  );
 
   return (
     <Page
       eyebrow="My Trip"
       title="Itinerary"
-      meta="June 14 – 27, 2026 · 14 days · 81 miles"
+      meta="June 14 – 28, 2026 · 15 days · 81 trail miles"
     >
       <SubNav items={TRIP_SUB} />
 
@@ -60,6 +67,14 @@ export default function ItineraryIndexPage() {
       <Section num="02" title="On the ranch · 12 days">
         <ul className="space-y-1.5">
           {onTrek.map((d) => (
+            <DayRow key={d.iso} day={d} />
+          ))}
+        </ul>
+      </Section>
+
+      <Section num="03" title="Post-trek · return">
+        <ul className="space-y-1.5">
+          {postTrek.map((d) => (
             <DayRow key={d.iso} day={d} />
           ))}
         </ul>

@@ -52,9 +52,9 @@
   --color-crew-bg: #e8f3e8;
   --color-crew-text: #1a5c1a;
 
-  /* Trek accent — for elevation gain/loss */
-  --color-gain: #a32d2d;
-  --color-loss: #1a5c1a;
+  /* Trek accent — gain green (positive), loss red (negative) */
+  --color-gain: #1a5c1a;
+  --color-loss: #a32d2d;
 
   /* Fonts (variables set in layout.tsx) */
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
