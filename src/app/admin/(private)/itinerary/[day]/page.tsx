@@ -4,6 +4,7 @@ import { getItinerary } from "@/lib/itinerary";
 import { isoToSlug } from "@/data/itinerary";
 import { saveDay } from "./actions";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
+import { SaveButton } from "@/components/admin/SaveButton";
 
 export const dynamic = "force-dynamic";
 
@@ -201,12 +202,7 @@ export default async function EditDayPage({
           <p className="text-[11px] text-ink-faint">
             Saving rebuilds the site (~60–90 sec).
           </p>
-          <button
-            type="submit"
-            className="bg-ink text-bg px-5 py-2.5 rounded-md text-[13px] font-medium hover:opacity-90 transition-opacity"
-          >
-            Save &amp; rebuild
-          </button>
+          <SaveButton />
         </div>
       </form>
     </div>
