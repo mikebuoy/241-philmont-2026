@@ -1,0 +1,41 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { NAV_ITEMS, isActive } from "./navItems";
+
+export default function TopNav() {
+  const pathname = usePathname();
+  return (
+    <header className="hidden sm:block bg-surface border-b border-border">
+      <div className="max-w-[900px] mx-auto px-6 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-baseline gap-2">
+          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
+            Trek 12-23
+          </span>
+          <span className="text-[13px] font-semibold tracking-tight">
+            Philmont 2026
+          </span>
+        </Link>
+        <nav className="flex items-center gap-1">
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(pathname, item);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+                  active
+                    ? "bg-ink text-bg"
+                    : "text-ink-muted hover:text-ink hover:bg-surface-2"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </header>
+  );
+}

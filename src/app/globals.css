@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design tokens — extracted from trek_12_23_crew_brief.html
+   ============================================================ */
+@theme {
+  /* Surfaces */
+  --color-bg: #f5f4f0;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0efe9;
+
+  /* Borders */
+  --color-border: #e0ddd4;
+  --color-border-strong: #c8c4b8;
+
+  /* Ink */
+  --color-ink: #1a1916;
+  --color-ink-muted: #6b6860;
+  --color-ink-faint: #9b9890;
+
+  /* Info — blue */
+  --color-info-bg: #e8f0f8;
+  --color-info-text: #1a4a7a;
+  --color-info-border: #b8d0ea;
+
+  /* OK — green */
+  --color-ok-bg: #e8f3e8;
+  --color-ok-text: #1a5c1a;
+  --color-ok-border: #b8ddb8;
+
+  /* Warn — amber */
+  --color-warn-bg: #fdf3e0;
+  --color-warn-text: #7a4a00;
+  --color-warn-border: #f0d090;
+
+  /* Danger — red */
+  --color-danger-bg: #faeaea;
+  --color-danger-text: #7a1a1a;
+  --color-danger-border: #f0b8b8;
+
+  /* Cell shading (weight tables) */
+  --color-cell-ok: #d4edda;
+  --color-cell-ok-text: #155724;
+  --color-cell-warn: #fff3cd;
+  --color-cell-warn-text: #856404;
+  --color-cell-danger: #f8d7da;
+  --color-cell-danger-text: #721c24;
+
+  /* Source badges */
+  --color-issued-bg: #e8f0f8;
+  --color-issued-text: #1a4a7a;
+  --color-crew-bg: #e8f3e8;
+  --color-crew-text: #1a5c1a;
+
+  /* Trek accent — for elevation gain/loss */
+  --color-gain: #a32d2d;
+  --color-loss: #1a5c1a;
+
+  /* Fonts (variables set in layout.tsx) */
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Numbers and labels default to mono */
+.font-num {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+}
+
+/* Section heading underline — matches crew_brief style */
+.section-rule {
+  border-bottom: 1.5px solid var(--color-ink);
+}
+
+/* Hairline used throughout crew_brief */
+.hairline {
+  border-color: var(--color-border);
+}
+.hairline-strong {
+  border-color: var(--color-border-strong);
+}
