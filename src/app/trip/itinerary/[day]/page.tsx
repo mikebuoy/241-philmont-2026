@@ -14,6 +14,7 @@ import { loadGpxFromStorage } from "@/lib/gpx";
 import { ElevationProfile } from "@/components/ElevationProfile";
 import { RouteMap } from "@/components/RouteMap";
 import { EditPageButton } from "@/components/admin/EditPageButton";
+import { SaveConfirmation } from "@/components/admin/SaveConfirmation";
 
 type Params = { day: string };
 
@@ -82,6 +83,8 @@ export default async function DayDetailPage({
       title={d.label}
       meta={d.camp}
     >
+      <SaveConfirmation />
+
       {/* Back link + edit button row */}
       <div className="flex items-center justify-between gap-3">
         <Link

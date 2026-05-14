@@ -18,14 +18,8 @@ const TYPE_TONE: Record<
   layover: "warn",
 };
 
-export default async function AdminItineraryList({
-  searchParams,
-}: {
-  searchParams: Promise<{ saved?: string }>;
-}) {
+export default async function AdminItineraryList() {
   const days = await getItinerary();
-  const { saved } = await searchParams;
-  const savedDay = saved ? days.find((d) => d.iso === saved) : null;
 
   return (
     <div className="max-w-[900px] mx-auto px-6 pt-8 pb-16">
@@ -40,38 +34,6 @@ export default async function AdminItineraryList({
           {days.length} days. Tap to edit notes, programs, badges, GPX.
         </p>
       </header>
-
-      {savedDay && (
-        <div
-          className="bg-ok-bg text-ok-text rounded-lg p-3.5 mb-6 flex items-start gap-3"
-          style={{ borderLeft: "3px solid var(--color-ok-border)" }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0 mt-0.5"
-            aria-hidden="true"
-          >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-          <div>
-            <p className="text-[13px] font-semibold">
-              Saved · {savedDay.label}
-            </p>
-            <p className="text-[11px] mt-0.5 opacity-90">
-              Vercel rebuild in progress. Public site updates in ~60–90
-              seconds.
-            </p>
-          </div>
-        </div>
-      )}
 
       <ul className="space-y-1.5">
         {days.map((d) => (

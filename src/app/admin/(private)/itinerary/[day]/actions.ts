@@ -7,6 +7,7 @@ import {
   createAdminClient,
   isCurrentUserAdmin,
 } from "@/lib/supabase/admin";
+import { isoToSlug } from "@/data/itinerary";
 
 const FLAG_KEYS = [
   "dryCamp",
@@ -107,5 +108,11 @@ export async function saveDay(iso: string, formData: FormData) {
   revalidatePath("/admin/itinerary");
   revalidatePath(`/admin/itinerary/${iso}`);
 
-  redirect(`/admin/itinerary?saved=${iso}`);
+  // Revalidate the public pages so they regenerate with fresh data
+  // on the next request (which will be the redirect below).
+  const slug = isoToSlug(iso);
+  revalidatePath("/trip/itinerary");
+  revalidatePath(`/trip/itinerary/${slug}`);
+
+  redirect(`/trip/itinerary/${slug}?saved=1`);
 }

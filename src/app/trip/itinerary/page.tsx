@@ -9,6 +9,7 @@ import type { ItineraryDay, CampType } from "@/data/itinerary";
 import { getItinerary } from "@/lib/itinerary";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { EditPageButton } from "@/components/admin/EditPageButton";
+import { SaveConfirmation } from "@/components/admin/SaveConfirmation";
 
 export const metadata: Metadata = { title: "Itinerary" };
 
@@ -54,6 +55,8 @@ export default async function ItineraryIndexPage() {
       meta="June 14 – 28, 2026 · 15 days · 81 trail miles"
     >
       <SubNav items={TRIP_SUB} />
+
+      <SaveConfirmation />
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] text-ink-faint">
