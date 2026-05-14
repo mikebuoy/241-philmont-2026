@@ -116,145 +116,169 @@ export default async function DayDetailPage({
         )}
       </div>
 
-      {/* Trail metrics */}
-      {hasMetrics && (
-        <Section num="01" title="Trail metrics">
-          <Panel>
-            <ul className="text-[12px] space-y-1.5">
-              {d.miles != null && (
-                <Row label="Distance" value={`${d.miles} mi`} />
-              )}
-              {(d.gain != null || d.loss != null) && (
-                <Row
-                  label="Gain / Loss"
-                  value={
-                    <>
-                      {d.gain != null && (
-                        <span className="text-[var(--color-gain)]">
-                          +{d.gain.toLocaleString()}
-                        </span>
-                      )}
-                      {d.gain != null && d.loss != null && " / "}
-                      {d.loss != null && (
-                        <span className="text-[var(--color-loss)]">
-                          −{d.loss.toLocaleString()}
-                        </span>
-                      )}{" "}
-                      ft
-                    </>
-                  }
-                />
-              )}
-              {(d.cumMiles != null || d.cumGain != null) && (
-                <Row
-                  label="Cumulative"
-                  value={
-                    <>
-                      {d.cumMiles != null && `${d.cumMiles} mi`}
-                      {d.cumGain != null && d.cumLoss != null && (
+      {(() => {
+        // Sequential numbering for whichever sections render
+        const sections: { title: string; render: () => React.ReactNode }[] = [];
+        const hasTrailContext = d.type !== "travel" && d.type !== "acclimation";
+
+        if (hasTrailContext) {
+          sections.push({
+            title: "Elevation profile",
+            render: () => (
+              <ElevationProfile
+                track={track}
+                partial={gpxMeta?.partial}
+                partialNote={gpxMeta?.note}
+              />
+            ),
+          });
+        }
+        if (hasMetrics) {
+          sections.push({
+            title: "Trail metrics",
+            render: () => (
+              <Panel>
+                <ul className="text-[12px] space-y-1.5">
+                  {d.miles != null && (
+                    <Row label="Distance" value={`${d.miles} mi`} />
+                  )}
+                  {(d.gain != null || d.loss != null) && (
+                    <Row
+                      label="Gain / Loss"
+                      value={
                         <>
-                          {" · "}
-                          <span className="text-[var(--color-gain)]">
-                            +{d.cumGain.toLocaleString()}
-                          </span>
-                          {" / "}
-                          <span className="text-[var(--color-loss)]">
-                            −{d.cumLoss.toLocaleString()}
-                          </span>{" "}
+                          {d.gain != null && (
+                            <span className="text-[var(--color-gain)]">
+                              +{d.gain.toLocaleString()}
+                            </span>
+                          )}
+                          {d.gain != null && d.loss != null && " / "}
+                          {d.loss != null && (
+                            <span className="text-[var(--color-loss)]">
+                              −{d.loss.toLocaleString()}
+                            </span>
+                          )}{" "}
                           ft
                         </>
-                      )}
-                    </>
-                  }
-                />
-              )}
-              {d.elevation != null && (
-                <Row
-                  label="Camp elevation"
-                  value={`${d.elevation.toLocaleString()} ft`}
-                />
-              )}
-            </ul>
-          </Panel>
-        </Section>
-      )}
+                      }
+                    />
+                  )}
+                  {(d.cumMiles != null || d.cumGain != null) && (
+                    <Row
+                      label="Cumulative"
+                      value={
+                        <>
+                          {d.cumMiles != null && `${d.cumMiles} mi`}
+                          {d.cumGain != null && d.cumLoss != null && (
+                            <>
+                              {" · "}
+                              <span className="text-[var(--color-gain)]">
+                                +{d.cumGain.toLocaleString()}
+                              </span>
+                              {" / "}
+                              <span className="text-[var(--color-loss)]">
+                                −{d.cumLoss.toLocaleString()}
+                              </span>{" "}
+                              ft
+                            </>
+                          )}
+                        </>
+                      }
+                    />
+                  )}
+                  {d.elevation != null && (
+                    <Row
+                      label="Camp elevation"
+                      value={`${d.elevation.toLocaleString()} ft`}
+                    />
+                  )}
+                </ul>
+              </Panel>
+            ),
+          });
+        }
 
-      {/* Map */}
-      <Section num={hasMetrics ? "02" : "01"} title="Map">
-        <RouteMap
-          track={track}
-          partial={gpxMeta?.partial}
-          partialNote={gpxMeta?.note}
-        />
-      </Section>
+        sections.push({
+          title: "Activities & programs",
+          render: () =>
+            d.programs.length > 0 ? (
+              <Panel>
+                <ul className="space-y-2.5">
+                  {d.programs.map((p) => (
+                    <li
+                      key={p}
+                      className="flex items-start gap-2 text-[12px]"
+                    >
+                      <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                      <span className="text-ink">{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-[11px] text-ink-faint mt-3 leading-snug">
+                  Detailed program descriptions will be added as research is
+                  completed.
+                </p>
+              </Panel>
+            ) : (
+              <Panel>
+                <p className="text-[12px] text-ink-muted">None.</p>
+              </Panel>
+            ),
+        });
 
-      {/* Elevation profile */}
-      <Section
-        num={hasMetrics ? "03" : "02"}
-        title="Elevation profile"
-      >
-        <ElevationProfile
-          track={track}
-          partial={gpxMeta?.partial}
-          partialNote={gpxMeta?.note}
-        />
-      </Section>
+        if (d.notes || d.foodPickup || d.flags.dryCamp) {
+          sections.push({
+            title: "Notes",
+            render: () => (
+              <>
+                {d.flags.dryCamp && (
+                  <Box variant="danger">
+                    <strong>Dry camp protocol.</strong> Cook and eat dinner at
+                    the last water source during the lunch stop. Cold lunch
+                    bag eaten as camp dinner. No-cook breakfast the next
+                    morning. Carry 1–2L water into camp.
+                  </Box>
+                )}
+                {d.notes && (
+                  <Panel>
+                    <p className="text-[12px] text-ink leading-relaxed">
+                      {d.notes}
+                    </p>
+                  </Panel>
+                )}
+                {d.foodPickup && (
+                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">
+                    Food pickup · {d.foodPickup}
+                  </div>
+                )}
+              </>
+            ),
+          });
+        }
 
-      {/* Programs */}
-      {d.programs.length > 0 && (
-        <Section
-          num={hasMetrics ? "04" : "03"}
-          title="Activities & programs"
-        >
-          <Panel>
-            <ul className="space-y-2.5">
-              {d.programs.map((p) => (
-                <li
-                  key={p}
-                  className="flex items-start gap-2 text-[12px]"
-                >
-                  <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
-                  <span className="text-ink">{p}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-[11px] text-ink-faint mt-3 leading-snug">
-              Detailed program descriptions will be added as research is
-              completed.
-            </p>
-          </Panel>
-        </Section>
-      )}
+        if (hasTrailContext) {
+          sections.push({
+            title: "Map",
+            render: () => (
+              <RouteMap
+                track={track}
+                partial={gpxMeta?.partial}
+                partialNote={gpxMeta?.note}
+              />
+            ),
+          });
+        }
 
-      {/* Notes */}
-      {(d.notes || d.foodPickup) && (
-        <Section
-          num={`${(hasMetrics ? 4 : 3) + (d.programs.length > 0 ? 1 : 0)}`.padStart(
-            2,
-            "0",
-          )}
-          title="Notes"
-        >
-          {d.flags.dryCamp && (
-            <Box variant="danger">
-              <strong>Dry camp protocol.</strong> Cook and eat dinner at the
-              last water source during the lunch stop. Cold lunch bag eaten as
-              camp dinner. No-cook breakfast the next morning. Carry 1–2L water
-              into camp.
-            </Box>
-          )}
-          {d.notes && (
-            <Panel>
-              <p className="text-[12px] text-ink leading-relaxed">{d.notes}</p>
-            </Panel>
-          )}
-          {d.foodPickup && (
-            <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">
-              Food pickup · {d.foodPickup}
-            </div>
-          )}
-        </Section>
-      )}
+        return sections.map((s, i) => (
+          <Section
+            key={s.title}
+            num={String(i + 1).padStart(2, "0")}
+            title={s.title}
+          >
+            {s.render()}
+          </Section>
+        ));
+      })()}
 
       {/* Prev / Next */}
       <nav className="grid grid-cols-2 gap-2 pt-2">
