@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const GITHUB_REPO = "https://github.com/mikebuoy/241-philmont-2026";
 
 export function Footer() {
@@ -7,11 +9,18 @@ export function Footer() {
 
   return (
     <footer className="max-w-[900px] mx-auto px-6 py-6 pb-24 sm:pb-6">
-      <div className="border-t border-border pt-4 flex items-center justify-between flex-wrap gap-2">
+      <div className="border-t border-border pt-4 flex items-center justify-between flex-wrap gap-3">
         <p className="font-mono text-[10px] text-ink-faint">
           Trek 12-23 · Philmont 2026
         </p>
-        <p className="font-mono text-[10px] text-ink-faint">
+        <p className="font-mono text-[10px] text-ink-faint flex items-center gap-1.5 flex-wrap">
+          <Link
+            href="/admin"
+            className="hover:text-ink underline-offset-2 hover:underline"
+          >
+            Admin sign-in
+          </Link>
+          <span aria-hidden="true">·</span>
           {isDev ? (
             <span>build {sha} · {date}</span>
           ) : (
@@ -23,8 +32,9 @@ export function Footer() {
                 className="hover:text-ink underline-offset-2 hover:underline"
               >
                 {sha}
-              </a>{" "}
-              · {date}
+              </a>
+              <span aria-hidden="true">·</span>
+              <span>{date}</span>
             </>
           )}
         </p>
