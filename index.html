@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trek 12-23 — Crew Gear & Weight Briefing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e0ddd4;
+    --border-strong: #c8c4b8;
+    --text: #1a1916;
+    --text-muted: #6b6860;
+    --text-faint: #9b9890;
+    --blue-bg: #e8f0f8; --blue-text: #1a4a7a; --blue-border: #b8d0ea;
+    --green-bg: #e8f3e8; --green-text: #1a5c1a; --green-border: #b8ddb8;
+    --amber-bg: #fdf3e0; --amber-text: #7a4a00; --amber-border: #f0d090;
+    --red-bg: #faeaea; --red-text: #7a1a1a; --red-border: #f0b8b8;
+    --cell-green: #d4edda; --cell-green-text: #155724;
+    --cell-yellow: #fff3cd; --cell-yellow-text: #856404;
+    --cell-red: #f8d7da; --cell-red-text: #721c24;
+    --issued-bg: #e8f0f8; --issued-text: #1a4a7a;
+    --crew-bg: #e8f3e8; --crew-text: #1a5c1a;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .header-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .stat-val {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--mono);
+  }
+  .stat-val.gain { color: #a32d2d; }
+  .stat-val.loss { color: #1a5c1a; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* TWO COL PANELS */
+  .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 12px 0 1rem; }
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.1rem 1rem;
+  }
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+
+  /* WEIGHT STACK */
+  .ws-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ws-row:first-of-type { padding-top: 0; }
+  .ws-row:last-of-type { border-bottom: none; padding-bottom: 0; }
+  .ws-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 15px;
+  }
+  .ws-mid { flex: 1; }
+  .ws-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 1px; }
+  .ws-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .ws-badge {
+    flex-shrink: 0; height: 26px; min-width: 68px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 500; padding: 0 9px;
+  }
+  .ws-total {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border-strong);
+  }
+  .ws-total-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 15px; color: var(--text-muted);
+  }
+  .ws-total-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 1px; }
+  .ws-total-sub { font-size: 11px; color: var(--text-muted); }
+  .ws-total-badge {
+    flex-shrink: 0; height: 32px; min-width: 76px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 500;
+    background: var(--surface2);
+    color: var(--text);
+    padding: 0 10px;
+    border: 0.5px solid var(--border-strong);
+  }
+
+  /* CHECKLIST */
+  .check-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 9px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .check-item:first-child { padding-top: 0; }
+  .check-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .check-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 0.5px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 500;
+    color: var(--text-muted); flex-shrink: 0; margin-top: 1px;
+  }
+  .check-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .check-sub { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  /* CALLOUT DARK */
+  .callout-dark {
+    background: #1a1916;
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
+  .callout-main { font-size: 14px; font-weight: 600; color: #f5f4f0; letter-spacing: -0.01em; }
+  .callout-sub { font-size: 11px; color: #888; margin-top: 3px; }
+  .callout-icon { font-size: 28px; color: #555; margin-left: 14px; flex-shrink: 0; }
+
+  /* SECTION STRUCTURE */
+  .section { margin-top: 2.5rem; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    border-bottom: 1.5px solid var(--text);
+    padding-bottom: 6px;
+    margin-bottom: 1rem;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 1rem 0 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: var(--mono);
+  }
+  p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+  p strong { color: var(--text); font-weight: 600; }
+
+  /* BOXES */
+  .info-box {
+    background: var(--blue-bg);
+    border-left: 3px solid var(--blue-border);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin: 0.5rem 0 1rem;
+    line-height: 1.7;
+    color: var(--blue-text);
+  }
+  .info-box strong { color: var(--blue-text); font-weight: 600; }
+  .warn-box {
+    background: var(--amber-bg);
+    border-left: 3px solid var(--amber-border);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin: 0.5rem 0 1rem;
+    line-height: 1.7;
+    color: var(--amber-text);
+  }
+  .warn-box strong { color: var(--amber-text); font-weight: 600; }
+  .danger-box {
+    background: var(--red-bg);
+    border-left: 3px solid var(--red-border);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin: 0.5rem 0 1rem;
+    line-height: 1.7;
+    color: var(--red-text);
+  }
+  .danger-box strong { color: var(--red-text); font-weight: 600; }
+  .green-box {
+    background: var(--green-bg);
+    border-left: 3px solid var(--green-border);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    margin: 0.5rem 0 1rem;
+    line-height: 1.7;
+    color: var(--green-text);
+  }
+  .green-box strong { color: var(--green-text); font-weight: 600; }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.75rem;
+    font-size: 12px;
+    background: var(--surface);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 7px 10px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  th.tc { text-align: center; }
+  th.tr { text-align: right; }
+  td {
+    padding: 7px 10px;
+    border-bottom: 0.5px solid var(--border);
+    vertical-align: top;
+    color: var(--text-muted);
+  }
+  td.tc { text-align: center; }
+  td.tr { text-align: right; }
+  td strong { color: var(--text); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  .total-row td {
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface2);
+  }
+  .cell-green { background: var(--cell-green); color: var(--cell-green-text); font-weight: 600; font-family: var(--mono); }
+  .cell-yellow { background: var(--cell-yellow); color: var(--cell-yellow-text); font-weight: 600; font-family: var(--mono); }
+  .cell-red { background: var(--cell-red); color: var(--cell-red-text); font-weight: 600; font-family: var(--mono); }
+  .mono { font-family: var(--mono); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 0.5px solid transparent;
+  }
+  .b-issued { background: var(--issued-bg); color: var(--issued-text); border-color: var(--blue-border); }
+  .b-crew { background: var(--crew-bg); color: var(--crew-text); border-color: var(--green-border); }
+
+  .sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; line-height: 1.5; display: block; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; margin-bottom: 10px; font-size: 11px; align-items: center; flex-wrap: wrap; color: var(--text-muted); }
+  .swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+  /* SMELLABLES */
+  .smellables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 6px; }
+  .smellables-grid div { font-size: 11px; color: var(--text-muted); line-height: 2.0; padding-left: 12px; position: relative; }
+  .smellables-grid div::before { content: "—"; position: absolute; left: 0; color: var(--text-faint); }
+
+  /* COOK STEPS */
+  .cook-step { display: flex; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .cook-step:last-child { border-bottom: none; }
+  .cook-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--amber-bg);
+    border: 0.5px solid var(--amber-border);
+    color: var(--amber-text);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px;
+  }
+  .cook-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .cook-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  /* TRAINING TIMELINE */
+  .timeline { margin: 0.75rem 0 1rem; }
+  .tl-item { display: flex; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-date {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+    width: 100px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .tl-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .tl-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  /* SOURCES */
+  .sources {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    line-height: 1.8;
+    font-family: var(--mono);
+  }
+
+  /* PRINT */
+  @media print {
+    body { background: white; }
+    .page { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- HEADER -->
+<!-- ══════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-eyebrow">BSA Troop 241 · Philmont Scout Ranch · 2026</div>
+  <div class="header-title">Trek 12-23 — Crew Gear &amp; Weight Briefing</div>
+  <div class="header-meta">Super Strenuous · 81 miles · June 16–27, 2026 · 12 crew · 5 advisors · 7 scouts</div>
+</div>
+
+<!-- STAT GRID -->
+<div class="stat-grid">
+  <div class="stat"><div class="stat-val">11</div><div class="stat-label">Trail days</div></div>
+  <div class="stat"><div class="stat-val">81 mi</div><div class="stat-label">Total distance</div></div>
+  <div class="stat"><div class="stat-val">12,441 ft</div><div class="stat-label">Highest point · Baldy · Day 6</div></div>
+  <div class="stat"><div class="stat-val">3</div><div class="stat-label">Resupply stops</div></div>
+  <div class="stat"><div class="stat-val gain">↑ 35,000 ft</div><div class="stat-label">Total elevation gain</div></div>
+  <div class="stat"><div class="stat-val loss">↓ 35,650 ft</div><div class="stat-label">Total elevation loss</div></div>
+</div>
+
+<!-- TWO COL OVERVIEW -->
+<div class="two-col">
+  <div class="panel">
+    <div class="panel-title">How heavy is my pack?</div>
+    <div class="ws-row">
+      <div class="ws-icon" style="background:#e8f0f8;">📋</div>
+      <div class="ws-mid"><div class="ws-name">Base weight</div><div class="ws-desc">Everything on your personal packing list — sleeping bag, pad, clothing, rain gear</div></div>
+      <div class="ws-badge" style="background:#e8f0f8;color:#1a4a7a;">Your list</div>
+    </div>
+    <div class="ws-row">
+      <div class="ws-icon" style="background:#e8f3e8;">⛺</div>
+      <div class="ws-mid"><div class="ws-name">Shelter</div><div class="ws-desc">Your tent or tent components — include this in your base weight when you pack</div></div>
+      <div class="ws-badge" style="background:#e8f3e8;color:#1a5c1a;">2–4 lbs</div>
+    </div>
+    <div class="ws-row">
+      <div class="ws-icon" style="background:#fdf3e0;">🎒</div>
+      <div class="ws-mid"><div class="ws-name">Crew gear &amp; food</div><div class="ws-desc">Distributed at HQ — drops ~1.5 lbs per person per day as meals are consumed</div></div>
+      <div class="ws-badge" style="background:#fdf3e0;color:#7a4a00;">8–11 lbs</div>
+    </div>
+    <div class="ws-row">
+      <div class="ws-icon" style="background:#faeaea;">💧</div>
+      <div class="ws-mid"><div class="ws-name">Water</div><div class="ws-desc">Carry 1–2L hiking · up to 2L extra for dry stretches · 1L ≈ 2.2 lbs · top off at every source</div></div>
+      <div class="ws-badge" style="background:#faeaea;color:#7a1a1a;">2–4 lbs</div>
+    </div>
+    <div class="ws-total">
+      <div class="ws-total-icon">⚖</div>
+      <div style="flex:1;"><div class="ws-total-name">Day 2 total carry</div><div class="ws-total-sub">Your heaviest day · target ≤ 25% of body weight</div></div>
+      <div class="ws-total-badge">Base + 12–19 lbs</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Before you arrive</div>
+    <div class="check-item"><div class="check-num">1</div><div><div class="check-label">Weigh your pack</div><div class="check-sub">Target ≤ 25% of body weight. Use the weight table in this brief to find your personal ceiling.</div></div></div>
+    <div class="check-item"><div class="check-num">2</div><div><div class="check-label">Break in your boots</div><div class="check-sub">20–30 miles minimum before June 16. New boots = blisters by Day 3.</div></div></div>
+    <div class="check-item"><div class="check-num">3</div><div><div class="check-label">Know your smellables</div><div class="check-sub">Food, toothpaste, sunscreen, lip balm, deodorant — anything scented goes in the bear bag at night. No exceptions.</div></div></div>
+    <div class="check-item"><div class="check-num">4</div><div><div class="check-label">Arrive hydrated</div><div class="check-sub">Trek hits 12,441 ft on Day 6. Heavy packs at altitude accelerate exhaustion and increase AMS risk.</div></div></div>
+  </div>
+</div>
+
+<div class="callout-dark">
+  <div>
+    <div class="callout-main">Oz = Pounds. Pounds = Pain.</div>
+    <div class="callout-sub">Every item you pack is carried every mile of 81 miles. Audit everything. The easiest way to save weight is to leave behind what you don't need.</div>
+  </div>
+  <div class="callout-icon">⛰</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 1: PACK WEIGHT -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">01</span><span class="section-title">Know Your Pack Weight Limit</span></div>
+
+  <div class="info-box"><strong>What is base weight?</strong> Base weight is everything in your pack before food, water, and crew gear. It is everything on your personal packing list — sleeping bag, pad, clothing, rain gear, personal items. Your shelter (tent or tent components) is part of your base weight. Food, water, and crew gear are added on top. The combined total is your pack weight on the trail.</div>
+
+  <p>On Day 2 and Day 8 — your two heaviest start days — every crew member carries their base weight plus 9–11 lbs of crew gear and food. That drops by ~1.5 lbs per person per day as food is consumed. By Day 11 at Clarks Fork, food weight is down to ~1.5 lbs per person. Crew gear distribution at HQ will account for body weight — lighter crew members carry lighter items.</p>
+  <p>Philmont recommends total pack weight not exceed <strong>25% of your body weight.</strong> Find your row below.</p>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:#d4edda;"></span>Sweet spot — good margin</span>
+    <span><span class="swatch" style="background:#fff3cd;"></span>Watch zone — every ounce counts</span>
+    <span><span class="swatch" style="background:#f8d7da;"></span>Over-limit risk — shed weight before you go</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Body weight</th>
+        <th class="tc">Base weight ceiling<br><span style="font-weight:400;">(~8 lbs adds)</span></th>
+        <th class="tc">Base weight ceiling<br><span style="font-weight:400;">(~11 lbs adds)</span></th>
+        <th class="tc">+ Crew Gear &amp; Food<br><span style="font-weight:400;">8–11 lbs</span></th>
+        <th class="tc">+ Water<br><span style="font-weight:400;">1–2L carry</span></th>
+        <th class="tc">Max pack weight<br><span style="font-weight:400;">(25% body wt)</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>130 lbs</strong></td><td class="tc cell-yellow">24.5</td><td class="tc cell-yellow">21.5</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">32.5</td></tr>
+      <tr><td><strong>140 lbs</strong></td><td class="tc cell-green">27.0</td><td class="tc cell-yellow">24.0</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">35.0</td></tr>
+      <tr><td><strong>150 lbs</strong></td><td class="tc cell-green">29.5</td><td class="tc cell-green">26.5</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">37.5</td></tr>
+      <tr><td><strong>160 lbs</strong></td><td class="tc cell-green">32.0</td><td class="tc cell-green">29.0</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">40.0</td></tr>
+      <tr><td><strong>170 lbs</strong></td><td class="tc cell-green">34.5</td><td class="tc cell-green">31.5</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">42.5</td></tr>
+      <tr><td><strong>180 lbs</strong></td><td class="tc cell-green">37.0</td><td class="tc cell-green">34.0</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">45.0</td></tr>
+      <tr><td><strong>190 lbs</strong></td><td class="tc cell-green">39.5</td><td class="tc cell-green">36.5</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">47.5</td></tr>
+      <tr><td><strong>200 lbs</strong></td><td class="tc cell-green">42.0</td><td class="tc cell-green">39.0</td><td class="tc mono">8–11</td><td class="tc mono">2.2–4.4</td><td class="tc mono">50.0</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;margin-bottom:0;">All weights in lbs. Water weight is personal carry — not included in add-ons but shown separately to factor into total. Scouts at 130 lbs should be assigned lighter shared items only.</p>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 2: FOOD -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">02</span><span class="section-title">Food Weight</span></div>
+  <p>Food is issued in 2-person buddy bags. 12 crew = 6 exact buddy pairs. Each pair shares one bag set per day (breakfast, lunch, dinner). Your meal buddy is also your tent partner. Food weight drops ~1.45 lbs per person per day as meals are consumed.</p>
+
+  <table>
+    <thead>
+      <tr><th>Carry segment</th><th>Days</th><th>Days carried</th><th>Buddy pair total</th><th>Your share</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>HQ → Baldy Town</td><td>Days 2–5</td><td>4 days</td><td><strong>~11.6 lbs</strong></td><td><strong>~5.8 lbs</strong></td></tr>
+      <tr><td>Baldy Town → Ponil</td><td>Days 6–7</td><td>2 days</td><td><strong>~5.8 lbs</strong></td><td><strong>~2.9 lbs</strong></td></tr>
+      <tr><td>Ponil → HQ</td><td>Days 8–12</td><td>4 days + lunch</td><td><strong>~11.6 lbs</strong></td><td><strong>~5.8 lbs</strong></td></tr>
+      <tr class="total-row"><td colspan="3">Drop rate per day consumed</td><td>~2.9 lbs/day per pair</td><td>~1.45 lbs/day</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box"><strong>Dry camp strategy — Day 3, Santa Claus:</strong> There is no water source at this campsite. We cook and eat the dinner meal at the last water source during the lunch stop. The cold lunch bag is carried into camp and eaten for dinner. Breakfast next morning is also no-cook. Carry 1–2L of drinking water in. Zero cooking or cleaning at the dry camp — this is how we manage the water scarcity.</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 3: WATER -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">03</span><span class="section-title">Water</span></div>
+
+  <p>We carry 4 filters total: 2 Platypus QuickDraw + 2 Sawyer Squeeze. Four independent filter paths for fast bottle filling at any water source. Micropur tabs carried as a supplemental treatment option.</p>
+
+  <p><strong>Personal water carry:</strong> Carry 1–2L while hiking. Carry up to 2 additional liters for dry stretches or the Santa Claus dry camp. At 1L ≈ 2.2 lbs. Top off at every reliable source — do not wait until you are low.</p>
+
+  <div class="warn-box">
+    <strong>Hydration is a skill — train for it now.</strong> Philmont's dry desert climate and elevation demand significantly more water intake than most crew members are used to. On trail you need to drink <strong>3–4 liters of water per day minimum</strong>, alternating with sports drinks to replace electrolytes lost during strenuous hiking. A good rule of thumb on trail: take several sips every 15–20 minutes — do not wait until you are thirsty. Thirst is a late sign of dehydration.<br><br>
+    Start building this habit now. If you are not used to drinking 3–4 liters a day, your body will resist it at first. Practice on your training hikes. Dehydration is one of Philmont's most common causes of illness, and it is entirely preventable.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 4: TENTS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">04</span><span class="section-title">Tents &amp; Shelter</span></div>
+
+  <h3>Scouts — Philmont-issued MSR Thunder Ridge (3 tents · 6 scouts in buddy pairs)</h3>
+  <p>Philmont issues MSR Thunder Ridge 2-person tents at no charge. Built for Philmont conditions and heavy use. Components are split between tent partners to share the load. <strong>Philmont does NOT issue stakes or groundsheets — each pair must supply their own.</strong></p>
+
+  <table>
+    <thead><tr><th>Partner</th><th>Components carried</th><th class="tr">Weight</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Partner A</strong></td><td>Tent body + groundsheet (Tyvek 55"×86") + stakes (8)</td><td class="tr"><strong>~2 lb 9–11 oz</strong></td></tr>
+      <tr><td><strong>Partner B</strong></td><td>Tent fly + poles</td><td class="tr"><strong>~3 lb 1–2 oz</strong></td></tr>
+      <tr class="total-row"><td>Full tent total</td><td></td><td class="tr">~5 lb 8 oz – 6 lb 3 oz</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Crew Leader — Personal 1P tent</h3>
+  <p>The crew leader carries a personal 1-person tent (~2 lbs). All components are self-carried — no buddy split.</p>
+
+  <h3>Advisors — Personal 1P tents</h3>
+  <p>All advisors carry their own 1-person tents. Plan for 2–4 lbs. If your tent is lighter, you benefit directly.</p>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 5: ISSUED GEAR -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">05</span><span class="section-title">Philmont-Issued Crew Gear</span></div>
+  <p>Issued at HQ with your first food pickup. Distributed across crew before Day 2 departure. Everyone carries something.</p>
+
+  <table>
+    <thead><tr><th>Item</th><th class="tr">Each</th><th>Qty</th><th class="tr">Total</th><th>Source</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Crew cook pots (8-quart)</td><td class="tr mono">~1 lb 5 oz</td><td>×2</td><td class="tr"><strong>~2 lb 10 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">1 per cook team · rehydration, serving, wash/rinse</span></td></tr>
+      <tr><td>Bear bags</td><td class="tr mono">~3 oz</td><td>×4</td><td class="tr"><strong>~12 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">Distributed at HQ to balance loads · some carry 1–2, some carry none</span></td></tr>
+      <tr><td>Bear ropes × 2 (100 ft)</td><td class="tr mono">~3 oz</td><td>×2</td><td class="tr"><strong>~6 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">1 person carries both · keep with carabiners</span></td></tr>
+      <tr><td>Carabiners × 2</td><td class="tr mono">~1.5 oz</td><td>×2</td><td class="tr"><strong>~3 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">With bear rope carrier · clip to pack</span></td></tr>
+      <tr><td>Camp suds (decanted)</td><td class="tr mono">~0.5 oz</td><td>×1</td><td class="tr"><strong>~0.5 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">1 per crew · scouts carry personal soap as backup</span></td></tr>
+      <tr><td>Scrubby + sump material</td><td class="tr mono">~1 oz</td><td>×1</td><td class="tr"><strong>~1 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">With cook kit</span></td></tr>
+      <tr><td>Large spoon / ladle</td><td class="tr mono">~1 oz</td><td>×1</td><td class="tr"><strong>~1 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">With cook kit</span></td></tr>
+      <tr><td>Pliers / multi-tool</td><td class="tr mono">~2 oz</td><td>×1</td><td class="tr"><strong>~2 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">1 advisor · hip belt pocket</span></td></tr>
+      <tr><td>Toilet paper (crew supply)</td><td class="tr mono">~5 oz</td><td>×1</td><td class="tr"><strong>~5 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">Distributed across bear bags · goes in smellables at night</span></td></tr>
+      <tr><td>Micropur purification tabs</td><td class="tr mono">~1 oz</td><td>×1</td><td class="tr"><strong>~1 oz</strong></td><td><span class="badge b-issued">issued</span></td><td><span class="sub">Supplemental treatment option · 1 advisor carries</span></td></tr>
+      <tr class="total-row"><td>Issued gear total</td><td></td><td></td><td class="tr">~5 lb 9 oz</td><td colspan="2">Avg ~7.5 oz per person across 12 crew</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 6: CREW-SUPPLIED -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">06</span><span class="section-title">Crew-Supplied Shared Gear</span></div>
+  <p>Brought by crew members from home. Distributed before departure at HQ.</p>
+
+  <table>
+    <thead><tr><th>Item</th><th class="tr">Each</th><th>Qty</th><th class="tr">Total</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Dining fly (crew-supplied)</td><td class="tr mono">2 lb 6 oz</td><td>×1</td><td class="tr"><strong>2 lb 6 oz</strong></td><td><span class="badge b-crew">crew</span><span class="sub">Rotate at each resupply · trekking poles for support · assigned based on pack space and load balance</span></td></tr>
+      <tr><td>Cook kit bundle (stove + HE pot + fuel + lighter)</td><td class="tr mono">28.47 oz</td><td>×2</td><td class="tr"><strong>3 lb 8.9 oz</strong></td><td><span class="sub">Fire Maple FMS-118 + Bulin 1.5L/2.1L pot · nested · weighed · 1 per cook team</span></td></tr>
+      <tr><td>Spare fuel canister</td><td class="tr mono">10.76 oz</td><td>×1</td><td class="tr"><strong>10.76 oz</strong></td><td><span class="sub">Backup · carried by a 3rd crew member · likely unused based on prior trek data</span></td></tr>
+      <tr><td>Platypus QuickDraw filter</td><td class="tr mono">2.9 oz</td><td>×2</td><td class="tr"><strong>5.8 oz</strong></td><td><span class="sub">Each carrier keeps their own · screws onto CNOC bag or any 28mm bottle</span></td></tr>
+      <tr><td>Sawyer Squeeze filter</td><td class="tr mono">3.0 oz</td><td>×2</td><td class="tr"><strong>6.0 oz</strong></td><td><span class="sub">Each carrier keeps their own · 4 independent filter paths total</span></td></tr>
+      <tr><td>CNOC Vecto 2L dirty bag</td><td class="tr mono">2.6 oz</td><td>×2</td><td class="tr"><strong>5.2 oz</strong></td><td><span class="sub">Wide-mouth collection bag · pairs with QuickDraw · 1 per filter carrier</span></td></tr>
+      <tr><td>First aid kit (crew-level)</td><td class="tr mono">~14 oz</td><td>×1</td><td class="tr"><strong>~14 oz</strong></td><td><span class="sub">1 advisor carries · accessible at top of pack · not buried</span></td></tr>
+      <tr><td>Sectional maps + compass</td><td class="tr mono">~4 oz</td><td>×1</td><td class="tr"><strong>~4 oz</strong></td><td><span class="sub">Crew leader carries · hip belt or top lid pocket</span></td></tr>
+      <tr><td>Repair kit</td><td class="tr mono">~3 oz</td><td>×1</td><td class="tr"><strong>~3 oz</strong></td><td><span class="sub">Tent tape · pole sleeve · needle/thread · spare buckle · 1 advisor carries</span></td></tr>
+      <tr class="total-row"><td>Crew-supplied total</td><td></td><td></td><td class="tr">~8 lb 10 oz</td><td>Avg ~11 oz per person across 12 crew</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 7: COOKING -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">07</span><span class="section-title">Cooking Method &amp; Cleanup</span></div>
+
+  <h3>Standard Philmont method</h3>
+  <p>Philmont meals are designed around a boil-and-rehydrate system. Water is boiled, poured into the food, and the meal rehydrates in the issued pot. All utensils and bowls are sterilized in boiling water before eating. Cleanup follows strict Leave No Trace protocol — all grey water goes into a sump hole, never on the ground surface or near a water source.</p>
+
+  <h3>Our hybrid method — HE pot + issued pot</h3>
+  <p>We run two cook teams simultaneously. Each team uses a Fire Maple FMS-118 stove with a Bulin heat exchange pot to quick-boil water, then transfers to the issued 8-quart pot for sterilizing, rehydrating, serving, and cleanup. This cuts boil time 20–40% at altitude and conserves fuel across the trek.</p>
+
+  <div class="cook-step" style="padding-top:0;">
+    <div class="cook-num">1</div>
+    <div><div class="cook-label">Boil</div><div class="cook-desc">Fill HE pot with water. Ignite Fire Maple stove. Bring to full rolling boil — HE pot reaches boil significantly faster than standard pots at altitude.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">2</div>
+    <div><div class="cook-label">Sterilize bowls &amp; utensils</div><div class="cook-desc">Using the pot lifter or multi-tool, completely submerge all personal bowls and eating utensils in the boiling water. Hold for several seconds. This is the official Philmont method and is required before every meal to prevent foodborne illness on the trail.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">3</div>
+    <div><div class="cook-label">Rehydrate &amp; serve</div><div class="cook-desc">Transfer boiled water to the issued 8-quart pot. Add food. Cover and let rehydrate per meal instructions (typically 10–15 minutes). Serve from the issued pot into sterilized personal bowls. Only open and rehydrate the food you intend to eat.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">4</div>
+    <div><div class="cook-label">Eat clean</div><div class="cook-desc">Eat everything in your bowl. Lick it clean. Every bit of food left behind becomes a smellable. Encourage crew members to take only what they can eat.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">5</div>
+    <div><div class="cook-label">Wash &amp; rinse</div><div class="cook-desc">Add a small amount of water and one drop of camp suds to the issued pot. Scrub with the issued scrubby. Rinse personal bowls, utensils, and cooking pots until free of food residue and soap.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">6</div>
+    <div><div class="cook-label">Sump &amp; dispose</div><div class="cook-desc">Pour all grey water — wash and rinse water — through the strainer into the sump hole. Strain food particles into the yum yum bag for disposal at the next staffed camp. Never pour grey water on the ground surface or near any water source.</div></div>
+  </div>
+  <div class="cook-step">
+    <div class="cook-num">7</div>
+    <div><div class="cook-label">Bear bag</div><div class="cook-desc">All food bags, wrappers, and smellables go into bear bags immediately after cleanup. Bear bags are hung before the crew goes to sleep — no exceptions.</div></div>
+  </div>
+
+  <div class="info-box" style="margin-top:0.75rem;"><strong>Cook team structure:</strong> 2–3 crew members run both stoves, both pots, and cleanup after each meal. The crew leader assigns cook and cleanup roles. Rotate crew members across cook teams so everyone learns the system by Day 3.</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 8: BEAR BAGS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">08</span><span class="section-title">Bear Bags &amp; Smellables</span></div>
+  <p>Philmont requires all smellables stored in bear bags hung from a tree each night — no exceptions. This is not a suggestion. Ranger staff will check. A smellable is anything with a scent that could attract wildlife.</p>
+  <p><strong>Everything below goes in the bear bag at night:</strong></p>
+  <div class="smellables-grid">
+    <div>All food and snacks</div>
+    <div>Toothpaste and floss</div>
+    <div>Sunscreen and lip balm</div>
+    <div>Insect repellent</div>
+    <div>Deodorant</div>
+    <div>Soap and hand sanitizer</div>
+    <div>Trash and food wrappers</div>
+    <div>Chapstick</div>
+    <div>Scented lotion or wipes</div>
+    <div>Any scented medication</div>
+    <div>Empty food bags</div>
+    <div>Gum and candy</div>
+  </div>
+  <div class="warn-box" style="margin-top:0.75rem;"><strong>If it has a scent, it goes in the bag.</strong> Items left in tents or packs overnight are a Philmont violation and a safety risk for the entire crew.</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 9: FOOTWEAR -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">09</span><span class="section-title">Footwear</span></div>
+
+  <h3>Boots</h3>
+  <p>Boots are the recommended footwear for this itinerary. 81 miles over 11 days with significant elevation change demands a supportive, broken-in boot. Ankle support matters on descent — Day 6 drops 5,820 ft and Day 12 drops 6,870 ft.</p>
+  <div class="warn-box"><strong>Break in your boots before you arrive.</strong> 20–30 miles minimum on varied terrain before June 16. New or barely worn boots will produce blisters within the first two days. If you are wearing new boots to Philmont, you are choosing blisters and potentially compromising the crew.</div>
+
+  <h3>Trail runners</h3>
+  <p>Trail runners are viable for experienced hikers with ultralight kits and strong ankles. Not recommended for first-time Philmont hikers or anyone carrying over 30 lbs total. The tradeoff is ankle support — on loose trail at elevation, a rolled ankle ends your trek. If you choose trail runners, they must have aggressive tread and be fully broken in. Accept the stability tradeoff consciously.</p>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 10: PRE-TREK PREP -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">10</span><span class="section-title">Preparing at Home</span></div>
+
+  <p>You are leaving from approximately 1,000 ft elevation and arriving at Philmont's base at 6,500 ft, with trail camps between 7,100 and 9,700 ft and Baldy summit at 12,441 ft on Day 6. Your body cannot fully acclimatize to altitude in advance at home — but it can arrive physically prepared to handle the workload. Here is your window:</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-date">May 16<br>Shakedown</div>
+      <div><div class="tl-label">Pack shakedown hike</div><div class="tl-desc">Load your full pack at or near trek weight. Hike with the crew. Identify fit issues, hot spots on feet, and gear that doesn't work before it matters. Weigh every pack. Anyone over their 25% ceiling needs to cut weight this weekend.</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">May 17 –<br>June 7</div>
+      <div><div class="tl-label">Loaded hikes — progressive distance and weight</div><div class="tl-desc">Hike with your actual pack at trek weight on varied terrain. Aim for 2–3 hikes per week, increasing distance. If you have access to elevation gain — hills, stairs, stadium steps — use it. Minimum target: 3–5 miles per session with a loaded pack. The goal is time on feet with weight, not speed.</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Now –<br>June 14</div>
+      <div><div class="tl-label">Hydration training — start today</div><div class="tl-desc">Begin drinking 3–4 liters of water per day now. Alternate with electrolyte drinks on training days. Your body needs to adapt to this volume — it will feel like a lot at first. This is one of the most impactful things you can do to prepare for Philmont. Dehydration is the most common preventable illness on trek.</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Now –<br>June 14</div>
+      <div><div class="tl-label">Boot mileage</div><div class="tl-desc">If your boots are not broken in yet, start now. 20–30 miles minimum before June 16 shakedown. Wear your trail socks. Walk on varied terrain. Break in the boots you are actually bringing — not a different pair.</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">June 8 –<br>June 13</div>
+      <div><div class="tl-label">Taper — rest and recover</div><div class="tl-desc">Reduce mileage the week before departure. Let your body recover. Focus on sleep, hydration, and nutrition. Do not do a long hard hike 2–3 days before you fly out. Arrive rested, not depleted.</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">June 14</div>
+      <div><div class="tl-label">Fly day — hydrate on the plane</div><div class="tl-desc">Airplane cabin air is extremely dry. Drink water throughout the flight. Avoid alcohol. Arrive at Philmont already ahead on hydration. You will feel the altitude from the moment you land at 6,500 ft — being well-hydrated before you step off the plane makes a real difference on Day 1.</div></div>
+    </div>
+  </div>
+
+  <div class="green-box">
+    <strong>Altitude reality check:</strong> Living at 1,000 ft means your body is not adapted to reduced oxygen at elevation. You will feel more breathless on uphills than you expect, especially Days 3–6 as you climb into Baldy country. This is normal. The best response is to slow your pace, breathe steadily, drink water, and eat consistently. Do not race the crew on the uphills. A sustainable pace gets everyone to the summit. A fast pace gets one person there and the rest struggling behind.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SECTION 11: ALTITUDE -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header"><span class="section-num">11</span><span class="section-title">Altitude</span></div>
+
+  <div class="danger-box">
+    <strong>⚑ This trek reaches 12,441 ft on Day 6 — Baldy Mountain.</strong> Most of the trek runs between 7,000 and 10,000 ft. If you live and train at low elevation, your body will feel the difference immediately. Altitude reduces oxygen availability — your heart and lungs work harder at the same effort level. A heavy pack accelerates this significantly.<br><br>
+    <strong>Acute Mountain Sickness (AMS)</strong> — headache, nausea, fatigue, dizziness — can affect anyone regardless of fitness level. It is not a toughness issue. The best defenses: arrive hydrated, keep your pack weight in check, hike at a sustainable pace, eat and drink consistently. If symptoms develop, tell the crew leader or an advisor immediately. Do not push through and go silent.
+  </div>
+</div>
+
+<!-- SOURCES -->
+<div class="sources">
+  <strong>Sources:</strong> MSR Thunder Ridge weights from measured 2018 model (Gear Report / Phillip Ferrier, Philmont): body 1 lb 14.6 oz · fly 1 lb 11.3 oz · poles 1 lb 6.1 oz. Dining fly 2 lb 8 oz (2024 Philmont Guidebook to Adventure). Bear bags ~3 oz each (Philmont PASS/OATC equipment lists 2023). Issued 8-quart pot ~1 lb 5 oz (Open Country via Backpacking Light). Cook kit bundle 28.47 oz weighed. Fuel canisters 10.76 oz stated. Platypus QuickDraw 2.9 oz · Sawyer Squeeze 3.0 oz · CNOC Vecto 2L 2.6 oz (manufacturer stated). Cooking method: Philmont Scout Ranch Official Cooking Methods document, updated Feb 2023. Sterilization step confirmed: Philmont Official Cooking Methods 2022/2023; Gear Report "Best Alternative Philmont Cooking Method" 2024 update. Hydration guidance: Philmont Health &amp; Safety Risk Management page; Philmont Official Shakedown Guide Part 2, April 2019; Backpacking Light Philmont water forum (field-experienced advisors recommending 4+ quarts/day capacity). Pack weight guideline: Philmont Scout Ranch Advisors Guidebook 2025. Food weights: 6 buddy pairs × ~2.9 lbs/pair/day. Elevation totals calculated from 2026 Philmont Itinerary 12-23.
+</div>
+
+</div>
+</body>
+</html>
