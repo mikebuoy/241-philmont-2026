@@ -10,8 +10,11 @@ export function Footer() {
   return (
     <footer className="max-w-[900px] mx-auto px-6 py-6 pb-24 sm:pb-6">
       <div className="border-t border-border pt-4 flex items-center justify-between flex-wrap gap-3">
-        <p className="font-mono text-[10px] text-ink-faint">
-          Trek 12-23 · Philmont 2026
+        <p className="text-[10px] text-ink-faint flex items-baseline gap-1.5">
+          <span className="font-condensed font-semibold tracking-[0.02em] uppercase text-ink-muted">
+            Tooth of Time
+          </span>
+          <span className="font-mono">· Trek 12-23 · Philmont 2026</span>
         </p>
         <p className="font-mono text-[10px] text-ink-faint flex items-center gap-1.5 flex-wrap">
           <AdminSignInLink />

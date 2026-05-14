@@ -10,11 +10,11 @@ export default function TopNav() {
     <header className="hidden sm:block bg-surface border-b border-border">
       <div className="max-w-[900px] mx-auto px-6 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-baseline gap-2">
-          <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
-            Trek 12-23
+          <span className="font-condensed text-[15px] font-semibold tracking-[0.02em] uppercase">
+            Tooth of Time
           </span>
-          <span className="text-[13px] font-semibold tracking-tight">
-            Philmont 2026
+          <span className="font-mono text-[10px] text-ink-muted hidden sm:inline">
+            9,003 FT
           </span>
         </Link>
         <nav className="flex items-center gap-1">

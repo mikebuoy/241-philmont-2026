@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Design tokens — extracted from trek_12_23_crew_brief.html
+   Design tokens — Tooth of Time brand (see docs/brand.md)
    ============================================================ */
 @theme {
+  /* Primary trio */
+  --color-bg: #f5f1e8;             /* Bone — background */
+  --color-ink: #2a2a28;            /* Granite — text + logo */
+  --color-hcblue: #1e4d6b;         /* High Country Blue — accent */
+
+  /* Earth accents — use sparingly */
+  --color-trail-dust: #b8845a;
+  --color-aspen: #d4b547;
+
   /* Surfaces */
-  --color-bg: #f5f4f0;
   --color-surface: #ffffff;
   --color-surface-2: #f0efe9;
 
@@ -13,29 +21,28 @@
   --color-border: #e0ddd4;
   --color-border-strong: #c8c4b8;
 
-  /* Ink */
-  --color-ink: #1a1916;
+  /* Ink hierarchy */
   --color-ink-muted: #6b6860;
   --color-ink-faint: #9b9890;
 
-  /* Info — blue */
-  --color-info-bg: #e8f0f8;
-  --color-info-text: #1a4a7a;
-  --color-info-border: #b8d0ea;
+  /* Info — High Country Blue tones */
+  --color-info-bg: #e3edf2;
+  --color-info-text: #1e4d6b;
+  --color-info-border: #b8d0de;
 
-  /* OK — green */
-  --color-ok-bg: #e8f3e8;
-  --color-ok-text: #1a5c1a;
+  /* OK — green (functional, weight calculator) */
+  --color-ok-bg: #d4edda;
+  --color-ok-text: #155724;
   --color-ok-border: #b8ddb8;
 
-  /* Warn — amber */
-  --color-warn-bg: #fdf3e0;
-  --color-warn-text: #7a4a00;
+  /* Warn — amber (caution) */
+  --color-warn-bg: #fff3cd;
+  --color-warn-text: #856404;
   --color-warn-border: #f0d090;
 
-  /* Danger — red */
-  --color-danger-bg: #faeaea;
-  --color-danger-text: #7a1a1a;
+  /* Danger — red (over limit) */
+  --color-danger-bg: #f8d7da;
+  --color-danger-text: #721c24;
   --color-danger-border: #f0b8b8;
 
   /* Cell shading (weight tables) */
@@ -47,17 +54,20 @@
   --color-cell-danger-text: #721c24;
 
   /* Source badges */
-  --color-issued-bg: #e8f0f8;
-  --color-issued-text: #1a4a7a;
+  --color-issued-bg: #e3edf2;
+  --color-issued-text: #1e4d6b;
   --color-crew-bg: #e8f3e8;
   --color-crew-text: #1a5c1a;
 
-  /* Trek accent — gain green (positive), loss red (negative) */
+  /* Trek accent — gain green, loss red */
   --color-gain: #1a5c1a;
   --color-loss: #a32d2d;
 
   /* Fonts (variables set in layout.tsx) */
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+  --font-condensed:
+    var(--font-plex-sans-condensed), var(--font-plex-sans), system-ui,
+    sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
@@ -73,6 +83,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility class for the condensed display family */
+.font-condensed {
+  font-family: var(--font-condensed);
 }
 
 /* Numbers and labels default to mono */
