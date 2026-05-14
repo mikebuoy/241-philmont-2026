@@ -8,6 +8,7 @@ import { isoToSlug } from "@/data/itinerary";
 import type { ItineraryDay, CampType } from "@/data/itinerary";
 import { getItinerary } from "@/lib/itinerary";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
+import { EditPageButton } from "@/components/admin/EditPageButton";
 
 export const metadata: Metadata = { title: "Itinerary" };
 
@@ -54,9 +55,12 @@ export default async function ItineraryIndexPage() {
     >
       <SubNav items={TRIP_SUB} />
 
-      <p className="text-[11px] text-ink-faint">
-        Tap any day for trail metrics, map, elevation profile, and activities.
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] text-ink-faint">
+          Tap any day for trail metrics, map, elevation profile, and activities.
+        </p>
+        <EditPageButton href="/admin/itinerary" />
+      </div>
 
       <Section num="01" title="Pre-trek · arrival">
         <ul className="space-y-1.5">

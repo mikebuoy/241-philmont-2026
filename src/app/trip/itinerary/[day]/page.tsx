@@ -13,6 +13,7 @@ import { getItinerary } from "@/lib/itinerary";
 import { loadGpxFromStorage } from "@/lib/gpx";
 import { ElevationProfile } from "@/components/ElevationProfile";
 import { RouteMap } from "@/components/RouteMap";
+import { EditPageButton } from "@/components/admin/EditPageButton";
 
 type Params = { day: string };
 
@@ -81,13 +82,16 @@ export default async function DayDetailPage({
       title={d.label}
       meta={d.camp}
     >
-      {/* Back link */}
-      <Link
-        href="/trip/itinerary"
-        className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted hover:text-ink"
-      >
-        ‹ Back to itinerary
-      </Link>
+      {/* Back link + edit button row */}
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/trip/itinerary"
+          className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted hover:text-ink"
+        >
+          ‹ Back to itinerary
+        </Link>
+        <EditPageButton href={`/admin/itinerary/${isoToSlug(d.iso)}`} />
+      </div>
 
       {/* Type + flags */}
       <div className="flex flex-wrap gap-1.5">
