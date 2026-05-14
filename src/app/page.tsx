@@ -35,13 +35,37 @@ export default function Home() {
             tone="loss"
           />
         </div>
-        <p className="font-mono text-[11px] text-ink-muted mt-2 text-center">
-          ≈{" "}
-          <span className="text-[var(--color-gain)] font-medium">
-            1.2× Mount Everest
-          </span>{" "}
-          in cumulative ascent (Everest = 29,032 ft)
-        </p>
+        <div className="bg-ink text-bg rounded-lg p-4 sm:p-5 mt-3 flex items-start gap-4">
+          <svg
+            className="opacity-50 shrink-0 mt-0.5"
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />
+          </svg>
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-60 mb-1.5">
+              The challenge · The accomplishment
+            </p>
+            <p className="text-[15px] sm:text-[17px] font-semibold leading-tight">
+              You&apos;ll climb 1.2× Mount Everest in 11 days
+            </p>
+            <p className="text-[11px] sm:text-[12px] opacity-75 mt-1.5 leading-relaxed">
+              35,000 ft of cumulative ascent across 11 trail days, then 35,650
+              ft of descent on the way back. Everest summit ={" "}
+              <span className="font-mono">29,032 ft</span>. Your legs will
+              climb it, descend it, and then some.
+            </p>
+          </div>
+        </div>
       </Section>
 
       <Section num="01" title="Sister crews">
