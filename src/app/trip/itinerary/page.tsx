@@ -53,17 +53,15 @@ export default async function ItineraryIndexPage() {
       eyebrow="My Trip"
       title="Itinerary"
       meta="June 14 – 28, 2026 · 15 days · 81 trail miles"
+      action={<EditPageButton href="/admin/itinerary" />}
     >
       <SubNav items={TRIP_SUB} />
 
       <SaveConfirmation />
 
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] text-ink-faint">
-          Tap any day for trail metrics, map, elevation profile, and activities.
-        </p>
-        <EditPageButton href="/admin/itinerary" />
-      </div>
+      <p className="text-[11px] text-ink-faint">
+        Tap any day for trail metrics, map, elevation profile, and activities.
+      </p>
 
       <Section num="01" title="Pre-trek · arrival">
         <ul className="space-y-1.5">

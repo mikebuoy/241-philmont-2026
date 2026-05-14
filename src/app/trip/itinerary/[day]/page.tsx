@@ -82,19 +82,17 @@ export default async function DayDetailPage({
       eyebrow={`${d.weekday} · ${d.dateShort}${d.philmontDay != null ? ` · Philmont Day ${d.philmontDay}` : ""}`}
       title={d.label}
       meta={d.camp}
+      action={<EditPageButton href={`/admin/itinerary/${isoToSlug(d.iso)}`} />}
     >
       <SaveConfirmation />
 
-      {/* Back link + edit button row */}
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href="/trip/itinerary"
-          className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted hover:text-ink"
-        >
-          ‹ Back to itinerary
-        </Link>
-        <EditPageButton href={`/admin/itinerary/${isoToSlug(d.iso)}`} />
-      </div>
+      {/* Back link */}
+      <Link
+        href="/trip/itinerary"
+        className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted hover:text-ink"
+      >
+        ‹ Back to itinerary
+      </Link>
 
       {/* Type + flags */}
       <div className="flex flex-wrap gap-1.5">
