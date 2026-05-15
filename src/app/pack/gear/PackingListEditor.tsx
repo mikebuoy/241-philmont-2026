@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -54,18 +54,83 @@ export function PackingListEditor({
   const [bodyWeight, setBodyWeight] = useState<number | null>(
     initialBodyWeight,
   );
-  const [showNotPacking, setShowNotPacking] = useState(false);
-  const [showOnlyUnpacked, setShowOnlyUnpacked] = useState(false);
+  const [hideNotPacking, setHideNotPacking] = useState(false);
+  const [hidePacked, setHidePacked] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [boxHeight, setBoxHeight] = useState<number | "auto">("auto");
   const [mode, setMode] = useState<Mode>("pack");
   const [, startTransition] = useTransition();
 
-  // Collapse to compact as soon as the user scrolls at all
+  const boxRef = useRef<HTMLDivElement>(null);
+  const expandedRef = useRef<HTMLDivElement>(null);
+  const compactRef = useRef<HTMLDivElement>(null);
+  const expandedHRef = useRef(0);
+  const compactHRef = useRef(0);
+  const isCompactRef = useRef(false); // tracks state without stale closure
+
   useEffect(() => {
-    setCompact(window.scrollY > 0);
-    function onScroll() { setCompact(window.scrollY > 0); }
+    const COLLAPSE_AT = 300;
+    const EXPAND_AT = 290;
+
+    document.documentElement.style.overflowAnchor = "none";
+
+    const measure = () => {
+      if (expandedRef.current) expandedHRef.current = expandedRef.current.offsetHeight;
+      if (compactRef.current) compactHRef.current = compactRef.current.offsetHeight;
+    };
+
+    let prevY = window.scrollY;
+    let lastToggle = 0;
+    let cooldown = 150;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const goingDown = y > prevY;
+      prevY = y;
+
+      if (Date.now() - lastToggle < cooldown) return;
+
+      if (!isCompactRef.current && goingDown && y >= COLLAPSE_AT) {
+        isCompactRef.current = true;
+        lastToggle = Date.now();
+        cooldown = 500; // longer after collapse — scroll-anchor takes more time to settle
+        setCompact(true);
+        setBoxHeight(compactHRef.current || compactRef.current?.offsetHeight || 60);
+      } else if (isCompactRef.current && !goingDown && y <= EXPAND_AT) {
+        isCompactRef.current = false;
+        lastToggle = Date.now();
+        cooldown = 150; // short after expand — keep it snappy
+        setCompact(false);
+        setBoxHeight(expandedHRef.current || expandedRef.current?.offsetHeight || 200);
+      }
+    };
+
+    const onResize = () => {
+      measure();
+      setBoxHeight(isCompactRef.current ? compactHRef.current : expandedHRef.current);
+    };
+
+    // Measure after first paint, then check initial scroll position
+    const id = requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        measure();
+        // Pin height so CSS transition has a concrete value to animate from
+        setBoxHeight(expandedHRef.current);
+        if (window.scrollY >= COLLAPSE_AT) {
+          isCompactRef.current = true;
+          setCompact(true);
+          setBoxHeight(compactHRef.current);
+        }
+      })
+    );
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
@@ -225,8 +290,8 @@ export function PackingListEditor({
 
   // Apply filters
   const visible = items.filter((it) => {
-    if (it.isNotPacking && !showNotPacking) return false;
-    if (showOnlyUnpacked && it.isPacked) return false;
+    if (it.isNotPacking && hideNotPacking) return false;
+    if (it.isPacked && hidePacked) return false;
     return true;
   });
 
@@ -239,113 +304,133 @@ export function PackingListEditor({
 
       <div className="space-y-4">
 
-      {/* ───── Sticky totals header ───── */}
-      <div className="sticky top-0 z-30 -mx-6 !mt-0">
+      {/* ───── Blue info note — scrolls away above green box ───── */}
+      {children}
 
-        {/* Colored status bar — full width, two heights */}
+      {/* ───── Sticky totals header ───── */}
+      <div className="sticky top-0 z-30 -mx-6 !mt-0" style={{ overflowAnchor: "none" }}>
+
+        {/* Colored status bar — dual-layer with CSS transitions */}
         <div
-          className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "pt-5 pb-2 shadow-md" : "py-5 shadow-sm"}`}
+          ref={boxRef}
+          className={`${statusBg} ${statusText} relative overflow-hidden ${compact ? "shadow-md" : "shadow-sm"}`}
+          style={{
+            height: boxHeight === "auto" ? "auto" : `${boxHeight}px`,
+            transition: boxHeight === "auto" ? undefined : "height 250ms ease-out",
+          }}
         >
-          <div className="max-w-[900px] mx-auto px-6">
-            {compact ? (
-              /* ── Compact: centered weight + Edit/Done ── */
-              <div className="grid grid-cols-3 items-center">
-                <div />
-                <div className="flex items-center justify-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70 whitespace-nowrap">
+
+          {/* ── Expanded layer ── */}
+          <div
+            ref={expandedRef}
+            className="py-5"
+            style={{ opacity: compact ? 0 : 1, transition: "opacity 200ms", pointerEvents: compact ? "none" : undefined }}
+          >
+            <div className="max-w-[900px] mx-auto px-6">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                <label className="flex items-center gap-2 text-[12px]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                    Body weight
+                  </span>
+                  <input
+                    type="number"
+                    min={50}
+                    max={300}
+                    step={1}
+                    value={bodyWeight ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      onBodyWeightChange(v === "" ? null : Number(v));
+                    }}
+                    placeholder="170"
+                    className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
+                  />
+                  <span className="font-mono text-[11px] opacity-70">lbs</span>
+                </label>
+                {status && (
+                  <StatusBadge tone={status}>
+                    {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                  </StatusBadge>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
+                <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
+                <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
+              </div>
+
+              <div className="border-t border-current/10 pt-2">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
                     Total Day 1
                   </span>
-                  <span className="font-mono text-[15px] font-semibold whitespace-nowrap">
+                  <span className="font-mono text-[20px] font-semibold">
                     {fmt(totalDay1Lbs)} lbs
                   </span>
                 </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                    className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
-                  >
-                    {isEditMode ? "Done" : "Edit"}
-                  </button>
+                <div className="font-mono text-[10px] opacity-75 mt-0.5">
+                  {fmt(baseLbs)} base + {GF} Gear &amp; Food
                 </div>
               </div>
-            ) : (
-              /* ── Expanded: full detail ── */
-              <>
-                <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-                  <label className="flex items-center gap-2 text-[12px]">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                      Body weight
-                    </span>
-                    <input
-                      type="number"
-                      min={50}
-                      max={300}
-                      step={1}
-                      value={bodyWeight ?? ""}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        onBodyWeightChange(v === "" ? null : Number(v));
-                      }}
-                      placeholder="170"
-                      className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
-                    />
-                    <span className="font-mono text-[11px] opacity-70">lbs</span>
-                  </label>
-                  {status && (
-                    <StatusBadge tone={status}>
-                      {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
-                    </StatusBadge>
-                  )}
+
+              {deltaLines.length > 0 && (
+                <div className="mt-2 space-y-0.5">
+                  {deltaLines.map((line) => (
+                    <div key={line} className="font-mono text-[12px] font-semibold text-center">
+                      {line}
+                    </div>
+                  ))}
                 </div>
+              )}
 
-                <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                  <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
-                  <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
-                  <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
-                </div>
+              {!bodyWeight && (
+                <p className="text-[11px] mt-2 opacity-75 text-center">
+                  Enter your body weight to see target / status.
+                </p>
+              )}
 
-                <div className="border-t border-current/10 pt-2">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                      Total Day 1
-                    </span>
-                    <span className="font-mono text-[20px] font-semibold">
-                      {fmt(totalDay1Lbs)} lbs
-                    </span>
-                  </div>
-                  <div className="font-mono text-[10px] opacity-75 mt-0.5">
-                    {fmt(baseLbs)} base + {GF} Gear &amp; Food
-                  </div>
-                </div>
-
-                {deltaLines.length > 0 && (
-                  <div className="mt-2 space-y-0.5">
-                    {deltaLines.map((line) => (
-                      <div key={line} className="font-mono text-[12px] font-semibold text-center">
-                        {line}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {!bodyWeight && (
-                  <p className="text-[11px] mt-2 opacity-75 text-center">
-                    Enter your body weight to see target / status.
-                  </p>
-                )}
-
-                <div className="flex justify-end mt-3">
-                  <button
-                    onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                    className="inline-flex items-center px-3 py-1.5 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
-                  >
-                    {isEditMode ? "Done" : "Edit List"}
-                  </button>
-                </div>
-              </>
-            )}
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                  className="inline-flex items-center px-3 py-1.5 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
+                >
+                  {isEditMode ? "Done" : "Edit List"}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* ── Compact layer (absolute overlay) ── */}
+          <div
+            ref={compactRef}
+            className="absolute inset-x-0 top-0 pt-5 pb-2"
+            style={{ opacity: compact ? 1 : 0, transition: "opacity 200ms", pointerEvents: compact ? undefined : "none" }}
+          >
+            <div className="max-w-[900px] mx-auto px-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 font-mono text-[12px] min-w-0">
+                  <span className="whitespace-nowrap">
+                    <span className="opacity-70 text-[10px] uppercase tracking-[0.06em]">Base </span>
+                    <span className="font-semibold">{fmt(baseLbs)} lbs</span>
+                  </span>
+                  <span className="opacity-30">|</span>
+                  <span className="whitespace-nowrap">
+                    <span className="opacity-70 text-[10px] uppercase tracking-[0.06em]">Est. Max </span>
+                    <span className="font-semibold">{fmt(totalDay1Lbs)} lbs</span>
+                  </span>
+                </div>
+                <button
+                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                  className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
+                >
+                  {isEditMode ? "Done" : "Edit"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>{/* end colored bar */}
 
         {/* Column headers — edit mode only */}
         {isEditMode && (
@@ -364,28 +449,25 @@ export function PackingListEditor({
         )}
       </div>{/* end sticky header */}
 
-      {/* ───── Page content passed from parent (SubNav, info box, etc.) ───── */}
-      {children}
-
       {/* ───── Filters ───── */}
       <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
         <label className="flex items-center gap-1.5 cursor-pointer">
           <input
             type="checkbox"
-            checked={showNotPacking}
-            onChange={(e) => setShowNotPacking(e.target.checked)}
+            checked={hideNotPacking}
+            onChange={(e) => setHideNotPacking(e.target.checked)}
             className="accent-ink"
           />
-          Show not-packing ({totals.notPackingCount})
+          Hide non-packing ({totals.notPackingCount})
         </label>
         <label className="flex items-center gap-1.5 cursor-pointer">
           <input
             type="checkbox"
-            checked={showOnlyUnpacked}
-            onChange={(e) => setShowOnlyUnpacked(e.target.checked)}
+            checked={hidePacked}
+            onChange={(e) => setHidePacked(e.target.checked)}
             className="accent-ink"
           />
-          Only unpacked ({totals.unpackedCount})
+          Hide packed ({totals.unpackedCount})
         </label>
       </div>
 
@@ -398,7 +480,7 @@ export function PackingListEditor({
           const catSubtotalOz = allCatItems
             .filter((it) => !it.isNotPacking && !it.isWorn)
             .reduce((sum, it) => sum + it.qty * it.weightOz, 0);
-          if (catItems.length === 0 && !showNotPacking) return null;
+          if (catItems.length === 0 && hideNotPacking) return null;
 
           return (
             <section key={cat}>
@@ -444,7 +526,7 @@ export function PackingListEditor({
         .filter((cat) => TRAVEL_ONLY_CATEGORIES.has(cat))
         .map((cat) => {
           const catItems = visible.filter((it) => it.category === cat);
-          if (catItems.length === 0 && !showNotPacking) return null;
+          if (catItems.length === 0 && hideNotPacking) return null;
 
           return (
             <section key={cat} className="pt-4 border-t border-border-strong">
@@ -562,8 +644,9 @@ function PackRow({
       <input
         type="checkbox"
         checked={item.isPacked}
+        disabled={item.isNotPacking}
         onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
-        className="accent-ink shrink-0 w-4 h-4"
+        className="accent-ink shrink-0 w-4 h-4 disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Packed"
         title="Packed"
       />
@@ -614,8 +697,9 @@ function EditRow({
       <input
         type="checkbox"
         checked={item.isPacked}
+        disabled={item.isNotPacking}
         onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
-        className="accent-ink shrink-0"
+        className="accent-ink shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Packed"
         title="Packed"
       />
@@ -693,12 +777,16 @@ function EditRow({
 
       <button
         onClick={() => onToggle(item.id, "isNotPacking", !item.isNotPacking)}
-        className={`font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0 w-8 text-center ${
-          item.isNotPacking ? "bg-ink text-bg" : "text-ink-faint hover:text-ink"
+        className={`shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors ${
+          item.isNotPacking ? "text-ink" : "text-ink-faint hover:text-ink"
         }`}
         title={item.isNotPacking ? "Mark as packing" : "Mark as not packing"}
+        aria-label={item.isNotPacking ? "Mark as packing" : "Mark as not packing"}
       >
-        {item.isNotPacking ? "OFF" : "·"}
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+          <circle cx="7" cy="7" r="6" />
+          <line x1="2.5" y1="11.5" x2="11.5" y2="2.5" />
+        </svg>
       </button>
 
       {!item.isCore && (

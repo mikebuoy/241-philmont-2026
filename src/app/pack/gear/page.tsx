@@ -71,7 +71,7 @@ export default async function PackGearPage() {
         categoryOrder={categoryOrder}
         aboveHeader={<SubNav key="subnav" items={PACK_SUB} />}
       >
-        <Box variant="info">
+        <Box key="info" variant="info">
           <strong>Your personal packing list.</strong> Items pre-seeded from the
           troop gear list. Edit weights as you weigh your gear. Mark items
           you&apos;re not bringing as not-packing. Add personal items below each
