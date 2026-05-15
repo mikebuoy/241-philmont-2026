@@ -54,7 +54,7 @@ export default async function PackGearPage() {
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
       </svg>
-      Edit gear list
+      Edit Master List
     </Link>
   ) : undefined;
 
@@ -65,20 +65,19 @@ export default async function PackGearPage() {
       meta={`${me.name} · ${items.filter((i) => !i.isNotPacking).length} items packing`}
       action={adminAction}
     >
-      <SubNav items={PACK_SUB} />
-
-      <Box variant="info">
-        <strong>Your personal packing list.</strong> Items pre-seeded from the
-        troop gear list. Edit weights as you weigh your gear. Mark items
-        you&apos;re not bringing as not-packing. Add personal items below each
-        category. Saves automatically.
-      </Box>
-
       <PackingListEditor
         items={items}
         bodyWeightLbs={me.bodyWeightLbs}
         categoryOrder={categoryOrder}
-      />
+      >
+        <SubNav items={PACK_SUB} />
+        <Box variant="info">
+          <strong>Your personal packing list.</strong> Items pre-seeded from the
+          troop gear list. Edit weights as you weigh your gear. Mark items
+          you&apos;re not bringing as not-packing. Add personal items below each
+          category. Saves automatically.
+        </Box>
+      </PackingListEditor>
     </Page>
   );
 }

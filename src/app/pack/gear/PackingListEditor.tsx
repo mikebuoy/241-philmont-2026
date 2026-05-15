@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -40,10 +40,12 @@ export function PackingListEditor({
   items: initialItems,
   bodyWeightLbs: initialBodyWeight,
   categoryOrder: propCategoryOrder,
+  children,
 }: {
   items: PackingItem[];
   bodyWeightLbs: number | null;
   categoryOrder?: string[];
+  children?: ReactNode;
 }) {
   const [items, setItems] = useState<PackingItem[]>(initialItems);
   const [bodyWeight, setBodyWeight] = useState<number | null>(
@@ -53,19 +55,14 @@ export function PackingListEditor({
   const [showOnlyUnpacked, setShowOnlyUnpacked] = useState(false);
   const [compact, setCompact] = useState(false);
   const [mode, setMode] = useState<Mode>("pack");
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
 
-  // Flip to compact mode once the sentinel scrolls out of the viewport
+  // Collapse to compact as soon as the user scrolls at all
   useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setCompact(!entry.isIntersecting),
-      { threshold: 0 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    setCompact(window.scrollY > 0);
+    function onScroll() { setCompact(window.scrollY > 0); }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
@@ -235,128 +232,113 @@ export function PackingListEditor({
   return (
     <div className="space-y-4">
 
-      {/* ───── Mode toggle ───── */}
-      <div className="flex justify-end">
-        {isEditMode ? (
-          <button
-            onClick={() => setMode("pack")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono uppercase tracking-[0.05em] border border-border rounded-md hover:bg-surface-2 active:scale-95 transition-all"
-          >
-            Done
-          </button>
-        ) : (
-          <button
-            onClick={() => setMode("edit")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-ink text-bg rounded-md text-[11px] font-medium font-mono uppercase tracking-[0.05em] hover:opacity-90 active:scale-95 transition-all"
-          >
-            Edit List
-          </button>
-        )}
-      </div>
+      {/* ───── Sticky totals header ───── */}
+      <div className="sticky top-0 sm:top-14 z-30 -mx-6">
 
-      {/* ───── Sticky block: totals + column headers ───── */}
-      <div className="sticky top-14 z-30 space-y-1.5">
-
-        {/* Totals card — two visual modes driven by `compact` */}
-        <div
-          className={`${statusBg} ${statusText} rounded-lg shadow-sm transition-all duration-200 ${
-            compact ? "py-2 px-3" : "p-4"
-          }`}
-          style={{
-            borderLeft: status
-              ? `4px solid var(--color-${status}-border)`
-              : "4px solid var(--color-border-strong)",
-          }}
-        >
-          {compact ? (
-            /* ── Compact: single row — status badge + total ── */
-            <div className="flex items-center justify-between gap-2">
-              {status ? (
-                <StatusBadge tone={status}>
-                  {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
-                </StatusBadge>
-              ) : (
-                <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70">
-                  Total Day 1
-                </span>
-              )}
-              <span className="font-mono text-[15px] font-semibold">
-                {fmt(totalDay1Lbs)} lbs
-              </span>
-            </div>
-          ) : (
-            /* ── Full: all detail rows ── */
-            <>
-              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                    Body weight
-                  </span>
-                  <input
-                    type="number"
-                    min={50}
-                    max={300}
-                    step={1}
-                    value={bodyWeight ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      onBodyWeightChange(v === "" ? null : Number(v));
-                    }}
-                    placeholder="170"
-                    className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
-                  />
-                  <span className="font-mono text-[11px] opacity-70">lbs</span>
-                </label>
-                {status && (
-                  <StatusBadge tone={status}>
-                    {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
-                  </StatusBadge>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
-                <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
-                <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
-              </div>
-
-              <div className="border-t border-current/10 pt-2">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                    Total Day 1
-                  </span>
-                  <span className="font-mono text-[20px] font-semibold">
+        {/* Colored status bar — full width, two heights */}
+        <div className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "py-2.5 shadow-md" : "py-5 shadow-sm"}`}>
+          <div className="max-w-[900px] mx-auto px-6">
+            {compact ? (
+              /* ── Compact: centered weight + Edit/Done ── */
+              <div className="grid grid-cols-3 items-center">
+                <div />
+                <div className="flex items-center justify-center gap-2.5">
+                  {status ? (
+                    <StatusBadge tone={status}>
+                      {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                    </StatusBadge>
+                  ) : (
+                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70">
+                      Total Day 1
+                    </span>
+                  )}
+                  <span className="font-mono text-[15px] font-semibold">
                     {fmt(totalDay1Lbs)} lbs
                   </span>
                 </div>
-                <div className="font-mono text-[10px] opacity-75 mt-0.5">
-                  {fmt(baseLbs)} base + {GF} Gear &amp; Food
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                    className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
+                  >
+                    {isEditMode ? "Done" : "Edit List"}
+                  </button>
                 </div>
               </div>
-
-              {deltaLines.length > 0 && (
-                <div className="mt-2 space-y-0.5">
-                  {deltaLines.map((line) => (
-                    <div key={line} className="font-mono text-[12px] font-semibold text-center">
-                      {line}
-                    </div>
-                  ))}
+            ) : (
+              /* ── Expanded: full detail ── */
+              <>
+                <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                  <label className="flex items-center gap-2 text-[12px]">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                      Body weight
+                    </span>
+                    <input
+                      type="number"
+                      min={50}
+                      max={300}
+                      step={1}
+                      value={bodyWeight ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        onBodyWeightChange(v === "" ? null : Number(v));
+                      }}
+                      placeholder="170"
+                      className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
+                    />
+                    <span className="font-mono text-[11px] opacity-70">lbs</span>
+                  </label>
+                  {status && (
+                    <StatusBadge tone={status}>
+                      {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                    </StatusBadge>
+                  )}
                 </div>
-              )}
 
-              {!bodyWeight && (
-                <p className="text-[11px] mt-2 opacity-75 text-center">
-                  Enter your body weight to see target / status.
-                </p>
-              )}
-            </>
-          )}
+                <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                  <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
+                  <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
+                  <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
+                </div>
+
+                <div className="border-t border-current/10 pt-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                      Total Day 1
+                    </span>
+                    <span className="font-mono text-[20px] font-semibold">
+                      {fmt(totalDay1Lbs)} lbs
+                    </span>
+                  </div>
+                  <div className="font-mono text-[10px] opacity-75 mt-0.5">
+                    {fmt(baseLbs)} base + {GF} Gear &amp; Food
+                  </div>
+                </div>
+
+                {deltaLines.length > 0 && (
+                  <div className="mt-2 space-y-0.5">
+                    {deltaLines.map((line) => (
+                      <div key={line} className="font-mono text-[12px] font-semibold text-center">
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!bodyWeight && (
+                  <p className="text-[11px] mt-2 opacity-75 text-center">
+                    Enter your body weight to see target / status.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Column headers — only shown in edit mode */}
+        {/* Column headers — edit mode only */}
         {isEditMode && (
           <div
-            className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
+            className="bg-surface-2 border-x border-b border-border px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
             style={{ borderWidth: "0.5px" }}
           >
             <span className="w-4 shrink-0" aria-hidden="true" />
@@ -368,11 +350,10 @@ export function PackingListEditor({
             <span className="w-8 text-center shrink-0">Off</span>
           </div>
         )}
-      </div>{/* end sticky block */}
+      </div>{/* end sticky header */}
 
-      {/* Sentinel — IntersectionObserver target. When this exits the viewport
-          (user scrolled past the full totals block), compact mode activates. */}
-      <div ref={sentinelRef} aria-hidden="true" />
+      {/* ───── Page content passed from parent (SubNav, info box, etc.) ───── */}
+      {children}
 
       {/* ───── Filters ───── */}
       <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
