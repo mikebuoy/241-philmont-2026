@@ -21,7 +21,7 @@ export type ItineraryDay = {
   /** Internal Philmont 1–12 numbering. null for the two pre-trek days. */
   philmontDay: number | null;
   /** Sequential trail day number (1–12). null for non-trail days. */
-  trailDay: number | null;
+  trailDay?: number | null;
   /** Free-form description, e.g. "Ute Park to Cimarroncita" */
   label: string;
   /** Long-form date for headers */
