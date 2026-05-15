@@ -4,6 +4,11 @@
  *
  * Core items cannot be deleted by a crew member; they can only be marked "not packing".
  * Personal items can be added on top in P2.
+ *
+ * TODO (polish session): build admin UI to edit this list. Fields per item:
+ * name, description, required (Required/Optional/Note), category, default qty,
+ * default weight (oz). Moves this static array into Supabase so edits don't
+ * require a code push. New seed flow reads from DB instead of this file.
  */
 
 export type Required = "Required" | "Optional" | "Note";

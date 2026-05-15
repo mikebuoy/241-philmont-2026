@@ -295,17 +295,6 @@ export function PackingListEditor({
         )}
       </div>
 
-      {/* ───── Smellable banner ───── */}
-      {totals.smellableCount > 0 && (
-        <div className="bg-warn-bg text-warn-text rounded-md px-3.5 py-2.5 text-[12px] flex items-start gap-2">
-          <span className="text-[14px] leading-none">⚠</span>
-          <span>
-            <strong>{totals.smellableCount} smellables</strong> in your pack —
-            all must go in the bear bag every night.
-          </span>
-        </div>
-      )}
-
       {/* ───── Filters ───── */}
       <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -476,19 +465,24 @@ function ItemRow({
       </div>
 
       {/* Qty */}
-      <input
-        type="number"
-        min={0}
-        max={99}
-        value={qty}
-        onChange={(e) => setQty(e.target.value)}
-        onBlur={() => {
-          const n = parseInt(qty, 10) || 0;
-          if (n !== item.qty) onFieldChange(item.id, "qty", n);
-        }}
-        className="w-10 font-mono text-[12px] text-center bg-surface-2 border border-border rounded px-1 py-0.5"
-        aria-label="Quantity"
-      />
+      <div className="flex items-center gap-0.5 shrink-0">
+        <span className="font-mono text-[11px] text-ink-faint">×</span>
+        <input
+          type="number"
+          min={0}
+          max={99}
+          value={qty}
+          onChange={(e) => setQty(e.target.value)}
+          onBlur={() => {
+            const n = parseInt(qty, 10) || 0;
+            if (n !== item.qty) onFieldChange(item.id, "qty", n);
+          }}
+          className={`w-10 font-mono text-[12px] text-center bg-surface-2 border border-border rounded px-1 py-0.5 ${
+            item.qty > 1 ? "font-semibold" : ""
+          }`}
+          aria-label="Quantity"
+        />
+      </div>
 
       {/* Weight (oz) */}
       <div className="flex items-center gap-1">
@@ -522,13 +516,6 @@ function ItemRow({
         label="C"
         title="Consumable — depletes during trek"
         tone="info"
-      />
-      <FlagButton
-        active={item.isSmellable}
-        onClick={() => onToggle(item.id, "isSmellable", !item.isSmellable)}
-        label="S"
-        title="Smellable — must go in bear bag at night"
-        tone="warn"
       />
 
       {/* Not-packing toggle (icon button) */}
