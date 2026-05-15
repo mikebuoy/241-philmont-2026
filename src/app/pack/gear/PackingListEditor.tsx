@@ -239,7 +239,7 @@ export function PackingListEditor({
       {aboveHeader}
 
       {/* ───── Sticky totals header ───── */}
-      <div className="sticky top-0 sm:top-14 z-30 -mx-6">
+      <div className="sticky top-0 sm:top-14 z-30 -mx-6 !mt-0">
 
         {/* Colored status bar — full width, two heights */}
         <div
