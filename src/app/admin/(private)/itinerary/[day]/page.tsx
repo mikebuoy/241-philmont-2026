@@ -55,6 +55,25 @@ export default async function EditDayPage({
       </header>
 
       <form action={saveAction} className="space-y-6">
+        {/* Label */}
+        <section
+          className="bg-surface border border-border rounded-lg p-4"
+          style={{ borderWidth: "0.5px" }}
+        >
+          <label className="block">
+            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] block mb-2">
+              Label
+            </span>
+            <input
+              type="text"
+              name="label"
+              defaultValue={d.label}
+              placeholder="e.g. Ute Park to Cimarroncita"
+              className="w-full text-[12px] bg-surface-2 border border-border rounded px-3 py-2"
+            />
+          </label>
+        </section>
+
         {/* Notes */}
         <section
           className="bg-surface border border-border rounded-lg p-4"

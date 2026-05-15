@@ -43,6 +43,7 @@ export async function saveDay(iso: string, formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const label = String(formData.get("label") ?? "").trim();
   const notes = String(formData.get("notes") ?? "");
   const gpxPartial = formData.get("gpx_partial") === "on";
   const gpxNote = String(formData.get("gpx_note") ?? "");
@@ -72,6 +73,7 @@ export async function saveDay(iso: string, formData: FormData) {
 
   // Update row (use admin client to bypass RLS — auth already verified above)
   const patch: Record<string, unknown> = {
+    ...(label ? { label } : {}),
     notes,
     flags,
     programs,

@@ -77,45 +77,68 @@ export default async function DayDetailPage({
   const hasMetrics =
     d.miles != null || d.gain != null || d.loss != null || d.elevation != null;
 
+  const eyebrow = [
+    `${d.weekday} · ${d.dateShort}`,
+    d.philmontDay != null ? `Philmont Day ${d.philmontDay}` : null,
+  ].filter(Boolean).join(" · ");
+
+  const campMeta = (
+    <span className="flex items-center justify-between flex-wrap gap-1.5">
+      <span className="text-xs text-ink-muted">
+        {d.trailDay != null ? `Trail Day ${d.trailDay}: ` : ""}{d.camp}
+      </span>
+      <span className="flex items-center flex-wrap gap-1.5">
+      <StatusBadge tone={TYPE_TONE[d.type]}>{TYPE_LABEL[d.type]}</StatusBadge>
+      {d.flags.dryCamp && <StatusBadge tone="danger">DRY CAMP</StatusBadge>}
+      {d.flags.burroPickup && <StatusBadge tone="warn">BURRO PICKUP</StatusBadge>}
+      {d.flags.burroDropoff && <StatusBadge tone="warn">BURRO DROP-OFF</StatusBadge>}
+      {d.flags.summit && <StatusBadge tone="info">SUMMIT</StatusBadge>}
+      {d.flags.conservation && <StatusBadge tone="ok">CONSERVATION</StatusBadge>}
+      {d.flags.longestDay && <StatusBadge tone="neutral">LONGEST DAY</StatusBadge>}
+      {d.flags.hardestDescent && <StatusBadge tone="danger">HARDEST DESCENT</StatusBadge>}
+      </span>
+    </span>
+  );
+
   return (
     <Page
-      eyebrow={`${d.weekday} · ${d.dateShort}${d.philmontDay != null ? ` · Philmont Day ${d.philmontDay}` : ""}`}
+      eyebrow={eyebrow}
       title={d.label}
-      meta={d.camp}
+      meta={campMeta}
       action={<EditPageButton href={`/admin/itinerary/${isoToSlug(d.iso)}`} />}
     >
       <SaveConfirmation />
 
-      {/* Back link */}
-      <Link
-        href="/trip/itinerary"
-        className="inline-flex items-center gap-1 font-mono text-[11px] text-ink-muted hover:text-ink"
-      >
-        ‹ Back to itinerary
-      </Link>
-
-      {/* Type + flags */}
-      <div className="flex flex-wrap gap-1.5">
-        <StatusBadge tone={TYPE_TONE[d.type]}>
-          {TYPE_LABEL[d.type]}
-        </StatusBadge>
-        {d.flags.dryCamp && <StatusBadge tone="danger">DRY CAMP</StatusBadge>}
-        {d.flags.burroPickup && (
-          <StatusBadge tone="warn">BURRO PICKUP</StatusBadge>
-        )}
-        {d.flags.burroDropoff && (
-          <StatusBadge tone="warn">BURRO DROP-OFF</StatusBadge>
-        )}
-        {d.flags.summit && <StatusBadge tone="info">SUMMIT</StatusBadge>}
-        {d.flags.conservation && (
-          <StatusBadge tone="ok">CONSERVATION</StatusBadge>
-        )}
-        {d.flags.longestDay && (
-          <StatusBadge tone="neutral">LONGEST DAY</StatusBadge>
-        )}
-        {d.flags.hardestDescent && (
-          <StatusBadge tone="danger">HARDEST DESCENT</StatusBadge>
-        )}
+      {/* Sub-header nav */}
+      <div className="grid grid-cols-3 items-center font-mono text-[11px] text-ink-muted -mt-4">
+        <div>
+          {prev ? (
+            <Link
+              href={`/trip/itinerary/${isoToSlug(prev.iso)}`}
+              className="inline-flex items-center gap-1 hover:text-ink transition-colors"
+            >
+              ‹ {prev.label}
+            </Link>
+          ) : null}
+        </div>
+        <div className="flex justify-center">
+          <Link
+            href="/trip/itinerary"
+            className="inline-flex items-center gap-1 hover:text-ink transition-colors"
+          >
+            ↑ Itinerary
+          </Link>
+        </div>
+        <div className="flex justify-end">
+          {next ? (
+            <Link
+              href={`/trip/itinerary/${isoToSlug(next.iso)}`}
+              className="inline-flex items-center gap-1 hover:text-ink transition-colors"
+            >
+              {next.label} ›
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       {(() => {
@@ -132,6 +155,12 @@ export default async function DayDetailPage({
                   {d.miles != null && (
                     <Stat value={`${d.miles} mi`} label="DISTANCE" />
                   )}
+                  {d.elevation != null && (
+                    <Stat
+                      value={d.elevation.toLocaleString()}
+                      label="CAMP ELEV (FT)"
+                    />
+                  )}
                   {d.gain != null && (
                     <Stat
                       value={`+${d.gain.toLocaleString()}`}
@@ -146,15 +175,9 @@ export default async function DayDetailPage({
                       tone="loss"
                     />
                   )}
-                  {d.elevation != null && (
-                    <Stat
-                      value={d.elevation.toLocaleString()}
-                      label="CAMP ELEV (FT)"
-                    />
-                  )}
                 </div>
                 {(d.cumMiles != null || d.cumGain != null) && (
-                  <p className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em] mt-2">
+                  <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mt-2">
                     Cumulative{" "}
                     {d.cumMiles != null && `· ${d.cumMiles} mi`}
                     {d.cumGain != null && d.cumLoss != null && (

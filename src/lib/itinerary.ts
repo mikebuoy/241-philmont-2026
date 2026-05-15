@@ -18,6 +18,7 @@ function buildClient() {
 type Row = {
   iso: string;
   philmont_day: number | null;
+  trail_day: number | null;
   label: string;
   date_long: string;
   date_short: string;
@@ -44,6 +45,7 @@ function rowToDay(r: Row): ItineraryDay {
   return {
     iso: r.iso,
     philmontDay: r.philmont_day,
+    trailDay: r.trail_day,
     label: r.label,
     date: r.date_long,
     dateShort: r.date_short,

@@ -17,7 +17,7 @@ type Props = {
  * routes have a server-side admin gate that handles non-admin authed
  * users — they'll be bounced to /admin/signin?error=forbidden.
  */
-export function EditPageButton({ href, label = "Edit this page" }: Props) {
+export function EditPageButton({ href, label = "Edit" }: Props) {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
