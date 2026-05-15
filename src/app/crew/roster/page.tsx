@@ -7,6 +7,7 @@ import { CREW_SUB } from "@/components/nav/navItems";
 import { CREWS, ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers } from "@/lib/crew";
+import { EditPageButton } from "@/components/admin/EditPageButton";
 
 export const metadata: Metadata = { title: "Crew Roster" };
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function RosterPage() {
       eyebrow="My Crew"
       title="Crew Roster"
       meta={`Two sister crews · 22 members · ${claimedCount} signed in`}
+      action={<EditPageButton href="/admin/roster" label="Manage claims" />}
     >
       <SubNav items={CREW_SUB} />
 
