@@ -35,6 +35,7 @@ import {
   addGearItem,
   deleteGearItem,
   updateGearItem,
+  applyDefaultFlag,
   reorderItems,
   moveItemToCategory,
 } from "./actions";
@@ -222,6 +223,9 @@ export function GearEditor({
       qty: "1",
       weightOz: 0,
       sortOrder: 9999,
+      defaultIsWorn: false,
+      defaultIsConsumable: false,
+      defaultIsNotPacking: false,
     };
     setItems((prev) => [...prev, tempItem]);
     startTransition(() => addGearItem(category, name));
@@ -233,8 +237,13 @@ export function GearEditor({
     startTransition(() => deleteGearItem(id));
   }
 
-  function handleFieldBlur(id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) {
+  function handleFieldBlur(id: string, field: Parameters<typeof updateGearItem>[1], value: string | number | boolean) {
     startTransition(() => updateGearItem(id, field, value));
+  }
+
+  function handleFlagToggle(id: string, field: "default_is_worn" | "default_is_consumable", value: boolean) {
+    patchItem(id, field === "default_is_worn" ? { defaultIsWorn: value } : { defaultIsConsumable: value });
+    startTransition(() => applyDefaultFlag(id, field, value));
   }
 
   function patchItem(id: string, patch: Partial<CoreGearItem>) {
@@ -347,6 +356,11 @@ export function GearEditor({
                   onDeleteItem={handleDeleteItem}
                   onFieldBlur={handleFieldBlur}
                   onPatchItem={patchItem}
+                  onFlagToggle={handleFlagToggle}
+                  onNotPackingChange={(id, val) => {
+                    patchItem(id, { defaultIsNotPacking: val });
+                    startTransition(() => updateGearItem(id, "default_is_not_packing", val));
+                  }}
                   onRequiredChange={(id, val) => {
                     patchItem(id, { required: val });
                     startTransition(() => updateGearItem(id, "required", val));
@@ -477,6 +491,8 @@ function SortableCategorySection({
   onDeleteItem,
   onFieldBlur,
   onPatchItem,
+  onFlagToggle,
+  onNotPackingChange,
   onRequiredChange,
 }: {
   category: GearCategory;
@@ -494,8 +510,10 @@ function SortableCategorySection({
   onSaveNewItem: () => void;
   onCancelAddItem: () => void;
   onDeleteItem: (id: string, name: string) => void;
-  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) => void;
+  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number | boolean) => void;
   onPatchItem: (id: string, patch: Partial<CoreGearItem>) => void;
+  onFlagToggle: (id: string, field: "default_is_worn" | "default_is_consumable", value: boolean) => void;
+  onNotPackingChange: (id: string, val: boolean) => void;
   onRequiredChange: (id: string, val: CoreGearItem["required"]) => void;
 }) {
   const {
@@ -581,12 +599,15 @@ function SortableCategorySection({
         style={{ borderWidth: "0.5px" }}
       >
         {/* Column headers */}
-        <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5 bg-surface-2 border-b border-border text-[10px] font-mono uppercase tracking-[0.08em] text-ink-faint" style={{ borderWidth: "0.5px" }}>
+        <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5 bg-surface-2 border-b border-border text-[10px] font-mono uppercase tracking-[0.08em] text-ink-faint" style={{ borderWidth: "0.5px" }}>
           <span className="w-4" />
           <span>Name / Description</span>
           <span className="w-24 text-center">Required</span>
           <span className="w-14 text-center">Qty</span>
           <span className="w-16 text-center">Wt (oz)</span>
+          <span className="w-5 text-center">W</span>
+          <span className="w-5 text-center">C</span>
+          <span className="w-7 text-center">Off</span>
           <span className="w-6" />
         </div>
 
@@ -602,6 +623,8 @@ function SortableCategorySection({
               onDelete={() => onDeleteItem(item.id, item.name)}
               onFieldBlur={onFieldBlur}
               onPatch={onPatchItem}
+              onFlagToggle={onFlagToggle}
+              onNotPackingChange={onNotPackingChange}
               onRequiredChange={onRequiredChange}
             />
           ))}
@@ -663,13 +686,17 @@ function SortableItemRow({
   onDelete,
   onFieldBlur,
   onPatch,
+  onFlagToggle,
+  onNotPackingChange,
   onRequiredChange,
 }: {
   item: CoreGearItem;
   isLast: boolean;
   onDelete: () => void;
-  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) => void;
+  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number | boolean) => void;
   onPatch: (id: string, patch: Partial<CoreGearItem>) => void;
+  onFlagToggle: (id: string, field: "default_is_worn" | "default_is_consumable", value: boolean) => void;
+  onNotPackingChange: (id: string, val: boolean) => void;
   onRequiredChange: (id: string, val: CoreGearItem["required"]) => void;
 }) {
   const {
@@ -694,7 +721,7 @@ function SortableItemRow({
       className={`group ${!isLast ? "border-b border-border" : ""}`}
     >
       {/* Main row */}
-      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5">
+      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5">
         {/* Drag handle */}
         <button
           className="w-4 cursor-grab active:cursor-grabbing text-ink-faint hover:text-ink-muted p-0.5 touch-none"
@@ -757,6 +784,39 @@ function SortableItemRow({
             }
           }}
         />
+
+        {/* Worn default */}
+        <button
+          onClick={() => onFlagToggle(item.id, "default_is_worn", !item.defaultIsWorn)}
+          title={item.defaultIsWorn ? "Default: Worn (click to unset)" : "Set default: Worn"}
+          className={`w-5 h-5 rounded font-mono text-[10px] font-semibold transition-colors ${
+            item.defaultIsWorn ? "bg-ok-bg text-ok-text" : "text-ink-faint hover:text-ink"
+          }`}
+        >
+          W
+        </button>
+
+        {/* Consumable default */}
+        <button
+          onClick={() => onFlagToggle(item.id, "default_is_consumable", !item.defaultIsConsumable)}
+          title={item.defaultIsConsumable ? "Default: Consumable (click to unset)" : "Set default: Consumable"}
+          className={`w-5 h-5 rounded font-mono text-[10px] font-semibold transition-colors ${
+            item.defaultIsConsumable ? "bg-info-bg text-info-text" : "text-ink-faint hover:text-ink"
+          }`}
+        >
+          C
+        </button>
+
+        {/* Not packing default */}
+        <button
+          onClick={() => onNotPackingChange(item.id, !item.defaultIsNotPacking)}
+          title={item.defaultIsNotPacking ? "Default: Not packing (click to unset)" : "Set default: Not packing"}
+          className={`w-7 h-5 rounded font-mono text-[10px] font-semibold transition-colors ${
+            item.defaultIsNotPacking ? "bg-warn-bg text-warn-text" : "text-ink-faint hover:text-ink"
+          }`}
+        >
+          Off
+        </button>
 
         {/* Delete */}
         <button

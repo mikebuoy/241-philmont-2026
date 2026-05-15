@@ -91,20 +91,103 @@ type GearField =
   | "required"
   | "qty"
   | "weight_oz"
-  | "description";
+  | "description"
+  | "default_is_not_packing";
 
 export async function updateGearItem(
   id: string,
   field: GearField,
-  value: string | number,
+  value: string | number | boolean,
 ): Promise<void> {
   await requireAdmin();
   const admin = createAdminClient();
+
+  // For name changes: fetch old name first, then cascade to packing_items
+  if (field === "name") {
+    const { data: existing } = await admin
+      .from("core_gear_items")
+      .select("name")
+      .eq("id", id)
+      .single();
+    const oldName = existing?.name as string | undefined;
+    const { error } = await admin
+      .from("core_gear_items")
+      .update({ name: value, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw new Error(`Update failed: ${error.message}`);
+    if (oldName && oldName !== value) {
+      await admin
+        .from("packing_items")
+        .update({ name: value })
+        .eq("name", oldName)
+        .eq("is_core", true);
+    }
+    revalidatePath("/admin/gear");
+    return;
+  }
+
+  // For required changes: update core item and cascade is_required to packing_items
+  if (field === "required") {
+    const { data: existing } = await admin
+      .from("core_gear_items")
+      .select("name")
+      .eq("id", id)
+      .single();
+    const { error } = await admin
+      .from("core_gear_items")
+      .update({ required: value, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw new Error(`Update failed: ${error.message}`);
+    if (existing?.name) {
+      await admin
+        .from("packing_items")
+        .update({ is_required: value === "Required" })
+        .eq("name", existing.name)
+        .eq("is_core", true);
+    }
+    revalidatePath("/admin/gear");
+    return;
+  }
+
+  // All other fields: update core item only (no cascade)
   const { error } = await admin
     .from("core_gear_items")
     .update({ [field]: value, updated_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw new Error(`Update failed: ${error.message}`);
+  revalidatePath("/admin/gear");
+}
+
+/** Toggle a default worn/consumable flag and retroactively update all crew packing lists. */
+export async function applyDefaultFlag(
+  id: string,
+  field: "default_is_worn" | "default_is_consumable",
+  value: boolean,
+): Promise<void> {
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  const { data: existing } = await admin
+    .from("core_gear_items")
+    .select("name")
+    .eq("id", id)
+    .single();
+  if (!existing?.name) throw new Error("Item not found");
+
+  const { error: coreErr } = await admin
+    .from("core_gear_items")
+    .update({ [field]: value, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (coreErr) throw new Error(`Update failed: ${coreErr.message}`);
+
+  const packingField = field === "default_is_worn" ? "is_worn" : "is_consumable";
+  const { error: packErr } = await admin
+    .from("packing_items")
+    .update({ [packingField]: value })
+    .eq("name", existing.name)
+    .eq("is_core", true);
+  if (packErr) throw new Error(`Cascade failed: ${packErr.message}`);
+
   revalidatePath("/admin/gear");
 }
 
@@ -154,28 +237,55 @@ export async function deleteGearItem(id: string): Promise<void> {
   revalidatePath("/admin/gear");
 }
 
-/** Persist item order within a category after drag/drop. */
+/** Persist item order within a category after drag/drop. Cascades to all crew packing lists. */
 export async function reorderItems(orderedIds: string[]): Promise<void> {
   await requireAdmin();
   const admin = createAdminClient();
+
+  // Fetch names so we can cascade sort_order to packing_items by name
+  const { data: coreItems } = await admin
+    .from("core_gear_items")
+    .select("id, name")
+    .in("id", orderedIds);
+  const nameById = Object.fromEntries(
+    (coreItems ?? []).map((r: { id: string; name: string }) => [r.id, r.name]),
+  );
+
   await Promise.all(
     orderedIds.map((id, idx) =>
       admin
         .from("core_gear_items")
         .update({ sort_order: idx, updated_at: new Date().toISOString() })
-        .eq("id", id),
+        .eq("id", id)
+        .then(() => {
+          const name = nameById[id];
+          if (!name) return;
+          return admin
+            .from("packing_items")
+            .update({ sort_order: idx })
+            .eq("name", name)
+            .eq("is_core", true);
+        }),
     ),
   );
   revalidatePath("/admin/gear");
 }
 
-/** Move an item to a different category (cross-category drag). */
+/** Move an item to a different category (cross-category drag). Cascades to all crew packing lists. */
 export async function moveItemToCategory(
   id: string,
   category: string,
 ): Promise<void> {
   await requireAdmin();
   const admin = createAdminClient();
+
+  // Fetch current name + category before moving
+  const { data: existing } = await admin
+    .from("core_gear_items")
+    .select("name, category")
+    .eq("id", id)
+    .single();
+
   const { data: last } = await admin
     .from("core_gear_items")
     .select("sort_order")
@@ -184,10 +294,21 @@ export async function moveItemToCategory(
     .limit(1)
     .maybeSingle();
   const sort_order = last ? (last.sort_order as number) + 1 : 0;
+
   const { error } = await admin
     .from("core_gear_items")
     .update({ category, sort_order, updated_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw new Error(`Move item failed: ${error.message}`);
+
+  // Cascade category + sort_order to crew packing lists
+  if (existing?.name) {
+    await admin
+      .from("packing_items")
+      .update({ category, sort_order })
+      .eq("name", existing.name)
+      .eq("is_core", true);
+  }
+
   revalidatePath("/admin/gear");
 }

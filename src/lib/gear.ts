@@ -16,6 +16,9 @@ export type CoreGearItem = {
   qty: string;
   weightOz: number;
   sortOrder: number;
+  defaultIsWorn: boolean;
+  defaultIsConsumable: boolean;
+  defaultIsNotPacking: boolean;
 };
 
 type CategoryRow = {
@@ -33,6 +36,9 @@ type ItemRow = {
   qty: string;
   weight_oz: number;
   sort_order: number;
+  default_is_worn: boolean;
+  default_is_consumable: boolean;
+  default_is_not_packing: boolean;
 };
 
 function rowToCategory(r: CategoryRow): GearCategory {
@@ -49,6 +55,9 @@ function rowToItem(r: ItemRow): CoreGearItem {
     qty: r.qty,
     weightOz: Number(r.weight_oz),
     sortOrder: r.sort_order,
+    defaultIsWorn: r.default_is_worn ?? false,
+    defaultIsConsumable: r.default_is_consumable ?? false,
+    defaultIsNotPacking: r.default_is_not_packing ?? false,
   };
 }
 

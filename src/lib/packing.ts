@@ -92,9 +92,10 @@ export async function seedCoreItemsForCrewMember(
   const rows = (gearItems as Array<{
     category: string; name: string; required: string;
     qty: string; weight_oz: number; sort_order: number;
+    default_is_worn: boolean; default_is_consumable: boolean; default_is_not_packing: boolean;
   }>).map((g, idx) => {
     let weightOz = Number(g.weight_oz) || 0;
-    let isNotPacking = false;
+    let isNotPacking = g.default_is_not_packing ?? false;
 
     if (g.category === "Shelter") {
       if (g.name === "Philmont Thunder Ridge tent (your half)") {
@@ -114,6 +115,8 @@ export async function seedCoreItemsForCrewMember(
       weight_oz: weightOz,
       is_core: true,
       is_required: g.required === "Required",
+      is_worn: g.default_is_worn ?? false,
+      is_consumable: g.default_is_consumable ?? false,
       is_not_packing: isNotPacking,
       sort_order: g.sort_order ?? idx,
     };

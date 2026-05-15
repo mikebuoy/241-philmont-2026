@@ -305,9 +305,6 @@ export function PackingListEditor({
 
       <div className="space-y-4">
 
-      {/* ───── Blue info note — scrolls away above green box ───── */}
-      {children}
-
       {/* ───── Sticky totals header ───── */}
       <div className="sticky top-0 z-30 -mx-6 !mt-0" style={{ overflowAnchor: "none" }}>
 
@@ -449,6 +446,9 @@ export function PackingListEditor({
           </div>
         )}
       </div>{/* end sticky header */}
+
+      {/* ───── Blue info note ───── */}
+      {children}
 
       {/* ───── Filters ───── */}
       <div className="flex items-center justify-end gap-4 text-[11px] font-mono text-ink-muted">
@@ -655,9 +655,12 @@ function PackRow({
         title="Packed"
       />
       <div className="flex-1 min-w-0">
-        <span className={`font-medium leading-snug ${item.isPacked ? "line-through opacity-60" : ""}`}>
-          {item.name}
-        </span>
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
+          <span className={`font-medium leading-snug ${item.isPacked ? "line-through opacity-60" : ""}`}>
+            {item.name}
+          </span>
+        </div>
         {item.description && (
           <div className="text-ink-muted font-normal text-[11px] leading-snug mt-0.5">
             {item.description}
