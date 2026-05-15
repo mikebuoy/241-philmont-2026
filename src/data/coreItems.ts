@@ -41,7 +41,6 @@ export const CORE_ITEMS: CoreItem[] = [
   { category: "10 Essentials", item: "Compass", required: "Required", qty: "1" },
 
   // Clothing
-  { category: "Clothing", item: "Field Uniform", required: "Required", qty: "1" },
   { category: "Clothing", item: "Troop Red Activity Shirt", required: "Required", qty: "1" },
   { category: "Clothing", item: "Hiking Socks", required: "Required", qty: "2" },
   { category: "Clothing", item: "Hiking underwear", required: "Required", qty: "2" },
@@ -98,7 +97,6 @@ export const CORE_ITEMS: CoreItem[] = [
   { category: "Pack", item: "Pack Liner (unscented trash compactor bag)", required: "Required", qty: "1" },
   { category: "Pack", item: "Pack Cover", required: "Optional", qty: "1" },
   { category: "Pack", item: "10 - 15 Liter Summit/Day Pack", required: "Required", qty: "1" },
-  { category: "Pack", item: "Gear Duffle for Checked Luggage", required: "Required", qty: "1" },
 
   // Personal Gear
   { category: "Personal Gear", item: "Bandana/Buff/Shemagh", required: "Required", qty: "1" },
@@ -142,6 +140,10 @@ export const CORE_ITEMS: CoreItem[] = [
   { category: "Water", item: "1 Liter Smartwater Bottle (with water)", required: "Required", qty: "2" },
   { category: "Water", item: "2 Liters Additional Capacity (collapsible)", required: "Required", qty: "1" },
   { category: "Water", item: "Total of 4 Liters Capacity", required: "Note", qty: "—" },
+
+  // Travel / Basecamp Only — NOT counted in pack weight
+  { category: "Travel / Basecamp Only", item: "Field Uniform", required: "Required", qty: "1" },
+  { category: "Travel / Basecamp Only", item: "Gear Duffle for Checked Luggage", required: "Required", qty: "1" },
 ];
 
 export const CORE_CATEGORIES: string[] = [
@@ -159,4 +161,10 @@ export const CORE_CATEGORIES: string[] = [
   "Shelter",
   "Sleep System",
   "Water",
+  "Travel / Basecamp Only",
 ];
+
+/** Categories whose items are NOT counted toward pack weight totals. */
+export const TRAVEL_ONLY_CATEGORIES = new Set<string>([
+  "Travel / Basecamp Only",
+]);

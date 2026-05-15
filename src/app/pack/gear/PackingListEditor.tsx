@@ -4,7 +4,10 @@ import { useMemo, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
-import { CORE_CATEGORIES } from "@/data/coreItems";
+import {
+  CORE_CATEGORIES,
+  TRAVEL_ONLY_CATEGORIES,
+} from "@/data/coreItems";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import {
   updateItemField,
@@ -155,6 +158,7 @@ export function PackingListEditor({
       qty: 1,
       weightOz: 0,
       isCore: false,
+      isRequired: null,
       isWorn: false,
       isConsumable: false,
       isSmellable: false,
@@ -317,50 +321,113 @@ export function PackingListEditor({
         </label>
       </div>
 
-      {/* ───── Categories ───── */}
-      {categoryOrder.map((cat) => {
-        const catItems = visible.filter((it) => it.category === cat);
-        const allCatItems = items.filter((it) => it.category === cat);
-        const catSubtotalOz = allCatItems
-          .filter((it) => !it.isNotPacking && !it.isWorn)
-          .reduce((sum, it) => sum + it.qty * it.weightOz, 0);
-        if (catItems.length === 0 && !showNotPacking) return null;
+      {/* ───── Column headers (legend) ───── */}
+      <div
+        className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em]"
+        style={{ borderWidth: "0.5px" }}
+      >
+        <span className="w-4 shrink-0" aria-hidden="true" />
+        <span className="flex-1 min-w-0">Item</span>
+        <span className="w-14 text-center shrink-0">#</span>
+        <span className="w-20 text-right shrink-0">oz</span>
+        <span className="w-6 text-center shrink-0">W</span>
+        <span className="w-6 text-center shrink-0">C</span>
+        <span className="w-8 text-center shrink-0">Off</span>
+      </div>
 
-        return (
-          <section key={cat}>
-            <div className="flex items-baseline justify-between mb-1.5 px-1">
-              <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">
-                {cat}
-              </h2>
-              <span className="font-mono text-[10px] text-ink-faint">
-                {catItems.length} · {fmt(catSubtotalOz, 1)} oz
-              </span>
-            </div>
-            <ul
-              className="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border"
-              style={{ borderWidth: "0.5px" }}
-            >
-              {catItems.map((it) => (
-                <ItemRow
-                  key={it.id}
-                  item={it}
-                  onToggle={onToggle}
-                  onFieldChange={onFieldChange}
-                  onDelete={() => onDelete(it.id)}
-                />
-              ))}
-              <li className="px-3 py-2 bg-surface-2/50">
-                <button
-                  onClick={() => onAddPersonal(cat)}
-                  className="font-mono text-[11px] text-ink-muted hover:text-ink"
-                >
-                  + Add personal item
-                </button>
-              </li>
-            </ul>
-          </section>
-        );
-      })}
+      {/* ───── Pack categories (counted) ───── */}
+      {categoryOrder
+        .filter((cat) => !TRAVEL_ONLY_CATEGORIES.has(cat))
+        .map((cat) => {
+          const catItems = visible.filter((it) => it.category === cat);
+          const allCatItems = items.filter((it) => it.category === cat);
+          const catSubtotalOz = allCatItems
+            .filter((it) => !it.isNotPacking && !it.isWorn)
+            .reduce((sum, it) => sum + it.qty * it.weightOz, 0);
+          if (catItems.length === 0 && !showNotPacking) return null;
+
+          return (
+            <section key={cat}>
+              <div className="flex items-baseline justify-between mb-1.5 px-1">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+                  {cat}
+                </h2>
+                <span className="font-mono text-[10px] text-ink-faint">
+                  {catItems.length} · {fmt(catSubtotalOz, 1)} oz
+                </span>
+              </div>
+              <ul
+                className="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border"
+                style={{ borderWidth: "0.5px" }}
+              >
+                {catItems.map((it) => (
+                  <ItemRow
+                    key={it.id}
+                    item={it}
+                    onToggle={onToggle}
+                    onFieldChange={onFieldChange}
+                    onDelete={() => onDelete(it.id)}
+                  />
+                ))}
+                <li className="px-3 py-2 bg-surface-2/50">
+                  <button
+                    onClick={() => onAddPersonal(cat)}
+                    className="font-mono text-[11px] text-ink-muted hover:text-ink"
+                  >
+                    + Add personal item
+                  </button>
+                </li>
+              </ul>
+            </section>
+          );
+        })}
+
+      {/* ───── Travel / Basecamp Only — NOT counted ───── */}
+      {categoryOrder
+        .filter((cat) => TRAVEL_ONLY_CATEGORIES.has(cat))
+        .map((cat) => {
+          const catItems = visible.filter((it) => it.category === cat);
+          if (catItems.length === 0 && !showNotPacking) return null;
+
+          return (
+            <section key={cat} className="pt-4 border-t border-border-strong">
+              <div className="flex items-baseline justify-between mb-1.5 px-1">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+                  {cat}
+                </h2>
+                <span className="font-mono text-[10px] text-ink-faint italic">
+                  not in pack weight
+                </span>
+              </div>
+              <p className="text-[11px] text-ink-faint mb-2 px-1 italic leading-snug">
+                These travel to and from Philmont but don&apos;t go on trail.
+                Not counted in any pack-weight totals.
+              </p>
+              <ul
+                className="bg-surface-2 border border-border rounded-md overflow-hidden divide-y divide-border"
+                style={{ borderWidth: "0.5px" }}
+              >
+                {catItems.map((it) => (
+                  <ItemRow
+                    key={it.id}
+                    item={it}
+                    onToggle={onToggle}
+                    onFieldChange={onFieldChange}
+                    onDelete={() => onDelete(it.id)}
+                  />
+                ))}
+                <li className="px-3 py-2 bg-surface-2/70">
+                  <button
+                    onClick={() => onAddPersonal(cat)}
+                    className="font-mono text-[11px] text-ink-muted hover:text-ink"
+                  >
+                    + Add personal item
+                  </button>
+                </li>
+              </ul>
+            </section>
+          );
+        })}
     </div>
   );
 }
@@ -448,24 +515,27 @@ function ItemRow({
         title="Packed"
       />
 
-      {/* Name */}
+      {/* Name + required/optional badge */}
       <div className="flex-1 min-w-0">
-        {item.isCore ? (
-          <span className="font-medium truncate block">{item.name}</span>
-        ) : (
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => {
-              if (name !== item.name) onFieldChange(item.id, "name", name);
-            }}
-            className="w-full font-medium bg-transparent border-b border-transparent focus:border-border-strong outline-none"
-          />
-        )}
+        <div className="flex items-baseline gap-1.5">
+          <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
+          {item.isCore ? (
+            <span className="font-medium truncate">{item.name}</span>
+          ) : (
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => {
+                if (name !== item.name) onFieldChange(item.id, "name", name);
+              }}
+              className="flex-1 font-medium bg-transparent border-b border-transparent focus:border-border-strong outline-none"
+            />
+          )}
+        </div>
       </div>
 
       {/* Qty */}
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className="flex items-center gap-0.5 shrink-0 w-14 justify-end">
         <span className="font-mono text-[11px] text-ink-faint">×</span>
         <input
           type="number"
@@ -485,7 +555,7 @@ function ItemRow({
       </div>
 
       {/* Weight (oz) */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0 w-20 justify-end">
         <input
           type="number"
           min={0}
@@ -496,10 +566,9 @@ function ItemRow({
             const n = parseFloat(weight) || 0;
             if (n !== item.weightOz) onFieldChange(item.id, "weightOz", n);
           }}
-          className="w-14 font-mono text-[12px] text-right bg-surface-2 border border-border rounded px-1.5 py-0.5"
+          className="w-16 font-mono text-[12px] text-right bg-surface-2 border border-border rounded px-1.5 py-0.5"
           aria-label="Weight in oz"
         />
-        <span className="font-mono text-[10px] text-ink-muted">oz</span>
       </div>
 
       {/* Flag toggles */}
@@ -521,7 +590,7 @@ function ItemRow({
       {/* Not-packing toggle (icon button) */}
       <button
         onClick={() => onToggle(item.id, "isNotPacking", !item.isNotPacking)}
-        className={`font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0 ${
+        className={`font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0 w-8 text-center ${
           item.isNotPacking
             ? "bg-ink text-bg"
             : "text-ink-faint hover:text-ink"
@@ -547,6 +616,34 @@ function ItemRow({
         </button>
       )}
     </li>
+  );
+}
+
+function RequiredBadge({
+  isRequired,
+  isCore,
+}: {
+  isRequired: boolean | null;
+  isCore: boolean;
+}) {
+  if (!isCore || isRequired == null) return null;
+  if (isRequired) {
+    return (
+      <span
+        className="font-mono text-[9px] font-bold text-ok-text shrink-0 uppercase tracking-[0.04em]"
+        title="Required"
+      >
+        REQ
+      </span>
+    );
+  }
+  return (
+    <span
+      className="font-mono text-[9px] text-ink-faint shrink-0 lowercase tracking-[0.04em]"
+      title="Optional"
+    >
+      opt
+    </span>
   );
 }
 

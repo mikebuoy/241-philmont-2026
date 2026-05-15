@@ -2,6 +2,8 @@
 // (Server-side fetching + seeding lives in lib/packing.ts which imports
 // server-only modules and must not be imported from client components.)
 
+import { TRAVEL_ONLY_CATEGORIES } from "@/data/coreItems";
+
 export type PackingItem = {
   id: string;
   crewMemberId: string;
@@ -10,6 +12,7 @@ export type PackingItem = {
   qty: number;
   weightOz: number;
   isCore: boolean;
+  isRequired: boolean | null;
   isWorn: boolean;
   isConsumable: boolean;
   isSmellable: boolean;
@@ -29,6 +32,11 @@ export type Totals = {
   unpackedCount: number;
 };
 
+/**
+ * Compute weight totals. Items in TRAVEL_ONLY_CATEGORIES (Travel /
+ * Basecamp Only) are excluded entirely — they never contribute to base,
+ * worn, or consumable.
+ */
 export function computeTotals(items: PackingItem[]): Totals {
   let baseOz = 0;
   let wornOz = 0;
@@ -39,6 +47,12 @@ export function computeTotals(items: PackingItem[]): Totals {
   let unpackedCount = 0;
 
   for (const it of items) {
+    // Travel-only items are excluded from all pack-weight math
+    if (TRAVEL_ONLY_CATEGORIES.has(it.category)) {
+      if (!it.isPacked) unpackedCount++;
+      else packedCount++;
+      continue;
+    }
     if (it.isNotPacking) {
       notPackingCount++;
       continue;

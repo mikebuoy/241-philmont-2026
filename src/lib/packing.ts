@@ -16,6 +16,7 @@ type Row = {
   qty: number;
   weight_oz: number;
   is_core: boolean;
+  is_required: boolean | null;
   is_worn: boolean;
   is_consumable: boolean;
   is_smellable: boolean;
@@ -34,6 +35,7 @@ function rowToItem(r: Row): PackingItem {
     qty: r.qty,
     weightOz: Number(r.weight_oz),
     isCore: r.is_core,
+    isRequired: r.is_required,
     isWorn: r.is_worn,
     isConsumable: r.is_consumable,
     isSmellable: r.is_smellable,
@@ -98,6 +100,7 @@ export async function seedCoreItemsForCrewMember(
       qty: numberOrOne(coreItem.qty),
       weight_oz: weightOz,
       is_core: true,
+      is_required: coreItem.required === "Required",
       is_not_packing: isNotPacking,
       sort_order: idx,
     };
