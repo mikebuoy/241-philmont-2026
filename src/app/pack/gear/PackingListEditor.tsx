@@ -40,11 +40,14 @@ export function PackingListEditor({
   items: initialItems,
   bodyWeightLbs: initialBodyWeight,
   categoryOrder: propCategoryOrder,
+  aboveHeader,
   children,
 }: {
   items: PackingItem[];
   bodyWeightLbs: number | null;
   categoryOrder?: string[];
+  /** Renders above the sticky green box (e.g. SubNav). Scrolls away on scroll. */
+  aboveHeader?: ReactNode;
   children?: ReactNode;
 }) {
   const [items, setItems] = useState<PackingItem[]>(initialItems);
@@ -232,27 +235,27 @@ export function PackingListEditor({
   return (
     <div className="space-y-4">
 
+      {/* ───── Above-header slot (SubNav) — scrolls away ───── */}
+      {aboveHeader}
+
       {/* ───── Sticky totals header ───── */}
       <div className="sticky top-0 sm:top-14 z-30 -mx-6">
 
         {/* Colored status bar — full width, two heights */}
-        <div className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "py-2.5 shadow-md" : "py-5 shadow-sm"}`}>
+        <div
+          className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "pb-2 shadow-md" : "py-5 shadow-sm"}`}
+          style={compact ? { paddingTop: "env(safe-area-inset-top)" } : undefined}
+        >
           <div className="max-w-[900px] mx-auto px-6">
             {compact ? (
               /* ── Compact: centered weight + Edit/Done ── */
               <div className="grid grid-cols-3 items-center">
                 <div />
-                <div className="flex items-center justify-center gap-2.5">
-                  {status ? (
-                    <StatusBadge tone={status}>
-                      {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
-                    </StatusBadge>
-                  ) : (
-                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70">
-                      Total Day 1
-                    </span>
-                  )}
-                  <span className="font-mono text-[15px] font-semibold">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70 whitespace-nowrap">
+                    Total Day 1
+                  </span>
+                  <span className="font-mono text-[15px] font-semibold whitespace-nowrap">
                     {fmt(totalDay1Lbs)} lbs
                   </span>
                 </div>
@@ -261,7 +264,7 @@ export function PackingListEditor({
                     onClick={() => setMode(isEditMode ? "pack" : "edit")}
                     className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
                   >
-                    {isEditMode ? "Done" : "Edit List"}
+                    {isEditMode ? "Done" : "Edit"}
                   </button>
                 </div>
               </div>
@@ -330,6 +333,15 @@ export function PackingListEditor({
                     Enter your body weight to see target / status.
                   </p>
                 )}
+
+                <div className="flex justify-end mt-3">
+                  <button
+                    onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                    className="inline-flex items-center px-3 py-1.5 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
+                  >
+                    {isEditMode ? "Done" : "Edit List"}
+                  </button>
+                </div>
               </>
             )}
           </div>
