@@ -58,6 +58,10 @@ export function GearEditor({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
+  // Category reorder mode
+  const [reorderingCats, setReorderingCats] = useState(false);
+  const [catOrderSnapshot, setCatOrderSnapshot] = useState<GearCategory[]>([]);
+
   // Category management state
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [catErrors, setCatErrors] = useState<Record<string, string>>({});
@@ -117,13 +121,11 @@ export function GearEditor({
     const overId = over.id as string;
 
     if (isCatId(activeId)) {
-      // Reorder categories
+      // Reorder categories — in reorder mode, only update local state; Save persists
       const fromIdx = categories.findIndex((c) => catId(c.name) === activeId);
       const toIdx = categories.findIndex((c) => catId(c.name) === overId);
       if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
-      const next = arrayMove(categories, fromIdx, toIdx);
-      setCategories(next);
-      startTransition(() => reorderCategories(next.map((c) => c.name)));
+      setCategories((prev) => arrayMove(prev, fromIdx, toIdx));
     } else {
       // Item drag — category was already updated in onDragOver
       const currentCat = findItemCategory(activeId);
@@ -149,6 +151,23 @@ export function GearEditor({
         startTransition(() => reorderItems(next.map((i) => i.id)));
       }
     }
+  }
+
+  // ─── Category reorder mode ────────────────────────────────────────────────
+
+  function handleStartReorder() {
+    setCatOrderSnapshot(categories);
+    setReorderingCats(true);
+  }
+
+  function handleSaveReorder() {
+    setReorderingCats(false);
+    startTransition(() => reorderCategories(categories.map((c) => c.name)));
+  }
+
+  function handleCancelReorder() {
+    setCategories(catOrderSnapshot);
+    setReorderingCats(false);
   }
 
   // ─── Category CRUD ────────────────────────────────────────────────────────
@@ -241,56 +260,106 @@ export function GearEditor({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
+      {/* Category reorder toolbar */}
+      <div className="flex items-center justify-between mb-4">
+        {reorderingCats ? (
+          <>
+            <p className="text-[12px] text-ink-muted">
+              Drag categories into the order you want, then save.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCancelReorder}
+                className="text-[12px] text-ink-muted hover:text-ink px-3 py-1.5 rounded-md hover:bg-surface-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveReorder}
+                className="text-[12px] font-medium px-3 py-1.5 bg-ink text-bg rounded-md hover:opacity-90"
+              >
+                Save order
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <span />
+            <button
+              onClick={handleStartReorder}
+              className="text-[11px] font-mono text-ink-muted hover:text-ink border border-border rounded px-2.5 py-1 hover:bg-surface-2"
+            >
+              Reorder categories
+            </button>
+          </>
+        )}
+      </div>
+
       <SortableContext
         items={categories.map((c) => catId(c.name))}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-6">
-          {categories.map((cat) => {
-            const catItems = groupedItems(cat.name);
-            return (
-              <SortableCategorySection
+        {reorderingCats ? (
+          /* ── Compact reorder mode ── */
+          <div className="border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
+            {categories.map((cat, idx) => (
+              <SortableCategoryRow
                 key={cat.name}
                 category={cat}
-                items={catItems}
-                isEditing={editingCat === cat.name}
-                editRef={editCatRef}
-                catError={catErrors[cat.name]}
-                addingItemTo={addingItemTo}
-                newItemRef={newItemRef}
-                onStartEdit={() => {
-                  setEditingCat(cat.name);
-                  setTimeout(() => {
-                    if (editCatRef.current) {
-                      editCatRef.current.value = cat.name;
-                      editCatRef.current.select();
-                    }
-                  }, 0);
-                }}
-                onSaveRename={() => handleSaveRename(cat.name)}
-                onCancelEdit={() => setEditingCat(null)}
-                onDelete={() => handleDeleteCat(cat.name)}
-                onStartAddItem={() => {
-                  setAddingItemTo(cat.name);
-                  setTimeout(() => newItemRef.current?.focus(), 0);
-                }}
-                onSaveNewItem={() => handleAddItem(cat.name)}
-                onCancelAddItem={() => setAddingItemTo(null)}
-                onDeleteItem={handleDeleteItem}
-                onFieldBlur={handleFieldBlur}
-                onPatchItem={patchItem}
-                onRequiredChange={(id, val) => {
-                  patchItem(id, { required: val });
-                  startTransition(() => updateGearItem(id, "required", val));
-                }}
+                itemCount={groupedItems(cat.name).length}
+                isLast={idx === categories.length - 1}
               />
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* ── Normal expanded mode ── */
+          <div className="space-y-6">
+            {categories.map((cat) => {
+              const catItems = groupedItems(cat.name);
+              return (
+                <SortableCategorySection
+                  key={cat.name}
+                  category={cat}
+                  items={catItems}
+                  isEditing={editingCat === cat.name}
+                  editRef={editCatRef}
+                  catError={catErrors[cat.name]}
+                  addingItemTo={addingItemTo}
+                  newItemRef={newItemRef}
+                  onStartEdit={() => {
+                    setEditingCat(cat.name);
+                    setTimeout(() => {
+                      if (editCatRef.current) {
+                        editCatRef.current.value = cat.name;
+                        editCatRef.current.select();
+                      }
+                    }, 0);
+                  }}
+                  onSaveRename={() => handleSaveRename(cat.name)}
+                  onCancelEdit={() => setEditingCat(null)}
+                  onDelete={() => handleDeleteCat(cat.name)}
+                  onStartAddItem={() => {
+                    setAddingItemTo(cat.name);
+                    setTimeout(() => newItemRef.current?.focus(), 0);
+                  }}
+                  onSaveNewItem={() => handleAddItem(cat.name)}
+                  onCancelAddItem={() => setAddingItemTo(null)}
+                  onDeleteItem={handleDeleteItem}
+                  onFieldBlur={handleFieldBlur}
+                  onPatchItem={patchItem}
+                  onRequiredChange={(id, val) => {
+                    patchItem(id, { required: val });
+                    startTransition(() => updateGearItem(id, "required", val));
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </SortableContext>
 
-      {/* Add category */}
-      <div className="mt-6 pt-4 border-t border-border">
+      {/* Add category — hidden in reorder mode */}
+      {!reorderingCats && <div className="mt-6 pt-4 border-t border-border">
         {addingCat ? (
           <div className="flex items-center gap-2">
             <input
@@ -324,7 +393,7 @@ export function GearEditor({
             + Add category
           </button>
         )}
-      </div>
+      </div>}
 
       {/* Drag overlay */}
       <DragOverlay dropAnimation={null}>
@@ -342,6 +411,49 @@ export function GearEditor({
         )}
       </DragOverlay>
     </DndContext>
+  );
+}
+
+// ─── SortableCategoryRow (compact reorder mode) ───────────────────────────────
+
+function SortableCategoryRow({
+  category,
+  itemCount,
+  isLast,
+}: {
+  category: GearCategory;
+  itemCount: number;
+  isLast: boolean;
+}) {
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } =
+    useSortable({ id: catId(category.name) });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        borderWidth: "0.5px",
+      }}
+      className={`flex items-center gap-3 px-4 py-3 bg-surface hover:bg-surface-2 ${
+        !isLast ? "border-b border-border" : ""
+      }`}
+    >
+      <button
+        className="cursor-grab active:cursor-grabbing text-ink-faint hover:text-ink-muted touch-none"
+        {...attributes}
+        {...listeners}
+        aria-label="Drag to reorder"
+      >
+        <GripIcon />
+      </button>
+      <span className="flex-1 font-mono text-[12px] uppercase tracking-[0.08em]">
+        {category.name}
+      </span>
+      <span className="font-mono text-[11px] text-ink-faint">{itemCount} items</span>
+    </div>
   );
 }
 
