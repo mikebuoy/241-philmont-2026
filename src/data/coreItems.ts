@@ -127,12 +127,11 @@ export const CORE_ITEMS: CoreItem[] = [
   { category: "Sleep System", item: "Sleeping Pad", required: "Required", qty: "1" },
   { category: "Sleep System", item: "Pillow", required: "Optional", qty: "1" },
 
-  // Tent
-  { category: "Tent", item: "Tents for Scouts — Provided by Philmont", required: "Required", qty: "Shared" },
-  { category: "Tent", item: "Ground Sheet", required: "Required", qty: "1 per Tent" },
-  { category: "Tent", item: "Tent Stakes Per Scout", required: "Required", qty: "5" },
-  { category: "Tent", item: "Adults — Minimal Footprint; No Bivy or Hammock", required: "Required", qty: "Shared or 1" },
-  { category: "Tent", item: "Tent Stakes Per Adult", required: "Required", qty: "2" },
+  // Shelter — pick ONE tent option; the other stays "not packing"
+  { category: "Shelter", item: "Philmont Thunder Ridge tent (your half)", required: "Required", qty: "1" },
+  { category: "Shelter", item: "Personal 1P tent (enter weight)", required: "Required", qty: "1" },
+  { category: "Shelter", item: "Ground Sheet (Tyvek)", required: "Required", qty: "1" },
+  { category: "Shelter", item: "Tent Stakes", required: "Required", qty: "5" },
 
   // Water
   { category: "Water", item: "1 Liter Smartwater Bottle (with water)", required: "Required", qty: "2" },
@@ -152,7 +151,7 @@ export const CORE_CATEGORIES: string[] = [
   "Personal Gear",
   "Personal Toiletries",
   "Rain Gear",
+  "Shelter",
   "Sleep System",
-  "Tent",
   "Water",
 ];
