@@ -243,8 +243,8 @@ export function PackingListEditor({
 
         {/* Colored status bar — full width, two heights */}
         <div
-          className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "pb-2 shadow-md" : "py-5 shadow-sm"}`}
-          style={compact ? { paddingTop: "calc(env(safe-area-inset-top) + 20px)" } : undefined}
+          className={`${statusBg} ${statusText} transition-all duration-200 ${compact ? "mt-5 sm:mt-0 pb-2 shadow-md" : "py-5 shadow-sm"}`}
+          style={compact ? { paddingTop: "env(safe-area-inset-top)" } : undefined}
         >
           <div className="max-w-[900px] mx-auto px-6">
             {compact ? (
