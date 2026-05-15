@@ -1,13 +1,25 @@
+import Link from "next/link";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
-import { Panel } from "@/components/primitives/Panel";
 import { Stat } from "@/components/primitives/Stat";
-import { Box } from "@/components/primitives/Box";
-import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { TREK_META } from "@/data/meta";
-import { CREWS } from "@/data/roster";
+import { createClient } from "@/lib/supabase/server";
+import { getMyCrewMember } from "@/lib/crew";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let firstName: string | null = null;
+  if (user) {
+    const me = await getMyCrewMember();
+    if (me) firstName = me.name.split(" ")[0];
+  }
+
+  const greeting = firstName ? `Welcome, ${firstName}` : "Welcome, crew";
+
   return (
     <Page
       eyebrow={`Trek ${TREK_META.trekNumber} · ${TREK_META.classification}`}
@@ -56,7 +68,7 @@ export default function Home() {
               The challenge · The accomplishment
             </p>
             <p className="text-[15px] sm:text-[17px] font-semibold leading-tight">
-              You&apos;ll climb 1.2× Mount Everest in 11 days
+              You&apos;ll climb 1.2&times; Mount Everest in 11 days
             </p>
             <p className="text-[11px] sm:text-[12px] opacity-75 mt-1.5 leading-relaxed">
               35,000 ft of cumulative ascent across 11 trail days, then 35,650
@@ -68,61 +80,120 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section num="01" title="Sister crews">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {CREWS.map((c) => (
-            <Panel key={c.id} title={`${c.name} · ${c.members.length} members`}>
-              <p className="text-[12px] text-ink-muted leading-relaxed">
-                Crew Leader{" "}
-                <span className="text-ink font-medium">
-                  {c.members.find((m) => m.role === "crew_leader")?.name}
-                </span>
-                {" · "}Lead Advisor{" "}
-                <span className="text-ink font-medium">
-                  {c.members.find((m) => m.role === "lead_advisor")?.name}
-                </span>
-              </p>
-            </Panel>
-          ))}
-        </div>
-      </Section>
-
-      <Section num="02" title="Locked decisions">
-        <Box variant="info">
-          <strong>Pack weight target ≤ 20% of body weight.</strong> Philmont's
-          official guidance is 25–30%; our crew target is 20% — for experience,
-          not survival. The hard ceiling is 25%.
-        </Box>
-        <Box variant="warn">
-          <strong>Dry camp Trail Day 2 (Santa Claus).</strong> Cook dinner at
-          the last water source during lunch. Carry 1–2L into camp.
-        </Box>
-        <Box variant="danger">
-          <strong>Deodorant is NOT allowed in the backcountry.</strong>{" "}
-          Philmont ranger staff will check.
-        </Box>
-        <Box variant="ok">
-          <strong>Burro packing Days 6–7.</strong> Pickup at Miranda, drop-off
-          at Ponil. Mandatory part of this itinerary.
-        </Box>
-      </Section>
-
-      <Section num="03" title="Phase 0 — Foundation">
-        <Panel>
-          <p className="text-[12px] text-ink-muted leading-relaxed mb-3">
-            Design system, primitives, navigation, and data layer are in place.
-            All 22 crew members loaded into both sister crews. Itinerary recalculated
-            with the corrected calendar including Fly Day and Acclimation Day.
+      {/* Welcome + nav chicklets */}
+      <section>
+        <div className="mb-5">
+          <h2 className="text-[20px] font-semibold tracking-[-0.01em]">
+            {greeting}
+          </h2>
+          <p className="text-[13px] text-ink-muted mt-0.5">
+            Trek {TREK_META.trekNumber} &middot; Tooth of Time &middot;{" "}
+            {TREK_META.flyDate} &ndash; {TREK_META.trailEndDate}
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            <StatusBadge tone="ok">9 primitives</StatusBadge>
-            <StatusBadge tone="info">5-tab nav</StatusBadge>
-            <StatusBadge tone="crew">14 days seeded</StatusBadge>
-            <StatusBadge tone="issued">83 core items</StatusBadge>
-            <StatusBadge tone="neutral">Phase 1 next</StatusBadge>
-          </div>
-        </Panel>
-      </Section>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <NavCard
+            href="/trip/itinerary"
+            title="My Trip"
+            description="Daily itinerary and training plan"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <line x1="8" y1="14" x2="8" y2="14" />
+                <line x1="12" y1="14" x2="12" y2="14" />
+                <line x1="16" y1="14" x2="16" y2="14" />
+                <line x1="8" y1="18" x2="8" y2="18" />
+                <line x1="12" y1="18" x2="12" y2="18" />
+              </svg>
+            }
+          />
+          <NavCard
+            href="/pack/gear"
+            title="My Pack"
+            description="Gear list, food and pack weight"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                <line x1="12" y1="11" x2="12" y2="17" />
+                <line x1="9" y1="14" x2="15" y2="14" />
+              </svg>
+            }
+          />
+          <NavCard
+            href="/crew/roster"
+            title="My Crew"
+            description="Roster and duty schedule"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            }
+          />
+          <NavCard
+            href="/reference/gear"
+            title="Reference"
+            description="Gear specs, cooking and safety"
+            icon={
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                <line x1="12" y1="7" x2="16" y2="7" />
+                <line x1="12" y1="11" x2="16" y2="11" />
+              </svg>
+            }
+          />
+        </div>
+      </section>
     </Page>
+  );
+}
+
+function NavCard({
+  href,
+  title,
+  description,
+  icon,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col gap-3 bg-surface border border-border rounded-xl p-4 hover:bg-surface-2 hover:border-border-strong active:scale-[0.98] transition-all"
+      style={{ borderWidth: "0.5px" }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="w-8 h-8 text-ink-muted group-hover:text-ink transition-colors">
+          {icon}
+        </div>
+        <svg
+          className="w-3.5 h-3.5 text-ink-faint group-hover:text-ink-muted transition-colors mt-0.5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </div>
+      <div>
+        <div className="font-semibold text-[14px] leading-snug">{title}</div>
+        <div className="text-ink-muted text-[11px] mt-0.5 leading-snug">{description}</div>
+      </div>
+    </Link>
   );
 }
