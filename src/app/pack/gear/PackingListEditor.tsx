@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -49,7 +49,21 @@ export function PackingListEditor({
   );
   const [showNotPacking, setShowNotPacking] = useState(false);
   const [showOnlyUnpacked, setShowOnlyUnpacked] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
+
+  // Flip to compact mode once the sentinel scrolls out of the viewport
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setCompact(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
   const categoryOrder = useMemo(() => {
@@ -217,103 +231,121 @@ export function PackingListEditor({
     <div className="space-y-4">
       {/* ───── Sticky block: totals + column headers ───── */}
       <div className="sticky top-14 z-30 space-y-1.5">
-      <div
-        className={`${statusBg} ${statusText} rounded-lg p-4 shadow-sm`}
-        style={{
-          borderLeft: status
-            ? `4px solid var(--color-${status}-border)`
-            : "4px solid var(--color-border-strong)",
-        }}
-      >
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-          <label className="flex items-center gap-2 text-[12px]">
-            <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-              Body weight
-            </span>
-            <input
-              type="number"
-              min={50}
-              max={300}
-              step={1}
-              value={bodyWeight ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                onBodyWeightChange(v === "" ? null : Number(v));
-              }}
-              placeholder="170"
-              className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
-            />
-            <span className="font-mono text-[11px] opacity-70">lbs</span>
-          </label>
 
-          {status && (
-            <StatusBadge tone={status}>
-              {status === "ok"
-                ? "ON TARGET"
-                : status === "warn"
-                  ? "CAUTION"
-                  : "OVER LIMIT"}
-            </StatusBadge>
+        {/* Totals card — two visual modes driven by `compact` */}
+        <div
+          className={`${statusBg} ${statusText} rounded-lg shadow-sm transition-all duration-200 ${
+            compact ? "py-2 px-3" : "p-4"
+          }`}
+          style={{
+            borderLeft: status
+              ? `4px solid var(--color-${status}-border)`
+              : "4px solid var(--color-border-strong)",
+          }}
+        >
+          {compact ? (
+            /* ── Compact: single row — status badge + total ── */
+            <div className="flex items-center justify-between gap-2">
+              {status ? (
+                <StatusBadge tone={status}>
+                  {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                </StatusBadge>
+              ) : (
+                <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70">
+                  Total Day 1
+                </span>
+              )}
+              <span className="font-mono text-[15px] font-semibold">
+                {fmt(totalDay1Lbs)} lbs
+              </span>
+            </div>
+          ) : (
+            /* ── Full: all detail rows ── */
+            <>
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                <label className="flex items-center gap-2 text-[12px]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                    Body weight
+                  </span>
+                  <input
+                    type="number"
+                    min={50}
+                    max={300}
+                    step={1}
+                    value={bodyWeight ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      onBodyWeightChange(v === "" ? null : Number(v));
+                    }}
+                    placeholder="170"
+                    className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
+                  />
+                  <span className="font-mono text-[11px] opacity-70">lbs</span>
+                </label>
+                {status && (
+                  <StatusBadge tone={status}>
+                    {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                  </StatusBadge>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
+                <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
+                <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
+              </div>
+
+              <div className="border-t border-current/10 pt-2">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                    Total Day 1
+                  </span>
+                  <span className="font-mono text-[20px] font-semibold">
+                    {fmt(totalDay1Lbs)} lbs
+                  </span>
+                </div>
+                <div className="font-mono text-[10px] opacity-75 mt-0.5">
+                  {fmt(baseLbs)} base + {GF} Gear &amp; Food
+                </div>
+              </div>
+
+              {deltaLines.length > 0 && (
+                <div className="mt-2 space-y-0.5">
+                  {deltaLines.map((line) => (
+                    <div key={line} className="font-mono text-[12px] font-semibold text-center">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!bodyWeight && (
+                <p className="text-[11px] mt-2 opacity-75 text-center">
+                  Enter your body weight to see target / status.
+                </p>
+              )}
+            </>
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center mb-2">
-          <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
-          <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
-          <Stat
-            label="Consumable"
-            value={`${fmt(ozToLbs(totals.consumableOz))} lbs`}
-          />
+        {/* Column headers — always visible, always sticky */}
+        <div
+          className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
+          style={{ borderWidth: "0.5px" }}
+        >
+          <span className="w-4 shrink-0" aria-hidden="true" />
+          <span className="flex-1 min-w-0">Item</span>
+          <span className="w-14 text-center shrink-0">QTY</span>
+          <span className="w-20 text-right shrink-0">oz</span>
+          <span className="w-6 text-center shrink-0">W</span>
+          <span className="w-6 text-center shrink-0">C</span>
+          <span className="w-8 text-center shrink-0">Off</span>
         </div>
-
-        <div className="border-t border-current/10 pt-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-              Total Day 1
-            </span>
-            <span className="font-mono text-[20px] font-semibold">
-              {fmt(totalDay1Lbs)} lbs
-            </span>
-          </div>
-          <div className="font-mono text-[10px] opacity-75 mt-0.5">
-            {fmt(baseLbs)} base + {GF} Gear &amp; Food
-          </div>
-        </div>
-
-        {deltaLines.length > 0 && (
-          <div className="mt-2 space-y-0.5">
-            {deltaLines.map((line) => (
-              <div
-                key={line}
-                className="font-mono text-[12px] font-semibold text-center"
-              >
-                {line}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!bodyWeight && (
-          <p className="text-[11px] mt-2 opacity-75 text-center">
-            Enter your body weight to see target / status.
-          </p>
-        )}
-      </div>
-
-      {/* ───── Column headers — sticky with totals ───── */}
-      <div
-        className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
-        style={{ borderWidth: "0.5px" }}
-      >
-        <span className="w-4 shrink-0" aria-hidden="true" />
-        <span className="flex-1 min-w-0">Item</span>
-        <span className="w-14 text-center shrink-0">QTY</span>
-        <span className="w-20 text-right shrink-0">oz</span>
-        <span className="w-6 text-center shrink-0">W</span>
-        <span className="w-6 text-center shrink-0">C</span>
-        <span className="w-8 text-center shrink-0">Off</span>
-      </div>
       </div>{/* end sticky block */}
+
+      {/* Sentinel — IntersectionObserver target. When this exits the viewport
+          (user scrolled past the full totals block), compact mode activates. */}
+      <div ref={sentinelRef} aria-hidden="true" />
 
       {/* ───── Filters ───── */}
       <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
