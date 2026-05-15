@@ -28,7 +28,7 @@ function Inner() {
       href={href}
       className="hover:text-ink underline-offset-2 hover:underline"
     >
-      Admin sign-in
+      Sign in
     </Link>
   );
 }
@@ -39,7 +39,7 @@ function FallbackLink() {
       href="/admin/signin"
       className="hover:text-ink underline-offset-2 hover:underline"
     >
-      Admin sign-in
+      Sign in
     </Link>
   );
 }
