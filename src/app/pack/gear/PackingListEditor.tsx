@@ -34,6 +34,8 @@ function formatLbsOz(decimalLbs: number): string {
   return `${whole} ${lbsLabel} ${oz} oz`;
 }
 
+type Mode = "pack" | "edit";
+
 export function PackingListEditor({
   items: initialItems,
   bodyWeightLbs: initialBodyWeight,
@@ -50,6 +52,7 @@ export function PackingListEditor({
   const [showNotPacking, setShowNotPacking] = useState(false);
   const [showOnlyUnpacked, setShowOnlyUnpacked] = useState(false);
   const [compact, setCompact] = useState(false);
+  const [mode, setMode] = useState<Mode>("pack");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
 
@@ -227,8 +230,30 @@ export function PackingListEditor({
     return true;
   });
 
+  const isEditMode = mode === "edit";
+
   return (
     <div className="space-y-4">
+
+      {/* ───── Mode toggle ───── */}
+      <div className="flex justify-end">
+        {isEditMode ? (
+          <button
+            onClick={() => setMode("pack")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono uppercase tracking-[0.05em] border border-border rounded-md hover:bg-surface-2 active:scale-95 transition-all"
+          >
+            Done
+          </button>
+        ) : (
+          <button
+            onClick={() => setMode("edit")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-ink text-bg rounded-md text-[11px] font-medium font-mono uppercase tracking-[0.05em] hover:opacity-90 active:scale-95 transition-all"
+          >
+            Edit List
+          </button>
+        )}
+      </div>
+
       {/* ───── Sticky block: totals + column headers ───── */}
       <div className="sticky top-14 z-30 space-y-1.5">
 
@@ -328,19 +353,21 @@ export function PackingListEditor({
           )}
         </div>
 
-        {/* Column headers — always visible, always sticky */}
-        <div
-          className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <span className="w-4 shrink-0" aria-hidden="true" />
-          <span className="flex-1 min-w-0">Item</span>
-          <span className="w-14 text-center shrink-0">QTY</span>
-          <span className="w-20 text-right shrink-0">oz</span>
-          <span className="w-6 text-center shrink-0">W</span>
-          <span className="w-6 text-center shrink-0">C</span>
-          <span className="w-8 text-center shrink-0">Off</span>
-        </div>
+        {/* Column headers — only shown in edit mode */}
+        {isEditMode && (
+          <div
+            className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
+            style={{ borderWidth: "0.5px" }}
+          >
+            <span className="w-4 shrink-0" aria-hidden="true" />
+            <span className="flex-1 min-w-0">Item</span>
+            <span className="w-12 text-center shrink-0">QTY</span>
+            <span className="w-16 text-right shrink-0">oz</span>
+            <span className="w-5 text-center shrink-0">W</span>
+            <span className="w-5 text-center shrink-0">C</span>
+            <span className="w-8 text-center shrink-0">Off</span>
+          </div>
+        )}
       </div>{/* end sticky block */}
 
       {/* Sentinel — IntersectionObserver target. When this exits the viewport
@@ -398,19 +425,22 @@ export function PackingListEditor({
                   <ItemRow
                     key={it.id}
                     item={it}
+                    mode={mode}
                     onToggle={onToggle}
                     onFieldChange={onFieldChange}
                     onDelete={() => onDelete(it.id)}
                   />
                 ))}
-                <li className="px-3 py-2 bg-surface-2/50">
-                  <button
-                    onClick={() => onAddPersonal(cat)}
-                    className="font-mono text-[11px] text-ink-muted hover:text-ink"
-                  >
-                    + Add personal item
-                  </button>
-                </li>
+                {isEditMode && (
+                  <li className="px-3 py-2 bg-surface-2/50">
+                    <button
+                      onClick={() => onAddPersonal(cat)}
+                      className="font-mono text-[11px] text-ink-muted hover:text-ink"
+                    >
+                      + Add personal item
+                    </button>
+                  </li>
+                )}
               </ul>
             </section>
           );
@@ -445,19 +475,22 @@ export function PackingListEditor({
                   <ItemRow
                     key={it.id}
                     item={it}
+                    mode={mode}
                     onToggle={onToggle}
                     onFieldChange={onFieldChange}
                     onDelete={() => onDelete(it.id)}
                   />
                 ))}
-                <li className="px-3 py-2 bg-surface-2/70">
-                  <button
-                    onClick={() => onAddPersonal(cat)}
-                    className="font-mono text-[11px] text-ink-muted hover:text-ink"
-                  >
-                    + Add personal item
-                  </button>
-                </li>
+                {isEditMode && (
+                  <li className="px-3 py-2 bg-surface-2/70">
+                    <button
+                      onClick={() => onAddPersonal(cat)}
+                      className="font-mono text-[11px] text-ink-muted hover:text-ink"
+                    >
+                      + Add personal item
+                    </button>
+                  </li>
+                )}
               </ul>
             </section>
           );
@@ -503,43 +536,87 @@ function flagToDb(
   )[flag];
 }
 
-function ItemRow({
+type ItemRowProps = {
+  item: PackingItem;
+  mode: Mode;
+  onToggle: (
+    id: string,
+    flag: "isWorn" | "isConsumable" | "isSmellable" | "isPacked" | "isNotPacking",
+    v: boolean,
+  ) => void;
+  onFieldChange: (id: string, field: "name" | "qty" | "weightOz", v: string | number) => void;
+  onDelete: () => void;
+};
+
+function ItemRow({ item, mode, onToggle, onFieldChange, onDelete }: ItemRowProps) {
+  if (mode === "pack") {
+    return <PackRow item={item} onToggle={onToggle} />;
+  }
+  return <EditRow item={item} onToggle={onToggle} onFieldChange={onFieldChange} onDelete={onDelete} />;
+}
+
+function PackRow({
+  item,
+  onToggle,
+}: {
+  item: PackingItem;
+  onToggle: ItemRowProps["onToggle"];
+}) {
+  const dimmed = item.isNotPacking;
+  return (
+    <li className={`px-3 py-2.5 flex items-center gap-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
+      <input
+        type="checkbox"
+        checked={item.isPacked}
+        onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
+        className="accent-ink shrink-0 w-4 h-4"
+        aria-label="Packed"
+        title="Packed"
+      />
+      <div className="flex-1 min-w-0">
+        <span className={`font-medium leading-snug ${item.isPacked ? "line-through opacity-60" : ""}`}>
+          {item.name}
+        </span>
+        {item.description && (
+          <div className="text-ink-muted font-normal text-[11px] leading-snug mt-0.5">
+            {item.description}
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        {item.isWorn && (
+          <span className="font-mono text-[10px] font-semibold text-ok-text" title="Worn">W</span>
+        )}
+        {item.isConsumable && (
+          <span className="font-mono text-[10px] font-semibold text-info-text" title="Consumable">C</span>
+        )}
+      </div>
+      <div className="shrink-0 font-mono text-[11px] text-ink-muted text-right whitespace-nowrap">
+        {item.qty > 1 && <span>{item.qty} &times; </span>}
+        {item.weightOz} oz
+      </div>
+    </li>
+  );
+}
+
+function EditRow({
   item,
   onToggle,
   onFieldChange,
   onDelete,
 }: {
   item: PackingItem;
-  onToggle: (
-    id: string,
-    flag:
-      | "isWorn"
-      | "isConsumable"
-      | "isSmellable"
-      | "isPacked"
-      | "isNotPacking",
-    v: boolean,
-  ) => void;
-  onFieldChange: (
-    id: string,
-    field: "name" | "qty" | "weightOz",
-    v: string | number,
-  ) => void;
+  onToggle: ItemRowProps["onToggle"];
+  onFieldChange: ItemRowProps["onFieldChange"];
   onDelete: () => void;
 }) {
   const [name, setName] = useState(item.name);
   const [qty, setQty] = useState(String(item.qty));
   const [weight, setWeight] = useState(String(item.weightOz));
-
   const dimmed = item.isNotPacking;
 
   return (
-    <li
-      className={`px-3 py-2 flex items-center gap-2 text-[12px] ${
-        dimmed ? "opacity-50" : ""
-      }`}
-    >
-      {/* Packed checkbox */}
+    <li className={`px-3 py-2 flex items-center gap-2 text-[12px] ${dimmed ? "opacity-50" : ""}`}>
       <input
         type="checkbox"
         checked={item.isPacked}
@@ -549,7 +626,6 @@ function ItemRow({
         title="Packed"
       />
 
-      {/* Name + required/optional badge + description */}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
           <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
@@ -573,9 +649,8 @@ function ItemRow({
         </div>
       </div>
 
-      {/* Qty */}
-      <div className="flex items-center gap-0.5 shrink-0 w-14 justify-end">
-        <span className="font-mono text-[11px] text-ink-faint">×</span>
+      <div className="flex items-center gap-0.5 shrink-0 w-12 justify-end">
+        <span className="font-mono text-[11px] text-ink-faint">&times;</span>
         <input
           type="number"
           min={0}
@@ -586,15 +661,12 @@ function ItemRow({
             const n = parseInt(qty, 10) || 0;
             if (n !== item.qty) onFieldChange(item.id, "qty", n);
           }}
-          className={`w-10 font-mono text-[12px] text-center bg-surface-2 border border-border rounded px-1 py-0.5 ${
-            item.qty > 1 ? "font-semibold" : ""
-          }`}
+          className={`w-8 font-mono text-[12px] text-center bg-surface-2 border border-border rounded px-1 py-0.5 ${item.qty > 1 ? "font-semibold" : ""}`}
           aria-label="Quantity"
         />
       </div>
 
-      {/* Weight (oz) */}
-      <div className="flex items-center gap-1 shrink-0 w-20 justify-end">
+      <div className="flex items-center shrink-0 w-16 justify-end">
         <input
           type="number"
           min={0}
@@ -605,45 +677,36 @@ function ItemRow({
             const n = parseFloat(weight) || 0;
             if (n !== item.weightOz) onFieldChange(item.id, "weightOz", n);
           }}
-          className="w-16 font-mono text-[12px] text-right bg-surface-2 border border-border rounded px-1.5 py-0.5"
+          className="w-14 font-mono text-[12px] text-right bg-surface-2 border border-border rounded px-1.5 py-0.5"
           aria-label="Weight in oz"
         />
       </div>
 
-      {/* Flag toggles */}
       <FlagButton
         active={item.isWorn}
         onClick={() => onToggle(item.id, "isWorn", !item.isWorn)}
         label="W"
-        title="Worn — excluded from base weight"
+        title="Worn"
         tone="ok"
       />
       <FlagButton
         active={item.isConsumable}
         onClick={() => onToggle(item.id, "isConsumable", !item.isConsumable)}
         label="C"
-        title="Consumable — depletes during trek"
+        title="Consumable"
         tone="info"
       />
 
-      {/* Not-packing toggle (icon button) */}
       <button
         onClick={() => onToggle(item.id, "isNotPacking", !item.isNotPacking)}
         className={`font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0 w-8 text-center ${
-          item.isNotPacking
-            ? "bg-ink text-bg"
-            : "text-ink-faint hover:text-ink"
+          item.isNotPacking ? "bg-ink text-bg" : "text-ink-faint hover:text-ink"
         }`}
-        title={
-          item.isNotPacking
-            ? "Mark as packing"
-            : "Mark as not packing (hide from totals)"
-        }
+        title={item.isNotPacking ? "Mark as packing" : "Mark as not packing"}
       >
         {item.isNotPacking ? "OFF" : "·"}
       </button>
 
-      {/* Delete (personal items only) */}
       {!item.isCore && (
         <button
           onClick={onDelete}
@@ -651,7 +714,7 @@ function ItemRow({
           aria-label="Delete"
           title="Delete personal item"
         >
-          ✕
+          &#x2715;
         </button>
       )}
     </li>
