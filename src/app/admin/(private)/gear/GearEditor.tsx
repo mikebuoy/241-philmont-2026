@@ -1,214 +1,696 @@
 "use client";
 
-import { useTransition, useState, useRef } from "react";
-import { CORE_CATEGORIES } from "@/data/coreItems";
-import type { CoreGearItem } from "@/lib/gear";
-import { updateGearItem, addGearItem, deleteGearItem } from "./actions";
+import {
+  useState,
+  useTransition,
+  useRef,
+  useCallback,
+} from "react";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  type DragStartEvent,
+  type DragOverEvent,
+  type DragEndEvent,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { GearCategory, CoreGearItem } from "@/lib/gear";
+import {
+  addCategory,
+  updateCategoryName,
+  deleteCategory,
+  reorderCategories,
+  addGearItem,
+  deleteGearItem,
+  updateGearItem,
+  reorderItems,
+  moveItemToCategory,
+} from "./actions";
 
-const REQUIRED_OPTIONS = ["Required", "Optional", "Note"] as const;
+// ─── Drag ID helpers ─────────────────────────────────────────────────────────
+const CAT_PREFIX = "cat::";
+function catId(name: string) { return `${CAT_PREFIX}${name}`; }
+function isCatId(id: string) { return id.startsWith(CAT_PREFIX); }
+function catName(id: string) { return id.slice(CAT_PREFIX.length); }
 
-type Props = { initialItems: CoreGearItem[] };
-
-export function GearEditor({ initialItems }: Props) {
+// ─── Main component ───────────────────────────────────────────────────────────
+export function GearEditor({
+  initialCategories,
+  initialItems,
+}: {
+  initialCategories: GearCategory[];
+  initialItems: CoreGearItem[];
+}) {
+  const [categories, setCategories] = useState(initialCategories);
   const [items, setItems] = useState(initialItems);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
-  const [addingTo, setAddingTo] = useState<string | null>(null);
-  const newNameRef = useRef<HTMLInputElement>(null);
 
-  // Group by category, preserving CORE_CATEGORIES order
-  const groups: Record<string, CoreGearItem[]> = {};
-  for (const item of items) {
-    (groups[item.category] ??= []).push(item);
-  }
-  const orderedCategories = [
-    ...CORE_CATEGORIES.filter((c) => groups[c]),
-    ...Object.keys(groups).filter((c) => !CORE_CATEGORIES.includes(c)),
-  ];
+  // Category management state
+  const [editingCat, setEditingCat] = useState<string | null>(null);
+  const [catErrors, setCatErrors] = useState<Record<string, string>>({});
+  const [addingCat, setAddingCat] = useState(false);
+  const newCatRef = useRef<HTMLInputElement>(null);
+  const editCatRef = useRef<HTMLInputElement>(null);
 
-  function mutate(id: string, patch: Partial<CoreGearItem>) {
-    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
-  }
+  // Item add state
+  const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
+  const newItemRef = useRef<HTMLInputElement>(null);
 
-  function handleFieldBlur(
-    id: string,
-    field: Parameters<typeof updateGearItem>[1],
-    value: string | number,
-  ) {
-    startTransition(() => updateGearItem(id, field, value));
-  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
-  function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete "${name}"?\n\nThis only affects future seeds — existing crew member lists are unchanged.`)) return;
-    setItems((prev) => prev.filter((it) => it.id !== id));
-    startTransition(() => deleteGearItem(id));
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  const groupedItems = useCallback(
+    (cat: string) => items.filter((i) => i.category === cat),
+    [items],
+  );
+
+  function findItemCategory(itemId: string) {
+    return items.find((i) => i.id === itemId)?.category ?? null;
   }
 
-  async function handleAdd(category: string) {
-    const name = newNameRef.current?.value.trim();
+  // ─── Drag handlers ────────────────────────────────────────────────────────
+
+  function handleDragStart({ active }: DragStartEvent) {
+    setActiveId(active.id as string);
+  }
+
+  function handleDragOver({ active, over }: DragOverEvent) {
+    if (!over) return;
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    if (isCatId(activeId) || activeId === overId) return;
+
+    const srcCat = findItemCategory(activeId);
+    const dstCat = isCatId(overId)
+      ? catName(overId)
+      : (findItemCategory(overId) ?? srcCat);
+
+    if (srcCat && dstCat && srcCat !== dstCat) {
+      setItems((prev) =>
+        prev.map((it) => (it.id === activeId ? { ...it, category: dstCat } : it)),
+      );
+    }
+  }
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    setActiveId(null);
+    if (!over || active.id === over.id) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (isCatId(activeId)) {
+      // Reorder categories
+      const fromIdx = categories.findIndex((c) => catId(c.name) === activeId);
+      const toIdx = categories.findIndex((c) => catId(c.name) === overId);
+      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+      const next = arrayMove(categories, fromIdx, toIdx);
+      setCategories(next);
+      startTransition(() => reorderCategories(next.map((c) => c.name)));
+    } else {
+      // Item drag — category was already updated in onDragOver
+      const currentCat = findItemCategory(activeId);
+      const originalCat =
+        initialItems.find((i) => i.id === activeId)?.category ??
+        items.find((i) => i.id === activeId)?.category;
+
+      if (currentCat && currentCat !== originalCat) {
+        // Cross-category: persist move
+        startTransition(() => moveItemToCategory(activeId, currentCat));
+      } else if (currentCat) {
+        // Same category: reorder
+        const catItems = items.filter((i) => i.category === currentCat);
+        const fromIdx = catItems.findIndex((i) => i.id === activeId);
+        const overItem = isCatId(overId) ? null : catItems.find((i) => i.id === overId);
+        const toIdx = overItem ? catItems.indexOf(overItem) : -1;
+        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+        const next = arrayMove(catItems, fromIdx, toIdx);
+        setItems((prev) => {
+          const rest = prev.filter((i) => i.category !== currentCat);
+          return [...rest, ...next];
+        });
+        startTransition(() => reorderItems(next.map((i) => i.id)));
+      }
+    }
+  }
+
+  // ─── Category CRUD ────────────────────────────────────────────────────────
+
+  function handleSaveNewCat() {
+    const name = newCatRef.current?.value.trim();
     if (!name) return;
-    setAddingTo(null);
-    if (newNameRef.current) newNameRef.current.value = "";
+    setAddingCat(false);
+    if (newCatRef.current) newCatRef.current.value = "";
+    const tempCat: GearCategory = { id: crypto.randomUUID(), name, sortOrder: categories.length };
+    setCategories((prev) => [...prev, tempCat]);
+    startTransition(() => addCategory(name));
+  }
 
-    // Optimistic — server will revalidate and return the real row
-    const tempId = crypto.randomUUID();
-    setItems((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        category,
-        name,
-        description: "",
-        required: "Optional",
-        qty: "1",
-        weightOz: 0,
-        sortOrder: 9999,
-      },
-    ]);
+  function handleSaveRename(oldName: string) {
+    const newName = editCatRef.current?.value.trim();
+    setEditingCat(null);
+    if (!newName || newName === oldName) return;
+    setCategories((prev) =>
+      prev.map((c) => (c.name === oldName ? { ...c, name: newName } : c)),
+    );
+    setItems((prev) =>
+      prev.map((i) => (i.category === oldName ? { ...i, category: newName } : i)),
+    );
+    startTransition(() => updateCategoryName(oldName, newName));
+  }
+
+  async function handleDeleteCat(name: string) {
+    const count = items.filter((i) => i.category === name).length;
+    if (count > 0) {
+      setCatErrors((e) => ({ ...e, [name]: `Remove all ${count} item(s) first.` }));
+      setTimeout(() => setCatErrors((e) => { const next = { ...e }; delete next[name]; return next; }), 3000);
+      return;
+    }
+    setCategories((prev) => prev.filter((c) => c.name !== name));
+    startTransition(() => deleteCategory(name));
+  }
+
+  // ─── Item CRUD ────────────────────────────────────────────────────────────
+
+  function handleAddItem(category: string) {
+    const name = newItemRef.current?.value.trim();
+    if (!name) return;
+    setAddingItemTo(null);
+    if (newItemRef.current) newItemRef.current.value = "";
+    const tempItem: CoreGearItem = {
+      id: crypto.randomUUID(),
+      category,
+      name,
+      description: "",
+      required: "Optional",
+      qty: "1",
+      weightOz: 0,
+      sortOrder: 9999,
+    };
+    setItems((prev) => [...prev, tempItem]);
     startTransition(() => addGearItem(category, name));
   }
 
+  function handleDeleteItem(id: string, name: string) {
+    if (!confirm(`Delete "${name}"?\n\nOnly affects future seeds — existing crew lists unchanged.`)) return;
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    startTransition(() => deleteGearItem(id));
+  }
+
+  function handleFieldBlur(id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) {
+    startTransition(() => updateGearItem(id, field, value));
+  }
+
+  function patchItem(id: string, patch: Partial<CoreGearItem>) {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+  }
+
+  // ─── Active drag preview data ─────────────────────────────────────────────
+
+  const activeCat = activeId && isCatId(activeId)
+    ? categories.find((c) => catId(c.name) === activeId)
+    : null;
+  const activeItem = activeId && !isCatId(activeId)
+    ? items.find((i) => i.id === activeId)
+    : null;
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
-    <div className="space-y-8">
-      {orderedCategories.map((cat) => {
-        const catItems = groups[cat];
-        return (
-          <section key={cat}>
-            {/* Category header */}
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
-                {cat}
-                <span className="ml-2 text-ink-faint font-normal">
-                  ({catItems.length})
-                </span>
-              </h2>
-            </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={categories.map((c) => catId(c.name))}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-6">
+          {categories.map((cat) => {
+            const catItems = groupedItems(cat.name);
+            return (
+              <SortableCategorySection
+                key={cat.name}
+                category={cat}
+                items={catItems}
+                isEditing={editingCat === cat.name}
+                editRef={editCatRef}
+                catError={catErrors[cat.name]}
+                addingItemTo={addingItemTo}
+                newItemRef={newItemRef}
+                onStartEdit={() => {
+                  setEditingCat(cat.name);
+                  setTimeout(() => {
+                    if (editCatRef.current) {
+                      editCatRef.current.value = cat.name;
+                      editCatRef.current.select();
+                    }
+                  }, 0);
+                }}
+                onSaveRename={() => handleSaveRename(cat.name)}
+                onCancelEdit={() => setEditingCat(null)}
+                onDelete={() => handleDeleteCat(cat.name)}
+                onStartAddItem={() => {
+                  setAddingItemTo(cat.name);
+                  setTimeout(() => newItemRef.current?.focus(), 0);
+                }}
+                onSaveNewItem={() => handleAddItem(cat.name)}
+                onCancelAddItem={() => setAddingItemTo(null)}
+                onDeleteItem={handleDeleteItem}
+                onFieldBlur={handleFieldBlur}
+                onPatchItem={patchItem}
+                onRequiredChange={(id, val) => {
+                  patchItem(id, { required: val });
+                  startTransition(() => updateGearItem(id, "required", val));
+                }}
+              />
+            );
+          })}
+        </div>
+      </SortableContext>
 
-            {/* Item table */}
-            <div className="border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
-              {/* Column headers */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-center px-3 py-1.5 bg-surface-2 border-b border-border text-[10px] font-mono uppercase tracking-[0.08em] text-ink-faint">
-                <span>Name</span>
-                <span className="w-24 text-center">Required</span>
-                <span className="w-16 text-center">Qty</span>
-                <span className="w-16 text-center">Wt (oz)</span>
-                <span className="w-6" />
-              </div>
+      {/* Add category */}
+      <div className="mt-6 pt-4 border-t border-border">
+        {addingCat ? (
+          <div className="flex items-center gap-2">
+            <input
+              ref={newCatRef}
+              autoFocus
+              placeholder="New category name…"
+              className="flex-1 text-[13px] bg-surface border border-border rounded px-3 py-1.5"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveNewCat();
+                if (e.key === "Escape") setAddingCat(false);
+              }}
+            />
+            <button
+              className="text-[12px] font-medium px-3 py-1.5 bg-ink text-bg rounded hover:opacity-90"
+              onClick={handleSaveNewCat}
+            >
+              Add
+            </button>
+            <button
+              className="text-[12px] text-ink-muted hover:text-ink px-2 py-1.5"
+              onClick={() => setAddingCat(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            className="font-mono text-[11px] text-ink-muted hover:text-hcblue"
+            onClick={() => setAddingCat(true)}
+          >
+            + Add category
+          </button>
+        )}
+      </div>
 
-              {catItems.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-2 items-center px-3 py-1.5 ${
-                    i < catItems.length - 1 ? "border-b border-border" : ""
-                  }`}
-                  style={{ borderWidth: "0.5px" }}
-                >
-                  {/* Name */}
-                  <input
-                    className="w-full text-[12px] bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5 min-w-0"
-                    defaultValue={item.name}
-                    onBlur={(e) => {
-                      if (e.target.value !== item.name) {
-                        mutate(item.id, { name: e.target.value });
-                        handleFieldBlur(item.id, "name", e.target.value);
-                      }
-                    }}
-                  />
+      {/* Drag overlay */}
+      <DragOverlay dropAnimation={null}>
+        {activeCat && (
+          <div className="bg-surface border border-border-strong rounded-lg px-3 py-2 shadow-md opacity-90">
+            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">
+              {activeCat.name}
+            </span>
+          </div>
+        )}
+        {activeItem && (
+          <div className="bg-surface border border-border-strong rounded px-3 py-2 shadow-md opacity-90 text-[12px]">
+            {activeItem.name}
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
+}
 
-                  {/* Required */}
-                  <select
-                    className="w-24 text-[11px] bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5 font-mono cursor-pointer"
-                    value={item.required}
-                    onChange={(e) => {
-                      const val = e.target.value as CoreGearItem["required"];
-                      mutate(item.id, { required: val });
-                      startTransition(() => updateGearItem(item.id, "required", val));
-                    }}
-                  >
-                    {REQUIRED_OPTIONS.map((o) => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
+// ─── SortableCategorySection ──────────────────────────────────────────────────
 
-                  {/* Qty */}
-                  <input
-                    className="w-16 text-[12px] text-center font-mono bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5"
-                    defaultValue={item.qty}
-                    onBlur={(e) => {
-                      if (e.target.value !== item.qty) {
-                        mutate(item.id, { qty: e.target.value });
-                        handleFieldBlur(item.id, "qty", e.target.value);
-                      }
-                    }}
-                  />
+function SortableCategorySection({
+  category,
+  items,
+  isEditing,
+  editRef,
+  catError,
+  addingItemTo,
+  newItemRef,
+  onStartEdit,
+  onSaveRename,
+  onCancelEdit,
+  onDelete,
+  onStartAddItem,
+  onSaveNewItem,
+  onCancelAddItem,
+  onDeleteItem,
+  onFieldBlur,
+  onPatchItem,
+  onRequiredChange,
+}: {
+  category: GearCategory;
+  items: CoreGearItem[];
+  isEditing: boolean;
+  editRef: React.RefObject<HTMLInputElement | null>;
+  catError?: string;
+  addingItemTo: string | null;
+  newItemRef: React.RefObject<HTMLInputElement | null>;
+  onStartEdit: () => void;
+  onSaveRename: () => void;
+  onCancelEdit: () => void;
+  onDelete: () => void;
+  onStartAddItem: () => void;
+  onSaveNewItem: () => void;
+  onCancelAddItem: () => void;
+  onDeleteItem: (id: string, name: string) => void;
+  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) => void;
+  onPatchItem: (id: string, patch: Partial<CoreGearItem>) => void;
+  onRequiredChange: (id: string, val: CoreGearItem["required"]) => void;
+}) {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: catId(category.name) });
 
-                  {/* Weight */}
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    className="w-16 text-[12px] text-right font-mono bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5"
-                    defaultValue={item.weightOz || ""}
-                    placeholder="0"
-                    onBlur={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
-                      if (val !== item.weightOz) {
-                        mutate(item.id, { weightOz: val });
-                        handleFieldBlur(item.id, "weight_oz", val);
-                      }
-                    }}
-                  />
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
 
-                  {/* Delete */}
-                  <button
-                    className="w-6 h-6 flex items-center justify-center text-ink-faint hover:text-danger-text rounded hover:bg-danger-bg transition-colors text-[13px]"
-                    onClick={() => handleDelete(item.id, item.name)}
-                    title="Delete item"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+  const isAddingHere = addingItemTo === category.name;
 
-              {/* Add item row */}
-              {addingTo === cat ? (
-                <div className="flex items-center gap-2 px-3 py-2 border-t border-border bg-surface-2" style={{ borderWidth: "0.5px" }}>
-                  <input
-                    ref={newNameRef}
-                    autoFocus
-                    placeholder="New item name…"
-                    className="flex-1 text-[12px] bg-surface border border-border rounded px-2 py-1"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAdd(cat);
-                      if (e.key === "Escape") setAddingTo(null);
-                    }}
-                  />
-                  <button
-                    className="text-[11px] font-medium px-3 py-1 bg-ink text-bg rounded hover:opacity-90"
-                    onClick={() => handleAdd(cat)}
-                  >
-                    Add
-                  </button>
-                  <button
-                    className="text-[11px] text-ink-muted hover:text-ink px-2 py-1"
-                    onClick={() => setAddingTo(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <div className="px-3 py-2 border-t border-border bg-surface-2" style={{ borderWidth: "0.5px" }}>
-                  <button
-                    className="text-[11px] font-mono text-ink-muted hover:text-hcblue"
-                    onClick={() => setAddingTo(cat)}
-                  >
-                    + Add item
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
-        );
-      })}
+  return (
+    <section ref={setNodeRef} style={style}>
+      {/* Category header */}
+      <div className="flex items-center gap-2 mb-1 group">
+        {/* Drag handle */}
+        <button
+          className="cursor-grab active:cursor-grabbing text-ink-faint hover:text-ink-muted p-0.5 rounded touch-none"
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder category"
+          title="Drag to reorder"
+        >
+          <GripIcon />
+        </button>
+
+        {isEditing ? (
+          <input
+            ref={editRef}
+            defaultValue={category.name}
+            className="flex-1 font-mono text-[11px] uppercase tracking-[0.1em] bg-surface border border-border-strong rounded px-2 py-0.5"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSaveRename();
+              if (e.key === "Escape") onCancelEdit();
+            }}
+            onBlur={onSaveRename}
+            autoFocus
+          />
+        ) : (
+          <h2 className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted flex-1">
+            {category.name}
+            <span className="ml-1.5 text-ink-faint font-normal normal-case tracking-normal">
+              ({items.length})
+            </span>
+          </h2>
+        )}
+
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {!isEditing && (
+            <button
+              onClick={onStartEdit}
+              className="font-mono text-[10px] text-ink-faint hover:text-ink px-1.5 py-0.5 rounded hover:bg-surface-2"
+              title="Rename category"
+            >
+              rename
+            </button>
+          )}
+          <button
+            onClick={onDelete}
+            className="font-mono text-[10px] text-ink-faint hover:text-danger-text px-1.5 py-0.5 rounded hover:bg-danger-bg"
+            title="Delete category (must be empty)"
+          >
+            delete
+          </button>
+        </div>
+      </div>
+
+      {catError && (
+        <p className="text-[11px] text-danger-text mb-1 pl-7">{catError}</p>
+      )}
+
+      {/* Items table */}
+      <div
+        className="border border-border rounded-lg overflow-hidden ml-5"
+        style={{ borderWidth: "0.5px" }}
+      >
+        {/* Column headers */}
+        <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5 bg-surface-2 border-b border-border text-[10px] font-mono uppercase tracking-[0.08em] text-ink-faint" style={{ borderWidth: "0.5px" }}>
+          <span className="w-4" />
+          <span>Name / Description</span>
+          <span className="w-24 text-center">Required</span>
+          <span className="w-14 text-center">Qty</span>
+          <span className="w-16 text-center">Wt (oz)</span>
+          <span className="w-6" />
+        </div>
+
+        <SortableContext
+          items={items.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {items.map((item, idx) => (
+            <SortableItemRow
+              key={item.id}
+              item={item}
+              isLast={idx === items.length - 1 && !isAddingHere}
+              onDelete={() => onDeleteItem(item.id, item.name)}
+              onFieldBlur={onFieldBlur}
+              onPatch={onPatchItem}
+              onRequiredChange={onRequiredChange}
+            />
+          ))}
+        </SortableContext>
+
+        {/* Add item row */}
+        {isAddingHere ? (
+          <div
+            className="flex items-center gap-2 px-3 py-2 border-t border-border bg-surface-2"
+            style={{ borderWidth: "0.5px" }}
+          >
+            <input
+              ref={newItemRef}
+              placeholder="New item name…"
+              className="flex-1 text-[12px] bg-surface border border-border rounded px-2 py-1"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSaveNewItem();
+                if (e.key === "Escape") onCancelAddItem();
+              }}
+            />
+            <button
+              className="text-[11px] font-medium px-3 py-1 bg-ink text-bg rounded hover:opacity-90"
+              onClick={onSaveNewItem}
+            >
+              Add
+            </button>
+            <button
+              className="text-[11px] text-ink-muted hover:text-ink px-2 py-1"
+              onClick={onCancelAddItem}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div
+            className="px-3 py-2 border-t border-border bg-surface-2"
+            style={{ borderWidth: "0.5px" }}
+          >
+            <button
+              className="font-mono text-[11px] text-ink-muted hover:text-hcblue"
+              onClick={onStartAddItem}
+            >
+              + Add item
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ─── SortableItemRow ──────────────────────────────────────────────────────────
+
+const REQUIRED_OPTIONS = ["Required", "Optional", "Note"] as const;
+
+function SortableItemRow({
+  item,
+  isLast,
+  onDelete,
+  onFieldBlur,
+  onPatch,
+  onRequiredChange,
+}: {
+  item: CoreGearItem;
+  isLast: boolean;
+  onDelete: () => void;
+  onFieldBlur: (id: string, field: Parameters<typeof updateGearItem>[1], value: string | number) => void;
+  onPatch: (id: string, patch: Partial<CoreGearItem>) => void;
+  onRequiredChange: (id: string, val: CoreGearItem["required"]) => void;
+}) {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ ...style, borderWidth: "0.5px" }}
+      className={`group ${!isLast ? "border-b border-border" : ""}`}
+    >
+      {/* Main row */}
+      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center px-2 py-1.5">
+        {/* Drag handle */}
+        <button
+          className="w-4 cursor-grab active:cursor-grabbing text-ink-faint hover:text-ink-muted p-0.5 touch-none"
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder"
+          title="Drag to reorder"
+        >
+          <GripIcon size={12} />
+        </button>
+
+        {/* Name */}
+        <input
+          className="w-full text-[12px] bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5 min-w-0"
+          defaultValue={item.name}
+          onBlur={(e) => {
+            if (e.target.value !== item.name) {
+              onPatch(item.id, { name: e.target.value });
+              onFieldBlur(item.id, "name", e.target.value);
+            }
+          }}
+        />
+
+        {/* Required */}
+        <select
+          className="w-24 text-[11px] bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1 py-0.5 font-mono cursor-pointer"
+          value={item.required}
+          onChange={(e) => onRequiredChange(item.id, e.target.value as CoreGearItem["required"])}
+        >
+          {REQUIRED_OPTIONS.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+
+        {/* Qty */}
+        <input
+          className="w-14 text-[12px] text-center font-mono bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1 py-0.5"
+          defaultValue={item.qty}
+          onBlur={(e) => {
+            if (e.target.value !== item.qty) {
+              onPatch(item.id, { qty: e.target.value });
+              onFieldBlur(item.id, "qty", e.target.value);
+            }
+          }}
+        />
+
+        {/* Weight */}
+        <input
+          type="number"
+          step="0.1"
+          min="0"
+          className="w-16 text-[12px] text-right font-mono bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5"
+          defaultValue={item.weightOz || ""}
+          placeholder="0"
+          onBlur={(e) => {
+            const val = parseFloat(e.target.value) || 0;
+            if (val !== item.weightOz) {
+              onPatch(item.id, { weightOz: val });
+              onFieldBlur(item.id, "weight_oz", val);
+            }
+          }}
+        />
+
+        {/* Delete */}
+        <button
+          className="w-6 h-6 flex items-center justify-center text-ink-faint hover:text-danger-text rounded hover:bg-danger-bg transition-colors text-[13px] opacity-0 group-hover:opacity-100"
+          onClick={onDelete}
+          title="Delete item"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Description row */}
+      <div className="pl-8 pr-3 pb-1.5 -mt-0.5">
+        <input
+          className="w-full text-[11px] text-ink-muted bg-transparent border border-transparent hover:border-border focus:border-border-strong rounded px-1.5 py-0.5 placeholder:text-ink-faint/50"
+          defaultValue={item.description}
+          placeholder="Description (shown to crew members)…"
+          onBlur={(e) => {
+            if (e.target.value !== item.description) {
+              onPatch(item.id, { description: e.target.value });
+              onFieldBlur(item.id, "description", e.target.value);
+            }
+          }}
+        />
+      </div>
     </div>
+  );
+}
+
+// ─── Grip icon ────────────────────────────────────────────────────────────────
+
+function GripIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 14 14"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <circle cx="4" cy="3" r="1.1" />
+      <circle cx="4" cy="7" r="1.1" />
+      <circle cx="4" cy="11" r="1.1" />
+      <circle cx="10" cy="3" r="1.1" />
+      <circle cx="10" cy="7" r="1.1" />
+      <circle cx="10" cy="11" r="1.1" />
+    </svg>
   );
 }

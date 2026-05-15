@@ -20,6 +20,8 @@ export type PackingItem = {
   isNotPacking: boolean;
   notes: string | null;
   sortOrder: number;
+  /** Description from core_gear_items, merged server-side. Not stored in packing_items. */
+  description?: string;
 };
 
 export type Totals = {

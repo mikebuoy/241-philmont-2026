@@ -4,10 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
-import {
-  CORE_CATEGORIES,
-  TRAVEL_ONLY_CATEGORIES,
-} from "@/data/coreItems";
+import { TRAVEL_ONLY_CATEGORIES } from "@/data/coreItems";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import {
   updateItemField,
@@ -40,9 +37,11 @@ function formatLbsOz(decimalLbs: number): string {
 export function PackingListEditor({
   items: initialItems,
   bodyWeightLbs: initialBodyWeight,
+  categoryOrder: propCategoryOrder,
 }: {
   items: PackingItem[];
   bodyWeightLbs: number | null;
+  categoryOrder?: string[];
 }) {
   const [items, setItems] = useState<PackingItem[]>(initialItems);
   const [bodyWeight, setBodyWeight] = useState<number | null>(
@@ -52,15 +51,16 @@ export function PackingListEditor({
   const [showOnlyUnpacked, setShowOnlyUnpacked] = useState(false);
   const [, startTransition] = useTransition();
 
-  // Order categories: existing first per CORE_CATEGORIES, then any extras
+  // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
   const categoryOrder = useMemo(() => {
     const present = new Set(items.map((i) => i.category));
-    const ordered = CORE_CATEGORIES.filter((c) => present.has(c));
-    const extras = Array.from(present).filter(
-      (c) => !ordered.includes(c),
-    );
-    return [...ordered, ...extras.sort()];
-  }, [items]);
+    if (propCategoryOrder) {
+      const ordered = propCategoryOrder.filter((c) => present.has(c));
+      const extras = Array.from(present).filter((c) => !propCategoryOrder.includes(c));
+      return [...ordered, ...extras.sort()];
+    }
+    return Array.from(present).sort();
+  }, [items, propCategoryOrder]);
 
   const totals = useMemo(() => computeTotals(items), [items]);
   const targets = useMemo(
@@ -515,12 +515,12 @@ function ItemRow({
         title="Packed"
       />
 
-      {/* Name + required/optional badge */}
+      {/* Name + required/optional badge + description */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-1.5">
+        <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
           <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
           {item.isCore ? (
-            <span className="font-medium truncate">{item.name}</span>
+            <span className="font-medium">{item.name}</span>
           ) : (
             <input
               value={name}
@@ -530,6 +530,11 @@ function ItemRow({
               }}
               className="flex-1 font-medium bg-transparent border-b border-transparent focus:border-border-strong outline-none"
             />
+          )}
+          {item.description && (
+            <span className="text-ink-muted font-normal text-[11px] leading-snug shrink-0">
+              {item.description}
+            </span>
           )}
         </div>
       </div>

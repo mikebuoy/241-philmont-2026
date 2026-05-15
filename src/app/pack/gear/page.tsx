@@ -7,6 +7,7 @@ import { PACK_SUB } from "@/components/nav/navItems";
 import { createClient } from "@/lib/supabase/server";
 import { getMyCrewMember } from "@/lib/crew";
 import { getPackingItems, seedCoreItemsForCrewMember } from "@/lib/packing";
+import { getGearCategories, getCoreGearDescriptions } from "@/lib/gear";
 import { PackingListEditor } from "./PackingListEditor";
 
 export const metadata: Metadata = { title: "Gear List" };
@@ -18,22 +19,28 @@ export default async function PackGearPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Anonymous → sign in
-  if (!user) {
-    redirect("/admin/signin?next=/pack/gear");
-  }
+  if (!user) redirect("/admin/signin?next=/pack/gear");
 
-  // Signed in but not claimed → claim flow
   const me = await getMyCrewMember();
-  if (!me) {
-    redirect("/claim?next=/pack/gear");
-  }
+  if (!me) redirect("/claim?next=/pack/gear");
 
   // First visit: seed core items
   await seedCoreItemsForCrewMember(me);
 
-  // Fetch fresh items list
-  const items = await getPackingItems(me.id);
+  // Fetch items + categories + descriptions in parallel
+  const [rawItems, categories, descriptions] = await Promise.all([
+    getPackingItems(me.id),
+    getGearCategories(),
+    getCoreGearDescriptions(),
+  ]);
+
+  // Merge descriptions from core_gear_items (live lookup, not stored in packing_items)
+  const items = rawItems.map((item) => ({
+    ...item,
+    description: descriptions[item.name] || undefined,
+  }));
+
+  const categoryOrder = categories.map((c) => c.name);
 
   return (
     <Page
@@ -44,8 +51,8 @@ export default async function PackGearPage() {
       <SubNav items={PACK_SUB} />
 
       <Box variant="info">
-        <strong>Your personal packing list.</strong> 83 items pre-seeded from
-        the troop gear list. Edit weights as you weigh your gear. Mark items
+        <strong>Your personal packing list.</strong> Items pre-seeded from the
+        troop gear list. Edit weights as you weigh your gear. Mark items
         you&apos;re not bringing as not-packing. Add personal items below each
         category. Saves automatically.
       </Box>
@@ -53,6 +60,7 @@ export default async function PackGearPage() {
       <PackingListEditor
         items={items}
         bodyWeightLbs={me.bodyWeightLbs}
+        categoryOrder={categoryOrder}
       />
     </Page>
   );
