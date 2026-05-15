@@ -24,8 +24,8 @@ export const TRIP_SUB = [
 ];
 
 export const PACK_SUB = [
-  { href: "/pack/calculator", label: "Pack Weight" },
-  { href: "/pack/gear", label: "Gear List" },
+  { href: "/pack/calculator", label: "Estimator" },
+  { href: "/pack/gear", label: "My Gear" },
   { href: "/pack/food", label: "Food" },
 ];
 

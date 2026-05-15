@@ -14,7 +14,8 @@ import {
   saveMyBodyWeight,
 } from "./actions";
 
-const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+// Shelter is tracked as an actual packing item, so exclude it from the Day-1 constant
+const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs;
 
 function ozToLbs(oz: number): number {
   return oz / 16;
@@ -450,7 +451,10 @@ export function PackingListEditor({
       </div>{/* end sticky header */}
 
       {/* ───── Filters ───── */}
-      <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
+      <div className="flex items-center justify-end gap-4 text-[11px] font-mono text-ink-muted">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 opacity-50">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
         <label className="flex items-center gap-1.5 cursor-pointer">
           <input
             type="checkbox"

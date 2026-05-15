@@ -4,7 +4,8 @@ import { useState } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "./primitives/StatusBadge";
 
-const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+// Shelter is tracked as a personal packing item; excluded from the Day-1 constant
+const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs;
 
 function fmt(n: number, digits = 1): string {
   return n.toFixed(digits);
@@ -263,20 +264,13 @@ export function PackWeightCalculator() {
               {PACK_WEIGHT_CONSTANTS.crewGearAvgLbs} lbs
             </span>
           </li>
-          <li className="flex justify-between">
-            <span>Shelter (2–3 lbs typical · we plan at 2.5)</span>
-            <span className="font-mono">
-              {PACK_WEIGHT_CONSTANTS.shelterLbs} lbs
-            </span>
-          </li>
           <li className="flex justify-between border-t border-border pt-1.5 mt-1 text-ink font-medium">
             <span>Total Gear &amp; Food</span>
             <span className="font-mono">{GF} lbs</span>
           </li>
         </ul>
         <p className="text-[11px] text-ink-faint mt-2.5 leading-snug">
-          Carried but not inside your pack. If your shelter is lighter than
-          2.5 lbs, subtract.
+          Shelter weight is tracked individually in your packing list.
         </p>
       </div>
     </div>

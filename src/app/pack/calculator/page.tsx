@@ -107,8 +107,8 @@ export default function CalculatorPage() {
         <p className="text-[11px] text-ink-faint mt-2">
           Shading: green = good margin · yellow = tight · red = very tight or
           impossible. Target Base / Max Base exclude{" "}
-          {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs} lbs of Day-1 Gear &amp; Food
-          (food, water, crew gear, shelter).
+          {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs} lbs of Day-1 Gear &amp; Food
+          (food, water, crew gear). Shelter is tracked in your packing list.
         </p>
       </Section>
     </Page>
