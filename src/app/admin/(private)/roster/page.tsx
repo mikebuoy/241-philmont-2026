@@ -6,8 +6,9 @@ import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers } from "@/lib/crew";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLE_LABEL, type CrewRole } from "@/data/roster";
-import { unbindCrewMember } from "./actions";
+import { unbindCrewMember, resetCrewMemberGearList } from "./actions";
 import { UnbindButton } from "./UnbindButton";
+import { ResetGearButton } from "./ResetGearButton";
 
 export const dynamic = "force-dynamic";
 
@@ -122,13 +123,22 @@ export default async function AdminRosterPage() {
                     </td>
                     <td className="px-3 py-2.5 text-right">
                       {m.userId && (
-                        <UnbindButton
-                          name={m.name}
-                          action={async () => {
-                            "use server";
-                            await unbindCrewMember(m.id);
-                          }}
-                        />
+                        <div className="inline-flex items-center gap-2">
+                          <ResetGearButton
+                            name={m.name}
+                            action={async () => {
+                              "use server";
+                              await resetCrewMemberGearList(m.id);
+                            }}
+                          />
+                          <UnbindButton
+                            name={m.name}
+                            action={async () => {
+                              "use server";
+                              await unbindCrewMember(m.id);
+                            }}
+                          />
+                        </div>
                       )}
                     </td>
                   </tr>

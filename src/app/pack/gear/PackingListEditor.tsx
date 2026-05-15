@@ -215,9 +215,10 @@ export function PackingListEditor({
 
   return (
     <div className="space-y-4">
-      {/* ───── Sticky totals header ───── */}
+      {/* ───── Sticky block: totals + column headers ───── */}
+      <div className="sticky top-14 z-30 space-y-1.5">
       <div
-        className={`${statusBg} ${statusText} rounded-lg p-4 sticky top-14 sm:top-14 z-30 shadow-sm`}
+        className={`${statusBg} ${statusText} rounded-lg p-4 shadow-sm`}
         style={{
           borderLeft: status
             ? `4px solid var(--color-${status}-border)`
@@ -299,6 +300,21 @@ export function PackingListEditor({
         )}
       </div>
 
+      {/* ───── Column headers — sticky with totals ───── */}
+      <div
+        className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
+        style={{ borderWidth: "0.5px" }}
+      >
+        <span className="w-4 shrink-0" aria-hidden="true" />
+        <span className="flex-1 min-w-0">Item</span>
+        <span className="w-14 text-center shrink-0">QTY</span>
+        <span className="w-20 text-right shrink-0">oz</span>
+        <span className="w-6 text-center shrink-0">W</span>
+        <span className="w-6 text-center shrink-0">C</span>
+        <span className="w-8 text-center shrink-0">Off</span>
+      </div>
+      </div>{/* end sticky block */}
+
       {/* ───── Filters ───── */}
       <div className="flex items-center gap-4 text-[11px] font-mono text-ink-muted">
         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -319,20 +335,6 @@ export function PackingListEditor({
           />
           Only unpacked ({totals.unpackedCount})
         </label>
-      </div>
-
-      {/* ───── Column headers (legend) ───── */}
-      <div
-        className="bg-surface-2 border border-border rounded-md px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em]"
-        style={{ borderWidth: "0.5px" }}
-      >
-        <span className="w-4 shrink-0" aria-hidden="true" />
-        <span className="flex-1 min-w-0">Item</span>
-        <span className="w-14 text-center shrink-0">#</span>
-        <span className="w-20 text-right shrink-0">oz</span>
-        <span className="w-6 text-center shrink-0">W</span>
-        <span className="w-6 text-center shrink-0">C</span>
-        <span className="w-8 text-center shrink-0">Off</span>
       </div>
 
       {/* ───── Pack categories (counted) ───── */}
