@@ -1,7 +1,6 @@
 import "server-only";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CORE_ITEMS } from "@/data/coreItems";
 import type { CrewMember } from "@/lib/crew";
 import type { PackingItem } from "./packing-types";
 
@@ -61,10 +60,13 @@ export async function getPackingItems(crewMemberId: string): Promise<PackingItem
 }
 
 /**
- * Seed the 83 core items for a crew member who has none yet. Idempotent —
- * checks for existing items first and bails if any exist. Role-aware shelter
- * defaults: scouts get the Thunder Ridge half pre-packed; advisors get the
- * personal 1P pre-packed at 0 oz.
+ * Seed core items for a crew member who has none yet. Idempotent — checks for
+ * existing items first and bails if any exist. Reads from core_gear_items DB
+ * table (editable via /admin/gear) instead of the static array.
+ *
+ * Role-aware shelter defaults: scouts get Thunder Ridge at 43 oz pre-packed;
+ * advisors get Personal 1P pre-packed at 0 oz. These are keyed on item name —
+ * renaming those rows in the gear editor will break the role defaults.
  */
 export async function seedCoreItemsForCrewMember(
   member: CrewMember,
@@ -79,15 +81,26 @@ export async function seedCoreItemsForCrewMember(
 
   const isScout = member.role === "scout" || member.role === "crew_leader";
 
-  const rows = CORE_ITEMS.map((coreItem, idx) => {
-    let weightOz = 0;
+  // Read current gear list from DB so admin edits take effect for future seeds.
+  const admin = createAdminClient();
+  const { data: gearItems, error: gearErr } = await admin
+    .from("core_gear_items")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (gearErr) throw new Error(`Failed to load core gear: ${gearErr.message}`);
+
+  const rows = (gearItems as Array<{
+    category: string; name: string; required: string;
+    qty: string; weight_oz: number; sort_order: number;
+  }>).map((g, idx) => {
+    let weightOz = Number(g.weight_oz) || 0;
     let isNotPacking = false;
 
-    if (coreItem.category === "Shelter") {
-      if (coreItem.item === "Philmont Thunder Ridge tent (your half)") {
+    if (g.category === "Shelter") {
+      if (g.name === "Philmont Thunder Ridge tent (your half)") {
         weightOz = isScout ? 43 : 0;
         isNotPacking = !isScout;
-      } else if (coreItem.item === "Personal 1P tent (enter weight)") {
+      } else if (g.name === "Personal 1P tent (enter weight)") {
         weightOz = 0;
         isNotPacking = isScout;
       }
@@ -95,20 +108,17 @@ export async function seedCoreItemsForCrewMember(
 
     return {
       crew_member_id: member.id,
-      category: coreItem.category,
-      name: coreItem.item,
-      qty: numberOrOne(coreItem.qty),
+      category: g.category,
+      name: g.name,
+      qty: numberOrOne(g.qty),
       weight_oz: weightOz,
       is_core: true,
-      is_required: coreItem.required === "Required",
+      is_required: g.required === "Required",
       is_not_packing: isNotPacking,
-      sort_order: idx,
+      sort_order: g.sort_order ?? idx,
     };
   });
 
-  // Use admin client to bypass RLS for the initial bulk seed — the caller has
-  // already verified the crew_member belongs to the current user.
-  const admin = createAdminClient();
   const { error } = await admin.from("packing_items").insert(rows);
   if (error) throw new Error(`Seed failed: ${error.message}`);
 }
