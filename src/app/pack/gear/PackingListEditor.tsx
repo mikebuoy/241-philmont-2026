@@ -233,13 +233,14 @@ export function PackingListEditor({
   const isEditMode = mode === "edit";
 
   return (
-    <div className="space-y-4">
-
+    <div>
       {/* ───── Above-header slot (SubNav) — scrolls away ───── */}
       {aboveHeader}
 
+      <div className="space-y-4">
+
       {/* ───── Sticky totals header ───── */}
-      <div className="sticky top-0 sm:top-14 z-30 -mx-6 !mt-0">
+      <div className="sticky top-0 z-30 -mx-6 !mt-0">
 
         {/* Colored status bar — full width, two heights */}
         <div
@@ -487,6 +488,7 @@ export function PackingListEditor({
             </section>
           );
         })}
+      </div>{/* end space-y-4 */}
     </div>
   );
 }

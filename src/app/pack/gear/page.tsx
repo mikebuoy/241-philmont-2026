@@ -69,7 +69,7 @@ export default async function PackGearPage() {
         items={items}
         bodyWeightLbs={me.bodyWeightLbs}
         categoryOrder={categoryOrder}
-        aboveHeader={<SubNav items={PACK_SUB} />}
+        aboveHeader={<SubNav key="subnav" items={PACK_SUB} />}
       >
         <Box variant="info">
           <strong>Your personal packing list.</strong> Items pre-seeded from the
