@@ -1,5 +1,3 @@
-import { AdminSignInLink } from "./AdminSignInLink";
-
 const GITHUB_REPO = "https://github.com/mikebuoy/241-philmont-2026";
 
 export function Footer() {
@@ -17,8 +15,6 @@ export function Footer() {
           <span className="font-mono">· Trek 12-23 · Philmont 2026</span>
         </p>
         <p className="font-mono text-[10px] text-ink-faint flex items-center gap-1.5 flex-wrap">
-          <AdminSignInLink />
-          <span aria-hidden="true">·</span>
           {isDev ? (
             <span>build {sha} · {date}</span>
           ) : (

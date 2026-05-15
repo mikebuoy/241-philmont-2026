@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActive } from "./navItems";
+import { NavAuthButton } from "./NavAuthButton";
 
 export default function TopNav() {
   const pathname = usePathname();
@@ -17,24 +18,28 @@ export default function TopNav() {
             9,003 FT
           </span>
         </Link>
-        <nav className="flex items-center gap-1">
-          {NAV_ITEMS.map((item) => {
-            const active = isActive(pathname, item);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
-                  active
-                    ? "bg-ink text-bg"
-                    : "text-ink-muted hover:text-ink hover:bg-surface-2"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex items-center gap-3">
+          <nav className="flex items-center gap-1">
+            {NAV_ITEMS.map((item) => {
+              const active = isActive(pathname, item);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+                    active
+                      ? "bg-ink text-bg"
+                      : "text-ink-muted hover:text-ink hover:bg-surface-2"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="w-px h-4 bg-border shrink-0" aria-hidden="true" />
+          <NavAuthButton variant="top" />
+        </div>
       </div>
     </header>
   );

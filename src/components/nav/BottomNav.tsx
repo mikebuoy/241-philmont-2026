@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActive } from "./navItems";
+import { NavAuthButton } from "./NavAuthButton";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -11,7 +12,7 @@ export default function BottomNav() {
       className="sm:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-6">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item);
           return (
@@ -33,6 +34,7 @@ export default function BottomNav() {
             </Link>
           );
         })}
+        <NavAuthButton variant="bottom" />
       </div>
     </nav>
   );
