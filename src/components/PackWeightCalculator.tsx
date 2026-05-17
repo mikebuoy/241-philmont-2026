@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "./primitives/StatusBadge";
 
@@ -42,6 +42,15 @@ export function PackWeightCalculator({
   const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
   const [actual, setActual] = useState<number>(18);
   const [, startTransition] = useTransition();
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  useEffect(() => {
+    const seen = localStorage.getItem("estimator-help-seen");
+    if (!seen) {
+      setHelpOpen(true);
+      localStorage.setItem("estimator-help-seen", "1");
+    }
+  }, []);
 
   function handleBwChange(val: number) {
     setBw(val);
@@ -87,6 +96,52 @@ export function PackWeightCalculator({
 
   return (
     <div className="space-y-3">
+
+      {/* HOW TO USE — accordion */}
+      <div
+        className="bg-surface border border-border rounded-lg overflow-hidden"
+        style={{ borderWidth: "0.5px" }}
+      >
+        <button
+          onClick={() => setHelpOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 text-left bg-hcblue text-white rounded-lg"
+        >
+          <span className="font-mono text-[10px] uppercase tracking-[0.08em]">
+            How to use the estimator
+          </span>
+          <svg
+            className="shrink-0 text-white"
+            style={{ transform: helpOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}
+            width="14" height="14" viewBox="0 0 14 14" fill="none"
+          >
+            <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        {helpOpen && (
+          <div className="px-3.5 pb-3.5 space-y-2 border-t border-border" style={{ borderWidth: "0.5px" }}>
+            <ol className="text-[12px] text-ink space-y-2 pt-3 list-decimal list-inside">
+              <li>
+                <strong>Enter your body weight</strong> using the slider below.
+              </li>
+              <li>
+                <strong>Weigh your packed backpack</strong> — without worn
+                clothes or your tent. Step on a bathroom scale holding your
+                pack, then subtract your body weight. That number is your{" "}
+                <strong>base weight</strong>.
+              </li>
+              <li>
+                <strong>Enter your base weight</strong> in the bottom section to
+                see your estimated Day-1 total.
+              </li>
+            </ol>
+            <p className="text-[11px] text-ink-muted leading-snug">
+              Your Day-1 total is your base weight plus food, water, tent, and
+              crew gear. Try to stay under the 20% target.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* 1. CALCULATOR — body weight + derived targets */}
       <div
         className="bg-surface border border-border rounded-lg p-3.5 space-y-3"
@@ -129,9 +184,12 @@ export function PackWeightCalculator({
           <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
             Target Base Weight — what you control
           </p>
-          <div className="font-mono text-[30px] sm:text-[38px] font-semibold leading-none mb-1.5">
+          <div className="font-mono text-[30px] sm:text-[38px] font-semibold leading-none mb-1">
             {targets ? `≤ ${fmt(targets.targetBase)} lbs` : "—"}
           </div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-70 mb-1.5">
+            Based on 20% of your body weight
+          </p>
           <p className="text-[11px] leading-relaxed opacity-90">
             Everything in your pack. Does <strong>NOT</strong> include worn
             clothes, food, water, shelter, and crew gear.
@@ -140,23 +198,26 @@ export function PackWeightCalculator({
 
         {targets && (
           <div className="border border-border rounded-lg p-3 space-y-2.5" style={{ borderWidth: "0.5px" }}>
-            <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
-              Target Max Pack Weight (Base Weight + Gear &amp; Food)
+            <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] font-semibold">
+              Target Max Pack Weight
+            </p>
+            <p className="font-mono text-[9px] text-ink-faint uppercase tracking-[0.06em] mt-0.5">
+              (Base Weight + Gear &amp; Food) &middot; Based on % Body Weight
             </p>
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-ok-bg text-ok-text rounded-lg p-2.5 text-center">
-                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">20% Target</p>
-                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.target20)} lbs</div>
-                <p className="text-[9px] opacity-80 mt-0.5 leading-snug">Crew goal</p>
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">20% Goal</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">≤ {fmt(targets.target20)} lbs</div>
+                <p className="text-[9px] opacity-80 mt-0.5 leading-snug">Crew target</p>
               </div>
               <div className="bg-warn-bg text-warn-text rounded-lg p-2.5 text-center">
-                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">25% Standard</p>
-                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.max25)} lbs</div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">25% Ceiling</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">≤ {fmt(targets.max25)} lbs</div>
                 <p className="text-[9px] opacity-80 mt-0.5 leading-snug">Crew max</p>
               </div>
               <div className="bg-danger-bg text-danger-text rounded-lg p-2.5 text-center">
-                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">30% Hard Max</p>
-                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.hardMax30)} lbs</div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">30% Hard Limit</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">≤ {fmt(targets.hardMax30)} lbs</div>
                 <p className="text-[9px] opacity-80 mt-0.5 leading-snug">No exceptions</p>
               </div>
             </div>
@@ -171,7 +232,7 @@ export function PackWeightCalculator({
         style={{ borderWidth: "0.5px" }}
       >
         <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] mb-2.5">
-          Estimated Total Pack Weight
+          Estimated Max Pack Weight
         </p>
         <label className="block">
           <span className="text-[12px] font-medium text-ink">
