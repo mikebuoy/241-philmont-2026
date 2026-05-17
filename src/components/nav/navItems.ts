@@ -32,6 +32,7 @@ export const PACK_SUB = [
 export const CREW_SUB = [
   { href: "/crew/roster", label: "Roster" },
   { href: "/crew/duty", label: "Duty Roster" },
+  { href: "/crew/weights", label: "Pack Weights" },
 ];
 
 export const REFERENCE_SUB = [

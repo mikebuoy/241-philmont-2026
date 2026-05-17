@@ -35,12 +35,16 @@ function formatLbsOz(decimalLbs: number): string {
 export function PackWeightCalculator({
   initialBodyWeight,
   onBodyWeightChange,
+  initialActualBaseWeight,
+  onActualBaseWeightChange,
 }: {
   initialBodyWeight?: number | null;
   onBodyWeightChange?: (lbs: number) => void;
+  initialActualBaseWeight?: number | null;
+  onActualBaseWeightChange?: (lbs: number) => void;
 } = {}) {
   const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
-  const [actual, setActual] = useState<number>(18);
+  const [actual, setActual] = useState<number>(initialActualBaseWeight ?? 18);
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -56,6 +60,13 @@ export function PackWeightCalculator({
     setBw(val);
     if (onBodyWeightChange && val > 0) {
       startTransition(() => { onBodyWeightChange(val); });
+    }
+  }
+
+  function handleActualChange(val: number) {
+    setActual(val);
+    if (onActualBaseWeightChange && val > 0) {
+      startTransition(() => { onActualBaseWeightChange(val); });
     }
   }
   const targets = computeTargets(bw);
@@ -245,7 +256,7 @@ export function PackWeightCalculator({
               max={50}
               step={0.5}
               value={actual}
-              onChange={(e) => setActual(Number(e.target.value))}
+              onChange={(e) => handleActualChange(Number(e.target.value))}
               className="flex-1 accent-ink"
             />
             <input
@@ -254,7 +265,7 @@ export function PackWeightCalculator({
               max={100}
               step={0.5}
               value={actual}
-              onChange={(e) => setActual(Number(e.target.value) || 0)}
+              onChange={(e) => handleActualChange(Number(e.target.value) || 0)}
               className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
             />
           </div>

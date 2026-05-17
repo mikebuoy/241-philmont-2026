@@ -9,6 +9,7 @@ export type CrewMember = {
   crewId: 1 | 2;
   userId: string | null;
   bodyWeightLbs: number | null;
+  actualBaseWeightLbs: number | null;
   claimedAt: string | null;
 };
 
@@ -20,6 +21,7 @@ type Row = {
   crew_id: 1 | 2;
   user_id: string | null;
   body_weight_lbs: number | null;
+  actual_base_weight_lbs: number | null;
   claimed_at: string | null;
 };
 
@@ -32,6 +34,7 @@ function rowToMember(r: Row): CrewMember {
     crewId: r.crew_id,
     userId: r.user_id,
     bodyWeightLbs: r.body_weight_lbs,
+    actualBaseWeightLbs: r.actual_base_weight_lbs,
     claimedAt: r.claimed_at,
   };
 }

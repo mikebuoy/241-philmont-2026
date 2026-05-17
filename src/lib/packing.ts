@@ -45,6 +45,16 @@ function rowToItem(r: Row): PackingItem {
   };
 }
 
+/** Fetch all packing items for all crew members in one query. */
+export async function getAllPackingItems(): Promise<PackingItem[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("packing_items")
+    .select("*");
+  if (error) throw new Error(`Failed to load all packing items: ${error.message}`);
+  return (data as Row[]).map(rowToItem);
+}
+
 /** Fetch all items for a given crew member, ordered for stable rendering. */
 export async function getPackingItems(crewMemberId: string): Promise<PackingItem[]> {
   const supabase = await createServerClient();

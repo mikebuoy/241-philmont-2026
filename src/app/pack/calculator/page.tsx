@@ -8,7 +8,7 @@ import { PACK_SUB } from "@/components/nav/navItems";
 import { PackWeightCalculator } from "@/components/PackWeightCalculator";
 import { PACK_WEIGHT_TABLE, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { getMyCrewMember } from "@/lib/crew";
-import { saveMyBodyWeight } from "./actions";
+import { saveMyBodyWeight, saveMyActualBaseWeight } from "./actions";
 
 export const metadata: Metadata = { title: "Pack Weight Calculator" };
 
@@ -33,6 +33,8 @@ export default async function CalculatorPage() {
       <PackWeightCalculator
         initialBodyWeight={me?.bodyWeightLbs}
         onBodyWeightChange={saveMyBodyWeight}
+        initialActualBaseWeight={me?.actualBaseWeightLbs}
+        onActualBaseWeightChange={saveMyActualBaseWeight}
       />
 
       <Box variant="info">
