@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "./primitives/StatusBadge";
 
@@ -11,6 +11,13 @@ const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
 function fmt(n: number, digits = 1): string {
   return n.toFixed(digits);
 }
+
+const STATUS_COLORS = {
+  ok:       { bg: "#d4edda", text: "#155724", border: "#b8ddb8" },
+  warn:     { bg: "#fff3cd", text: "#856404", border: "#f0d090" },
+  over:     { bg: "#f8d7da", text: "#721c24", border: "#f0b8b8" },
+  critical: { bg: "#dc3545", text: "#ffffff", border: "#b02a37" },
+} as const;
 
 /** Convert decimal lbs to "X lb(s) Y oz" with correct pluralization. */
 function formatLbsOz(decimalLbs: number): string {
@@ -25,14 +32,28 @@ function formatLbsOz(decimalLbs: number): string {
   return `${whole} ${lbsLabel} ${oz} oz`;
 }
 
-export function PackWeightCalculator() {
-  const [bw, setBw] = useState<number>(170);
+export function PackWeightCalculator({
+  initialBodyWeight,
+  onBodyWeightChange,
+}: {
+  initialBodyWeight?: number | null;
+  onBodyWeightChange?: (lbs: number) => void;
+} = {}) {
+  const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
   const [actual, setActual] = useState<number>(18);
+  const [, startTransition] = useTransition();
+
+  function handleBwChange(val: number) {
+    setBw(val);
+    if (onBodyWeightChange && val > 0) {
+      startTransition(() => { onBodyWeightChange(val); });
+    }
+  }
   const targets = computeTargets(bw);
   const actualNum = actual;
   const validActual = actualNum > 0;
 
-  let status: "ok" | "warn" | "danger" | null = null;
+  let status: "ok" | "warn" | "over" | "critical" | null = null;
   let totalDay1: number | null = null;
   let pctOfBody: number | null = null;
   const deltaLines: string[] = [];
@@ -41,48 +62,37 @@ export function PackWeightCalculator() {
     totalDay1 = actualNum + GF;
     pctOfBody = (totalDay1 / bw) * 100;
     const deltaTarget = totalDay1 - targets.target20;
-    const deltaMax = totalDay1 - targets.max25;
+
     if (totalDay1 <= targets.target20) status = "ok";
     else if (totalDay1 <= targets.max25) status = "warn";
-    else status = "danger";
+    else if (totalDay1 <= targets.hardMax30) status = "over";
+    else status = "critical";
 
-    if (deltaMax > 0) {
-      deltaLines.push(`Cut ${formatLbsOz(deltaMax)} to hit max`);
-      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit target`);
+    if (totalDay1 > targets.hardMax30) {
+      deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.hardMax30)} to hit 30% hard max`);
+      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+    } else if (totalDay1 > targets.max25) {
+      deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.max25)} to hit 25% crew standard`);
+      deltaLines.push(`${formatLbsOz(targets.hardMax30 - totalDay1)} under 30% hard max`);
+    } else if (deltaTarget > 0) {
+      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+      deltaLines.push(`${formatLbsOz(targets.max25 - totalDay1)} under 25% crew standard`);
+    } else if (deltaTarget < -0.05) {
+      deltaLines.push(`${formatLbsOz(-deltaTarget)} under 20% target`);
     } else {
-      if (deltaTarget > 0) {
-        deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit target`);
-      } else if (deltaTarget < -0.05) {
-        deltaLines.push(`${formatLbsOz(-deltaTarget)} under target`);
-      } else {
-        deltaLines.push("At target");
-      }
-      const marginToMax = -deltaMax;
-      if (marginToMax > 0.05) {
-        deltaLines.push(`${formatLbsOz(marginToMax)} under max`);
-      }
+      deltaLines.push("At 20% target");
     }
   }
 
-  const statusBg = {
-    ok: "bg-ok-bg",
-    warn: "bg-warn-bg",
-    danger: "bg-danger-bg",
-  };
-  const statusText = {
-    ok: "text-ok-text",
-    warn: "text-warn-text",
-    danger: "text-danger-text",
-  };
 
   return (
     <div className="space-y-3">
-      {/* 1. CALCULATOR */}
+      {/* 1. CALCULATOR — body weight + derived targets */}
       <div
-        className="bg-surface border border-border rounded-lg p-3.5"
+        className="bg-surface border border-border rounded-lg p-3.5 space-y-3"
         style={{ borderWidth: "0.5px" }}
       >
-        <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] mb-2.5">
+        <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
           Calculator
         </p>
         <label className="block">
@@ -92,70 +102,68 @@ export function PackWeightCalculator() {
           <div className="mt-2 flex items-center gap-3">
             <input
               type="range"
-              min={110}
+              min={100}
               max={220}
               step={5}
               value={bw}
-              onChange={(e) => setBw(Number(e.target.value))}
+              onChange={(e) => handleBwChange(Number(e.target.value))}
               className="flex-1 accent-ink"
             />
             <input
               type="number"
-              min={110}
+              min={100}
               max={220}
               step={5}
               value={bw}
-              onChange={(e) => setBw(Number(e.target.value) || 0)}
+              onChange={(e) => handleBwChange(Number(e.target.value) || 0)}
               className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
             />
           </div>
         </label>
-      </div>
 
-      {/* 2. TARGET BASE WEIGHT — hero */}
-      <div
-        className="bg-ok-bg text-ok-text rounded-lg p-4 sm:p-5 text-center"
-        style={{ borderLeft: "4px solid var(--color-ok-border)" }}
-      >
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-2">
-          Target Base Weight — what you control
-        </p>
-        <div className="font-mono text-[34px] sm:text-[44px] font-semibold leading-none mb-2">
-          {targets ? `≤ ${fmt(targets.targetBase)} lbs` : "—"}
+        {/* Target base weight hero */}
+        <div
+          className="bg-info-bg text-info-text rounded-lg p-3.5 text-center"
+          style={{ borderLeft: "4px solid var(--color-info-border)" }}
+        >
+          <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
+            Target Base Weight — what you control
+          </p>
+          <div className="font-mono text-[30px] sm:text-[38px] font-semibold leading-none mb-1.5">
+            {targets ? `≤ ${fmt(targets.targetBase)} lbs` : "—"}
+          </div>
+          <p className="text-[11px] leading-relaxed opacity-90">
+            Everything in your pack. Does <strong>NOT</strong> include worn
+            clothes, food, water, shelter, and crew gear.
+          </p>
         </div>
-        <p className="text-[11px] sm:text-[12px] leading-relaxed opacity-90">
-          Everything in your pack. Does <strong>NOT</strong> include worn
-          clothes, food, water, shelter, and crew gear.
-        </p>
-      </div>
 
-      {/* 3. TARGET MAX + ABSOLUTE MAX — side by side always, center aligned */}
-      {targets && (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-info-bg text-info-text rounded-lg p-3 text-center">
-            <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.08em] opacity-80 leading-tight">
-              Target Max Total
+        {targets && (
+          <div className="border border-border rounded-lg p-3 space-y-2.5" style={{ borderWidth: "0.5px" }}>
+            <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+              Target Max Pack Weight (Base Weight + Gear &amp; Food)
             </p>
-            <div className="font-mono text-[20px] sm:text-[26px] font-semibold mt-1">
-              {fmt(targets.target20)} lbs
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-ok-bg text-ok-text rounded-lg p-2.5 text-center">
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">20% Target</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.target20)} lbs</div>
+                <p className="text-[9px] opacity-80 mt-0.5 leading-snug">Crew goal</p>
+              </div>
+              <div className="bg-warn-bg text-warn-text rounded-lg p-2.5 text-center">
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">25% Standard</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.max25)} lbs</div>
+                <p className="text-[9px] opacity-80 mt-0.5 leading-snug">Crew max</p>
+              </div>
+              <div className="bg-danger-bg text-danger-text rounded-lg p-2.5 text-center">
+                <p className="font-mono text-[9px] uppercase tracking-[0.08em] opacity-80 leading-tight">30% Hard Max</p>
+                <div className="font-mono text-[17px] sm:text-[20px] font-semibold mt-1">{fmt(targets.hardMax30)} lbs</div>
+                <p className="text-[9px] opacity-80 mt-0.5 leading-snug">No exceptions</p>
+              </div>
             </div>
-            <p className="text-[10px] sm:text-[11px] opacity-80 mt-1 leading-snug">
-              Day-1 total at 20% body weight
-            </p>
           </div>
-          <div className="bg-danger-bg text-danger-text rounded-lg p-3 text-center">
-            <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.08em] opacity-80 leading-tight">
-              Absolute Max (Ceiling)
-            </p>
-            <div className="font-mono text-[20px] sm:text-[26px] font-semibold mt-1">
-              {fmt(targets.max25)} lbs
-            </div>
-            <p className="text-[10px] sm:text-[11px] opacity-80 mt-1 leading-snug">
-              Above this you MUST cut weight
-            </p>
-          </div>
-        </div>
-      )}
+        )}
+
+      </div>
 
       {/* 4. ESTIMATED TOTAL PACK WEIGHT — input + conditional result */}
       <div
@@ -193,22 +201,21 @@ export function PackWeightCalculator() {
 
         {status && totalDay1 != null && pctOfBody != null && (
           <div
-            className={`${statusBg[status]} ${statusText[status]} rounded-lg p-4 sm:p-5 text-center mt-3`}
-            style={{ borderLeft: `4px solid var(--color-${status}-border)` }}
+            className="rounded-lg p-4 sm:p-5 text-center mt-3"
+            style={{
+              backgroundColor: STATUS_COLORS[status].bg,
+              color: STATUS_COLORS[status].text,
+              borderLeft: `4px solid ${STATUS_COLORS[status].border}`,
+            }}
           >
             <div className="font-mono text-[34px] sm:text-[44px] font-semibold leading-none">
               {fmt(totalDay1)} lbs
             </div>
             <div className="mt-2 flex items-center justify-center gap-2 flex-wrap">
-              {status === "ok" && (
-                <StatusBadge tone="ok">ON TARGET</StatusBadge>
-              )}
-              {status === "warn" && (
-                <StatusBadge tone="warn">CAUTION · cut weight</StatusBadge>
-              )}
-              {status === "danger" && (
-                <StatusBadge tone="danger">OVER LIMIT · MUST CUT</StatusBadge>
-              )}
+              {status === "ok" && <StatusBadge tone="ok">ON TARGET</StatusBadge>}
+              {status === "warn" && <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>}
+              {status === "over" && <StatusBadge tone="over">OVER 25%</StatusBadge>}
+              {status === "critical" && <StatusBadge tone="critical">OVER HARD MAX</StatusBadge>}
               <span className="text-[11px] sm:text-[12px] opacity-90">
                 {fmt(pctOfBody, 1)}% of body weight
               </span>
@@ -229,13 +236,19 @@ export function PackWeightCalculator() {
               Base {fmt(actualNum)} + {GF} Gear &amp; Food = {fmt(totalDay1)}{" "}
               lbs
             </p>
-            {status === "danger" && (
+            {status === "over" && (
               <p className="text-[11px] sm:text-[12px] mt-2 font-semibold">
-                Above the 25% hard ceiling. No exceptions.
+                Above 25% crew standard. Cut weight before departure.
+              </p>
+            )}
+            {status === "critical" && (
+              <p className="text-[11px] sm:text-[12px] mt-2 font-semibold">
+                Above the 30% hard ceiling. Must cut weight. No exceptions.
               </p>
             )}
           </div>
         )}
+
       </div>
 
       {/* 5. DAY-1 GEAR & FOOD BREAKDOWN */}

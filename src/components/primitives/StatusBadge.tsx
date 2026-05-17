@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 
-type Tone = "info" | "ok" | "warn" | "danger" | "issued" | "crew" | "neutral";
+type Tone = "info" | "ok" | "warn" | "over" | "critical" | "danger" | "issued" | "crew" | "neutral";
 
 const tones: Record<Tone, string> = {
   info: "bg-info-bg text-info-text",
   ok: "bg-ok-bg text-ok-text",
   warn: "bg-warn-bg text-warn-text",
+  over: "bg-over-bg text-over-text",
+  critical: "bg-critical-bg text-critical-text",
   danger: "bg-danger-bg text-danger-text",
   issued: "bg-issued-bg text-issued-text",
   crew: "bg-crew-bg text-crew-text",

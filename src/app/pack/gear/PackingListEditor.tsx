@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import React, { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -23,6 +23,13 @@ function ozToLbs(oz: number): number {
 function fmt(n: number, digits = 1): string {
   return n.toFixed(digits);
 }
+
+const STATUS_COLORS = {
+  ok:       { bg: "#d4edda", text: "#155724" },
+  warn:     { bg: "#fff3cd", text: "#856404" },
+  over:     { bg: "#f8d7da", text: "#721c24" },
+  critical: { bg: "#dc3545", text: "#ffffff" },
+} as const;
 function formatLbsOz(decimalLbs: number): string {
   const abs = Math.abs(decimalLbs);
   let whole = Math.floor(abs);
@@ -151,33 +158,32 @@ export function PackingListEditor({
     [bodyWeight],
   );
 
-  // Build status + delta lines exactly like the public calculator
+  // Build status + delta lines using 4-zone Philmont model
   const baseLbs = ozToLbs(totals.baseOz);
   const totalDay1Lbs = baseLbs + GF;
-  let status: "ok" | "warn" | "danger" | null = null;
+  let status: "ok" | "warn" | "over" | "critical" | null = null;
   const deltaLines: string[] = [];
   if (targets) {
     if (totalDay1Lbs <= targets.target20) status = "ok";
     else if (totalDay1Lbs <= targets.max25) status = "warn";
-    else status = "danger";
+    else if (totalDay1Lbs <= targets.hardMax30) status = "over";
+    else status = "critical";
 
     const deltaTarget = totalDay1Lbs - targets.target20;
-    const deltaMax = totalDay1Lbs - targets.max25;
-    if (deltaMax > 0) {
-      deltaLines.push(`Cut ${formatLbsOz(deltaMax)} to hit max`);
-      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit target`);
+
+    if (totalDay1Lbs > targets.hardMax30) {
+      deltaLines.push(`Cut ${formatLbsOz(totalDay1Lbs - targets.hardMax30)} to hit 30% hard max`);
+      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+    } else if (totalDay1Lbs > targets.max25) {
+      deltaLines.push(`Cut ${formatLbsOz(totalDay1Lbs - targets.max25)} to hit 25% crew standard`);
+      deltaLines.push(`${formatLbsOz(targets.hardMax30 - totalDay1Lbs)} under 30% hard max`);
+    } else if (deltaTarget > 0) {
+      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+      deltaLines.push(`${formatLbsOz(targets.max25 - totalDay1Lbs)} under 25% crew standard`);
+    } else if (deltaTarget < -0.05) {
+      deltaLines.push(`${formatLbsOz(-deltaTarget)} under 20% target`);
     } else {
-      if (deltaTarget > 0) {
-        deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit target`);
-      } else if (deltaTarget < -0.05) {
-        deltaLines.push(`${formatLbsOz(-deltaTarget)} under target`);
-      } else {
-        deltaLines.push("At target");
-      }
-      const marginToMax = -deltaMax;
-      if (marginToMax > 0.05) {
-        deltaLines.push(`${formatLbsOz(marginToMax)} under max`);
-      }
+      deltaLines.push("At 20% target");
     }
   }
 
@@ -278,16 +284,9 @@ export function PackingListEditor({
     });
   }
 
-  const statusBg = status
-    ? { ok: "bg-ok-bg", warn: "bg-warn-bg", danger: "bg-danger-bg" }[status]
-    : "bg-surface";
-  const statusText = status
-    ? {
-        ok: "text-ok-text",
-        warn: "text-warn-text",
-        danger: "text-danger-text",
-      }[status]
-    : "text-ink";
+  const statusStyle: React.CSSProperties = status
+    ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text }
+    : { backgroundColor: "#ffffff", color: "#2a2a28" };
 
   // Apply filters
   const visible = items.filter((it) => {
@@ -311,8 +310,9 @@ export function PackingListEditor({
         {/* Colored status bar — dual-layer with CSS transitions */}
         <div
           ref={boxRef}
-          className={`${statusBg} ${statusText} relative overflow-hidden ${compact ? "shadow-md" : "shadow-sm"}`}
+          className={`relative overflow-hidden ${compact ? "shadow-md" : "shadow-sm"}`}
           style={{
+            ...statusStyle,
             height: boxHeight === "auto" ? "auto" : `${boxHeight}px`,
             transition: boxHeight === "auto" ? undefined : "height 250ms ease-out",
           }}
@@ -326,30 +326,39 @@ export function PackingListEditor({
           >
             <div className="max-w-[900px] mx-auto px-6">
               <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-                <label className="flex items-center gap-2 text-[12px]">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                    Body weight
-                  </span>
-                  <input
-                    type="number"
-                    min={50}
-                    max={300}
-                    step={1}
-                    value={bodyWeight ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      onBodyWeightChange(v === "" ? null : Number(v));
-                    }}
-                    placeholder="170"
-                    className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
-                  />
-                  <span className="font-mono text-[11px] opacity-70">lbs</span>
-                </label>
+                <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
+                  Body weight
+                </span>
                 {status && (
                   <StatusBadge tone={status}>
-                    {status === "ok" ? "ON TARGET" : status === "warn" ? "CAUTION" : "OVER LIMIT"}
+                    {status === "ok" ? "ON TARGET" : status === "warn" ? "ABOVE TARGET" : status === "over" ? "OVER 25%" : "OVER HARD MAX"}
                   </StatusBadge>
                 )}
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="range"
+                  min={100}
+                  max={220}
+                  step={5}
+                  value={bodyWeight ?? 160}
+                  onChange={(e) => onBodyWeightChange(Number(e.target.value))}
+                  className="flex-1 accent-current opacity-80"
+                />
+                <input
+                  type="number"
+                  min={100}
+                  max={220}
+                  step={5}
+                  value={bodyWeight ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    onBodyWeightChange(v === "" ? null : Number(v));
+                  }}
+                  placeholder="160"
+                  className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
+                />
+                <span className="font-mono text-[11px] opacity-70 shrink-0">lbs</span>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center mb-2">

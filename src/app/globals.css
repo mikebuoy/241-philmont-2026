@@ -45,11 +45,25 @@
   --color-danger-text: #721c24;
   --color-danger-border: #f0b8b8;
 
+  /* Over — solid red (zone 3: 25–30%, standard participants) */
+  --color-over-bg: #dc3545;
+  --color-over-text: #ffffff;
+  --color-over-border: #b02a37;
+
+  /* Critical — dark red (zone 4: >30% standard / >25% conservative) */
+  --color-critical-bg: #6b0f1a;
+  --color-critical-text: #ffffff;
+  --color-critical-border: #4a0b12;
+
   /* Cell shading (weight tables) */
   --color-cell-ok: #d4edda;
   --color-cell-ok-text: #155724;
   --color-cell-warn: #fff3cd;
   --color-cell-warn-text: #856404;
+  --color-cell-over: #dc3545;
+  --color-cell-over-text: #ffffff;
+  --color-cell-critical: #6b0f1a;
+  --color-cell-critical-text: #ffffff;
   --color-cell-danger: #f8d7da;
   --color-cell-danger-text: #721c24;
 
