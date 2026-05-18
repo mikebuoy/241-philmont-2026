@@ -237,6 +237,9 @@ export function PackingListEditor({
   const markerPct = targets
     ? Math.min(100, Math.max(0, (totalDay1Lbs / targets.hardMax30) * 100))
     : 0;
+  const basePct = targets
+    ? Math.min(100, Math.max(0, (activeBaseLbs / targets.hardMax30) * 100))
+    : 0;
   const isCritical = status === "critical";
 
   // Apply filters
@@ -416,7 +419,7 @@ export function PackingListEditor({
             {/* Progress bar */}
             {targets ? (
               <div className="mb-1.5">
-                {/* % labels above the bar */}
+                {/* Percent labels above the bar — centered above the weight numbers inside */}
                 <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
                   <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
                   <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
@@ -425,11 +428,8 @@ export function PackingListEditor({
                 <div className="relative pt-2.5">
                   {/* Down arrow marker above bar */}
                   <div
-                    className="absolute top-0 z-10"
-                    style={{
-                      left: `${markerPct}%`,
-                      transform: "translateX(-50%)",
-                    }}
+                    className="absolute top-0 z-20"
+                    style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}
                   >
                     <div
                       className="w-0 h-0"
@@ -441,22 +441,53 @@ export function PackingListEditor({
                       }}
                     />
                   </div>
-                  {/* The bar — 30px, rounded outside corners, numbers inside */}
+                  {/* The bar — 30px, zones + translucent blue base overlay + weight numbers + base label */}
                   <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
                     <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
                     <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
                     <div style={{ width: `${overEdgePct - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
-                    {/* Weight numbers overlaid inside the bar */}
+                    {/* Translucent blue base fill — overlays zones from 0 to base position */}
+                    <div
+                      className="absolute left-0 top-0 bottom-0"
+                      style={{
+                        width: `${basePct}%`,
+                        backgroundColor: "rgba(30, 106, 145, 0.35)",
+                        borderRight: "2px solid #1e6a91",
+                      }}
+                    />
+                    {/* Striped pattern fill — gear & food portion, from base to Est Max */}
+                    {markerPct > basePct && (
+                      <div
+                        className="absolute top-0 bottom-0"
+                        style={{
+                          left: `${basePct}%`,
+                          width: `${markerPct - basePct}%`,
+                          backgroundColor: "rgba(30, 106, 145, 0.1)",
+                          backgroundImage:
+                            "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+                        }}
+                      />
+                    )}
+                    {/* Vertical marker line under arrow — runs through the bar at Est Max */}
+                    <div
+                      className="absolute top-0 bottom-0 z-10 pointer-events-none"
+                      style={{
+                        left: `${markerPct}%`,
+                        width: "2px",
+                        transform: "translateX(-50%)",
+                        backgroundColor: isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)",
+                      }}
+                    />
+                    {/* Base label — inside the bar at left, in blue (no actual/calc differentiation here) */}
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-[12px] sm:text-[13px] font-bold whitespace-nowrap pointer-events-none" style={{ color: "#0d3d5a" }}>
+                      Base: {fmt(activeBaseLbs, 1)}
+                    </div>
+                    {/* Weight numbers at threshold positions */}
                     <div className="absolute inset-0 pointer-events-none font-mono text-ink">
-                      <div className="absolute top-1/2 left-2 -translate-y-1/2 text-[18px] font-bold leading-none">
-                        0
-                      </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none"
-                           style={{ left: `${okPct}%` }}>
+                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${okPct}%` }}>
                         {fmt(targets.target20, 0)}
                       </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none"
-                           style={{ left: `${warnEdgePct}%` }}>
+                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${warnEdgePct}%` }}>
                         {fmt(targets.max25, 0)}
                       </div>
                       <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
@@ -472,12 +503,18 @@ export function PackingListEditor({
               </div>
             )}
 
-            {/* Active source */}
-            <div className="flex items-baseline justify-between gap-2 mt-2 font-mono text-[10px] text-ink-muted">
-              <span>
-                Using {useActualBase ? "actual" : "calc"} base · {fmt(activeBaseLbs)} lbs
-                <span className="text-ink-faint"> + {GF} gear &amp; food</span>
-              </span>
+            {/* Legend — explains the in-bar labels & color fills */}
+            <div className="mt-2 space-y-1 font-mono text-[10px] text-ink-muted">
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
+                  style={{ backgroundColor: "rgba(30, 106, 145, 0.35)", borderWidth: "0.5px" }}
+                  aria-hidden="true"
+                />
+                <span>
+                  <strong className="text-ink">Base</strong> &mdash; {useActualBase ? "actual base (your scale)" : "calc base (from list)"} &middot; {fmt(activeBaseLbs, 1)} lbs
+                </span>
+              </div>
             </div>
           </div>
         </div>
