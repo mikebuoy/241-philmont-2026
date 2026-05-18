@@ -55,24 +55,19 @@ export default async function RosterPage() {
                 title={`${crew.name} · ${crew.members.length} members`}
               >
                 <div className="space-y-3">
-                  {cl && (
-                    <div>
-                      <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                        Crew Leader (youth-led)
-                      </div>
-                      <RosterRow
-                        name={cl.name}
-                        role={cl.role}
-                        claimed={claimedNames.has(cl.name)}
-                      />
-                    </div>
-                  )}
-
                   <div>
                     <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                      Scouts ({scouts.length})
+                      Scouts ({(cl ? 1 : 0) + scouts.length})
                     </div>
                     <ul className="space-y-1">
+                      {cl && (
+                        <RosterRow
+                          key={cl.name}
+                          name={cl.name}
+                          role={cl.role}
+                          claimed={claimedNames.has(cl.name)}
+                        />
+                      )}
                       {scouts.map((m) => (
                         <RosterRow
                           key={m.name}
@@ -84,24 +79,19 @@ export default async function RosterPage() {
                     </ul>
                   </div>
 
-                  {la && (
-                    <div>
-                      <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                        Lead Advisor
-                      </div>
-                      <RosterRow
-                        name={la.name}
-                        role={la.role}
-                        claimed={claimedNames.has(la.name)}
-                      />
-                    </div>
-                  )}
-
                   <div>
                     <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                      Advisors ({advisors.length})
+                      Advisors ({(la ? 1 : 0) + advisors.length})
                     </div>
                     <ul className="space-y-1">
+                      {la && (
+                        <RosterRow
+                          key={la.name}
+                          name={la.name}
+                          role={la.role}
+                          claimed={claimedNames.has(la.name)}
+                        />
+                      )}
                       {advisors.map((m) => (
                         <RosterRow
                           key={m.name}
