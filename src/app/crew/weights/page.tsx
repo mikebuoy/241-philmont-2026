@@ -75,6 +75,9 @@ export default async function CrewWeightsPage() {
   const entered = rows.filter((r) => r.bw != null).length;
   const onTarget = rows.filter((r) => r.status === "ok").length;
 
+  const crews = [1, 2] as const;
+  const rowsByCrew = (crewId: 1 | 2) => rows.filter((r) => r.m.crewId === crewId);
+
   const dash = <span className="text-ink-faint">—</span>;
 
   return (
@@ -127,42 +130,53 @@ export default async function CrewWeightsPage() {
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
-                <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
-                  <td
-                    className="px-2.5 py-2 font-medium"
-                    style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
-                  >
-                    {m.name}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {actualBase != null ? fmt(actualBase) : dash}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {targets
-                      ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}`
-                      : dash}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {calcBase != null ? fmt(calcBase) : dash}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {targetMax != null ? fmt(targetMax) : dash}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {calcMax != null ? fmt(calcMax) : dash}
+            {crews.map((crewId) => (
+              <tbody key={crewId}>
+                <tr className="bg-surface-2 border-b border-border">
+                  <td colSpan={7} className="px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                    Crew {crewId}
                   </td>
                 </tr>
-              ))}
-            </tbody>
+                {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+                  <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
+                    <td
+                      className="px-2.5 py-2 font-medium"
+                      style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
+                    >
+                      {m.name}
+                    </td>
+                    <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
+                    <td className="px-2.5 py-2 font-mono text-right">
+                      {actualBase != null ? fmt(actualBase) : dash}
+                    </td>
+                    <td className="px-2.5 py-2 font-mono text-right">
+                      {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : dash}
+                    </td>
+                    <td className="px-2.5 py-2 font-mono text-right">
+                      {calcBase != null ? fmt(calcBase) : dash}
+                    </td>
+                    <td className="px-2.5 py-2 font-mono text-right">
+                      {targetMax != null ? fmt(targetMax) : dash}
+                    </td>
+                    <td className="px-2.5 py-2 font-mono text-right">
+                      {calcMax != null ? fmt(calcMax) : dash}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
         </div>
 
         {/* ── MOBILE CARDS (< md) ── */}
-        <div className="md:hidden space-y-2">
-          {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+        <div className="md:hidden space-y-4">
+          {crews.map((crewId) => (
+            <div key={crewId}>
+              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-2">
+                Crew {crewId}
+              </p>
+              <div className="space-y-2">
+          {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
             <div
               key={m.id}
               className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}
@@ -201,6 +215,9 @@ export default async function CrewWeightsPage() {
                   <span className="text-ink-muted">Target Max</span>
                   <span>{targetMax != null ? fmt(targetMax) : "—"}</span>
                 </div>
+              </div>
+            </div>
+          ))}
               </div>
             </div>
           ))}
