@@ -70,9 +70,10 @@ export async function getPackingItems(crewMemberId: string): Promise<PackingItem
 }
 
 /**
- * Seed core items for a crew member who has none yet. Idempotent — checks for
- * existing items first and bails if any exist. Reads from core_gear_items DB
- * table (editable via /admin/gear) instead of the static array.
+ * Sync core items for a crew member. Idempotent — inserts only items that
+ * don't already exist in the member's packing list (matched by name). This
+ * means new items added to core_gear_items automatically appear for all
+ * members on their next page load, without overwriting existing entries.
  *
  * Role-aware shelter defaults: scouts get Thunder Ridge at 43 oz pre-packed;
  * advisors get Personal 1P pre-packed at 0 oz. These are keyed on item name —
@@ -82,28 +83,39 @@ export async function seedCoreItemsForCrewMember(
   member: CrewMember,
 ): Promise<void> {
   const supabase = await createServerClient();
-  const { count, error: countErr } = await supabase
-    .from("packing_items")
-    .select("id", { count: "exact", head: true })
-    .eq("crew_member_id", member.id);
-  if (countErr) throw new Error(`Seed check failed: ${countErr.message}`);
-  if ((count ?? 0) > 0) return; // already seeded
+  const admin = createAdminClient();
+
+  // Fetch existing core item names for this member and all core_gear_items in parallel
+  const [existingRes, gearRes] = await Promise.all([
+    supabase
+      .from("packing_items")
+      .select("name")
+      .eq("crew_member_id", member.id)
+      .eq("is_core", true),
+    admin
+      .from("core_gear_items")
+      .select("*")
+      .order("sort_order", { ascending: true }),
+  ]);
+  if (existingRes.error) throw new Error(`Seed check failed: ${existingRes.error.message}`);
+  if (gearRes.error) throw new Error(`Failed to load core gear: ${gearRes.error.message}`);
+
+  const existingNames = new Set((existingRes.data as { name: string }[]).map((r) => r.name));
+  const gearItems = gearRes.data as Array<{
+    category: string; name: string; required: string;
+    qty: string; weight_oz: number; sort_order: number;
+    default_is_worn: boolean; default_is_consumable: boolean; default_is_not_packing: boolean;
+  }>;
+
+  // Only insert items not already present by name
+  const missing = gearItems.filter((g) => !existingNames.has(g.name));
+  if (missing.length === 0) return;
 
   const isScout = member.role === "scout" || member.role === "crew_leader";
 
   // Read current gear list from DB so admin edits take effect for future seeds.
-  const admin = createAdminClient();
-  const { data: gearItems, error: gearErr } = await admin
-    .from("core_gear_items")
-    .select("*")
-    .order("sort_order", { ascending: true });
-  if (gearErr) throw new Error(`Failed to load core gear: ${gearErr.message}`);
-
-  const rows = (gearItems as Array<{
-    category: string; name: string; required: string;
-    qty: string; weight_oz: number; sort_order: number;
-    default_is_worn: boolean; default_is_consumable: boolean; default_is_not_packing: boolean;
-  }>).map((g, idx) => {
+  // (admin client already fetched above)
+  const rows = missing.map((g, idx) => {
     let weightOz = Number(g.weight_oz) || 0;
     let isNotPacking = g.default_is_not_packing ?? false;
 
