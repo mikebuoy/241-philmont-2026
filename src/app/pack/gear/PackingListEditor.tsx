@@ -651,7 +651,27 @@ function PackRow({
   item: PackingItem;
   onToggle: ItemRowProps["onToggle"];
 }) {
+  const isNote = item.isCore && item.isRequired === null;
   const dimmed = item.isNotPacking;
+
+  if (isNote) {
+    return (
+      <li className="px-3 py-2 flex items-center gap-2 text-[13px]" style={{ backgroundColor: "#fff9db" }}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
+            <span className="font-medium leading-snug">{item.name}</span>
+          </div>
+          {item.description && (
+            <div className="font-normal text-[11px] leading-snug mt-0.5" style={{ color: "#856404" }}>
+              {item.description}
+            </div>
+          )}
+        </div>
+      </li>
+    );
+  }
+
   return (
     <li className={`px-3 py-2.5 flex items-center gap-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
       <input
@@ -707,6 +727,24 @@ function EditRow({
   const [qty, setQty] = useState(String(item.qty));
   const [weight, setWeight] = useState(String(item.weightOz));
   const dimmed = item.isNotPacking;
+  const isNote = item.isCore && item.isRequired === null;
+
+  if (isNote) {
+    return (
+      <li className="px-3 py-2 flex items-center gap-2 text-[12px]" style={{ backgroundColor: "#fff9db" }}>
+        <span className="w-4 shrink-0" aria-hidden="true" />
+        <div className="flex-1 min-w-0 flex items-baseline gap-1.5">
+          <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
+          <span className="font-medium">{item.name}</span>
+          {item.description && (
+            <span className="font-normal text-[11px] shrink-0" style={{ color: "#856404" }}>
+              {item.description}
+            </span>
+          )}
+        </div>
+      </li>
+    );
+  }
 
   return (
     <li className={`px-3 py-2 flex items-center gap-2 text-[12px] ${dimmed ? "opacity-50" : ""}`}>
@@ -826,8 +864,8 @@ function RequiredBadge({
   isRequired: boolean | null;
   isCore: boolean;
 }) {
-  if (!isCore || isRequired == null) return null;
-  if (isRequired) {
+  if (!isCore) return null;
+  if (isRequired === true) {
     return (
       <span
         className="font-mono text-[9px] font-bold text-ok-text shrink-0 uppercase tracking-[0.04em]"
@@ -837,12 +875,24 @@ function RequiredBadge({
       </span>
     );
   }
+  if (isRequired === false) {
+    return (
+      <span
+        className="font-mono text-[9px] text-ink-faint shrink-0 lowercase tracking-[0.04em]"
+        title="Optional"
+      >
+        opt
+      </span>
+    );
+  }
+  // isRequired === null && isCore → Note item
   return (
     <span
-      className="font-mono text-[9px] text-ink-faint shrink-0 lowercase tracking-[0.04em]"
-      title="Optional"
+      className="font-mono text-[9px] font-bold shrink-0 uppercase tracking-[0.04em]"
+      style={{ color: "#856404" }}
+      title="Note"
     >
-      opt
+      NOTE
     </span>
   );
 }

@@ -124,7 +124,7 @@ export async function seedCoreItemsForCrewMember(
       qty: numberOrOne(g.qty),
       weight_oz: weightOz,
       is_core: true,
-      is_required: g.required === "Required",
+      is_required: g.required === "Required" ? true : g.required === "Optional" ? false : null,
       is_worn: g.default_is_worn ?? false,
       is_consumable: g.default_is_consumable ?? false,
       is_not_packing: isNotPacking,
