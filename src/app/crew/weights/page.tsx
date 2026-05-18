@@ -104,68 +104,70 @@ export default async function CrewWeightsPage() {
         </div>
         <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
 
-        {/* ── DESKTOP TABLE (md+) ── */}
-        <div
-          className="hidden md:block bg-surface border border-border rounded-md overflow-hidden"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <table className="w-full text-[11px]">
-            <thead className="bg-surface-2 border-b border-border">
-              <tr>
-                {[
-                  ["Name",             "text-left"],
-                  ["Body\nWT",         "text-right"],
-                  ["Actual\nBase",     "text-right"],
-                  ["Target\nBase–Max", "text-right"],
-                  ["Calc\nBase",       "text-right"],
-                  ["Target\nMax",      "text-right"],
-                  ["Calc\nMax",        "text-right"],
-                ].map(([label, align]) => (
-                  <th
-                    key={label}
-                    className={`${align} font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight whitespace-pre-line`}
-                  >
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            {crews.map((crewId) => (
-              <tbody key={crewId}>
-                <tr className="bg-surface-2 border-b border-border">
-                  <td colSpan={7} className="px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
-                    Crew {crewId}
-                  </td>
-                </tr>
-                {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
-                  <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
-                    <td
-                      className="px-2.5 py-2 font-medium"
-                      style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
-                    >
-                      {m.name}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
-                    <td className="px-2.5 py-2 font-mono text-right">
-                      {actualBase != null ? fmt(actualBase) : dash}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-right">
-                      {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : dash}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-right">
-                      {calcBase != null ? fmt(calcBase) : dash}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-right">
-                      {targetMax != null ? fmt(targetMax) : dash}
-                    </td>
-                    <td className="px-2.5 py-2 font-mono text-right">
-                      {calcMax != null ? fmt(calcMax) : dash}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            ))}
-          </table>
+        {/* ── DESKTOP TABLES (md+) ── */}
+        <div className="hidden md:block space-y-4">
+          {crews.map((crewId) => (
+            <div key={crewId}>
+              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-1.5">
+                Crew {crewId}
+              </p>
+              <div
+                className="bg-surface border border-border rounded-md overflow-hidden"
+                style={{ borderWidth: "0.5px" }}
+              >
+                <table className="w-full text-[11px]">
+                  <thead className="bg-surface-2 border-b border-border">
+                    <tr>
+                      {[
+                        ["Name",             "text-left"],
+                        ["Body\nWT",         "text-right"],
+                        ["Actual\nBase",     "text-right"],
+                        ["Target\nBase–Max", "text-right"],
+                        ["Calc\nBase",       "text-right"],
+                        ["Target\nMax",      "text-right"],
+                        ["Calc\nMax",        "text-right"],
+                      ].map(([label, align]) => (
+                        <th
+                          key={label}
+                          className={`${align} font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight whitespace-pre-line`}
+                        >
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+                      <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
+                        <td
+                          className="px-2.5 py-2 font-medium"
+                          style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
+                        >
+                          {m.name}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
+                        <td className="px-2.5 py-2 font-mono text-right">
+                          {actualBase != null ? fmt(actualBase) : dash}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-right">
+                          {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : dash}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-right">
+                          {calcBase != null ? fmt(calcBase) : dash}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-right">
+                          {targetMax != null ? fmt(targetMax) : dash}
+                        </td>
+                        <td className="px-2.5 py-2 font-mono text-right">
+                          {calcMax != null ? fmt(calcMax) : dash}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* ── MOBILE CARDS (< md) ── */}
