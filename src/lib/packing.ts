@@ -85,11 +85,11 @@ export async function seedCoreItemsForCrewMember(
   const supabase = await createServerClient();
   const admin = createAdminClient();
 
-  // Fetch existing core item names for this member and all core_gear_items in parallel
+  // Fetch existing core items for this member and all core_gear_items in parallel
   const [existingRes, gearRes] = await Promise.all([
     supabase
       .from("packing_items")
-      .select("name")
+      .select("id, name, is_required")
       .eq("crew_member_id", member.id)
       .eq("is_core", true),
     admin
@@ -100,15 +100,33 @@ export async function seedCoreItemsForCrewMember(
   if (existingRes.error) throw new Error(`Seed check failed: ${existingRes.error.message}`);
   if (gearRes.error) throw new Error(`Failed to load core gear: ${gearRes.error.message}`);
 
-  const existingNames = new Set((existingRes.data as { name: string }[]).map((r) => r.name));
+  type ExistingRow = { id: string; name: string; is_required: boolean | null };
+  const existingItems = existingRes.data as ExistingRow[];
+  const existingByName = new Map(existingItems.map((r) => [r.name, r]));
+
   const gearItems = gearRes.data as Array<{
     category: string; name: string; required: string;
     qty: string; weight_oz: number; sort_order: number;
     default_is_worn: boolean; default_is_consumable: boolean; default_is_not_packing: boolean;
   }>;
 
+  // Sync is_required for existing core items that have drifted from core_gear_items
+  const stale = gearItems
+    .map((g) => {
+      const existing = existingByName.get(g.name);
+      if (!existing) return null;
+      const expected = g.required === "Required" ? true : g.required === "Optional" ? false : null;
+      if (existing.is_required === expected) return null;
+      return { id: existing.id, is_required: expected };
+    })
+    .filter(Boolean) as { id: string; is_required: boolean | null }[];
+
+  for (const { id, is_required } of stale) {
+    await supabase.from("packing_items").update({ is_required }).eq("id", id);
+  }
+
   // Only insert items not already present by name
-  const missing = gearItems.filter((g) => !existingNames.has(g.name));
+  const missing = gearItems.filter((g) => !existingByName.has(g.name));
   if (missing.length === 0) return;
 
   const isScout = member.role === "scout" || member.role === "crew_leader";

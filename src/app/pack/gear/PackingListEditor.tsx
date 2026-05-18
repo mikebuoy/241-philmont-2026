@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import React, { type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -12,6 +12,8 @@ import {
   addPersonalItem,
   deletePersonalItem,
   saveMyBodyWeight,
+  saveMyActualBaseWeight,
+  saveMyBaseWeightMode,
 } from "./actions";
 
 // Shelter is tracked as an actual packing item, so exclude it from the Day-1 constant
@@ -25,10 +27,10 @@ function fmt(n: number, digits = 1): string {
 }
 
 const STATUS_COLORS = {
-  ok:       { bg: "#d4edda", text: "#155724" },
-  warn:     { bg: "#fff3cd", text: "#856404" },
-  over:     { bg: "#f8d7da", text: "#721c24" },
-  critical: { bg: "#dc3545", text: "#ffffff" },
+  ok:       { bg: "#d4edda", text: "#155724", border: "#b8ddb8" },
+  warn:     { bg: "#fff3cd", text: "#856404", border: "#f0d090" },
+  over:     { bg: "#f8d7da", text: "#721c24", border: "#f0b8b8" },
+  critical: { bg: "#dc3545", text: "#ffffff", border: "#b02a37" },
 } as const;
 function formatLbsOz(decimalLbs: number): string {
   const abs = Math.abs(decimalLbs);
@@ -47,98 +49,40 @@ type Mode = "pack" | "edit";
 export function PackingListEditor({
   items: initialItems,
   bodyWeightLbs: initialBodyWeight,
+  actualBaseWeightLbs: initialActualBase,
+  useActualBaseWeight: initialUseActual,
   categoryOrder: propCategoryOrder,
   aboveHeader,
   children,
 }: {
   items: PackingItem[];
   bodyWeightLbs: number | null;
+  actualBaseWeightLbs?: number | null;
+  useActualBaseWeight?: boolean;
   categoryOrder?: string[];
   /** Renders above the sticky green box (e.g. SubNav). Scrolls away on scroll. */
   aboveHeader?: ReactNode;
   children?: ReactNode;
 }) {
   const [items, setItems] = useState<PackingItem[]>(initialItems);
-  const [bodyWeight, setBodyWeight] = useState<number | null>(
-    initialBodyWeight,
-  );
+  const [bodyWeight, setBodyWeight] = useState<number | null>(initialBodyWeight);
+  const [actualBase, setActualBase] = useState<number>(initialActualBase ?? 18);
+  const [useActualBase, setUseActualBase] = useState(initialUseActual ?? false);
   const [hideNotPacking, setHideNotPacking] = useState(false);
   const [hidePacked, setHidePacked] = useState(false);
-  const [compact, setCompact] = useState(false);
-  const [boxHeight, setBoxHeight] = useState<number | "auto">("auto");
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("pack");
   const [, startTransition] = useTransition();
 
-  const boxRef = useRef<HTMLDivElement>(null);
-  const expandedRef = useRef<HTMLDivElement>(null);
-  const compactRef = useRef<HTMLDivElement>(null);
-  const expandedHRef = useRef(0);
-  const compactHRef = useRef(0);
-  const isCompactRef = useRef(false); // tracks state without stale closure
-
+  // First-visit help panel: auto-open once, then remembered as collapsed
   useEffect(() => {
-    const COLLAPSE_AT = 300;
-    const EXPAND_AT = 290;
-
-    document.documentElement.style.overflowAnchor = "none";
-
-    const measure = () => {
-      if (expandedRef.current) expandedHRef.current = expandedRef.current.offsetHeight;
-      if (compactRef.current) compactHRef.current = compactRef.current.offsetHeight;
-    };
-
-    let prevY = window.scrollY;
-    let lastToggle = 0;
-    let cooldown = 150;
-
-    const onScroll = () => {
-      const y = window.scrollY;
-      const goingDown = y > prevY;
-      prevY = y;
-
-      if (Date.now() - lastToggle < cooldown) return;
-
-      if (!isCompactRef.current && goingDown && y >= COLLAPSE_AT) {
-        isCompactRef.current = true;
-        lastToggle = Date.now();
-        cooldown = 500; // longer after collapse — scroll-anchor takes more time to settle
-        setCompact(true);
-        setBoxHeight(compactHRef.current || compactRef.current?.offsetHeight || 60);
-      } else if (isCompactRef.current && !goingDown && y <= EXPAND_AT) {
-        isCompactRef.current = false;
-        lastToggle = Date.now();
-        cooldown = 150; // short after expand — keep it snappy
-        setCompact(false);
-        setBoxHeight(expandedHRef.current || expandedRef.current?.offsetHeight || 200);
-      }
-    };
-
-    const onResize = () => {
-      measure();
-      setBoxHeight(isCompactRef.current ? compactHRef.current : expandedHRef.current);
-    };
-
-    // Measure after first paint, then check initial scroll position
-    const id = requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        measure();
-        // Pin height so CSS transition has a concrete value to animate from
-        setBoxHeight(expandedHRef.current);
-        if (window.scrollY >= COLLAPSE_AT) {
-          isCompactRef.current = true;
-          setCompact(true);
-          setBoxHeight(compactHRef.current);
-        }
-      })
-    );
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(id);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-    };
+    if (typeof window === "undefined") return;
+    const seen = window.localStorage.getItem("pack-gear-howto-seen");
+    if (!seen) {
+      setHelpOpen(true);
+      window.localStorage.setItem("pack-gear-howto-seen", "1");
+    }
   }, []);
 
   // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
@@ -160,7 +104,8 @@ export function PackingListEditor({
 
   // Build status + delta lines using 4-zone Philmont model
   const baseLbs = ozToLbs(totals.baseOz);
-  const totalDay1Lbs = baseLbs + GF;
+  const activeBaseLbs = useActualBase ? actualBase : baseLbs;
+  const totalDay1Lbs = activeBaseLbs + GF;
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   const deltaLines: string[] = [];
   if (targets) {
@@ -284,9 +229,15 @@ export function PackingListEditor({
     });
   }
 
-  const statusStyle: React.CSSProperties = status
-    ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text }
-    : { backgroundColor: "#ffffff", color: "#2a2a28" };
+  // Progress bar zone widths (proportional to body weight percentages)
+  // ok: 0-20% = 20/30 = 66.67%, warn: 20-25% = 5/30 = 16.67%, over: 25-30% = 16.67%
+  const okPct = (20 / 30) * 100;
+  const warnEdgePct = (25 / 30) * 100;
+  const overEdgePct = 100;
+  const markerPct = targets
+    ? Math.min(100, Math.max(0, (totalDay1Lbs / targets.hardMax30) * 100))
+    : 0;
+  const isCritical = status === "critical";
 
   // Apply filters
   const visible = items.filter((it) => {
@@ -305,139 +256,357 @@ export function PackingListEditor({
       <div className="space-y-4">
 
       {/* ───── Sticky totals header ───── */}
+      {/* ───── How to use (auto-open first visit; scrolls away) ───── */}
+      <div className="bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
+        <button
+          type="button"
+          onClick={() => setHelpOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-surface-2 transition-colors"
+        >
+          <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+            How to use this page
+          </span>
+          <svg
+            width="12" height="12" viewBox="0 0 14 14" fill="none"
+            style={{ transform: helpOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}
+          >
+            <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {helpOpen && (
+          <div className="px-4 pb-4 pt-3 text-[12px] text-ink border-t border-border space-y-4" style={{ borderWidth: "0.5px" }}>
+
+            {/* Section 1 — weigh */}
+            <section className="space-y-2.5">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                1. Pick how to weigh your pack
+              </h3>
+              <div className="space-y-2.5">
+                <div>
+                  <p className="font-semibold leading-tight">🎯 Weigh each item</p>
+                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
+                    Open the Edit list mode. Type each item&apos;s weight in ounces as you weigh it. The bar updates live. Most accurate.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold leading-tight">🎒 Weigh your packed pack</p>
+                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
+                    Stand on a scale holding your full pack. Subtract your body weight. Open Adjust, enter that number as Actual base, and check &ldquo;I weighed my full pack.&rdquo; Fastest.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold leading-tight">🤝 Mix both</p>
+                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
+                    Weigh what you can. Use the toggle to fall back to actual pack weight any time. No judgment either way.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 2 — pack */}
+            <section className="space-y-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                2. Use the list as your packing list
+              </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Check the box next to an item once it&apos;s in your pack.
+              </p>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Tap a badge to mark an item:
+              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[10px] font-semibold bg-ok-bg text-ok-text rounded shrink-0 inline-flex items-center justify-center w-9 h-5">W</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Wearing it. Does not count toward pack weight.</span>
+                </div>
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[10px] font-semibold bg-info-bg text-info-text rounded shrink-0 inline-flex items-center justify-center w-9 h-5">C</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Consumable like food or water. Not counted on day 1.</span>
+                </div>
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[10px] font-semibold bg-surface-2 text-ink-muted rounded shrink-0 inline-flex items-center justify-center w-9 h-5">Off</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Not taking it. Skipped from your totals.</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3 — edit */}
+            <section className="space-y-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                3. Edit your gear
+              </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Tap the Edit list button at the top of the page. You can:
+              </p>
+              <ul className="text-ink-muted text-[11px] leading-snug pl-4 space-y-1 list-disc marker:text-ink-faint">
+                <li>Change weights, quantities, or item names</li>
+                <li>Add your own personal items at the bottom of each category</li>
+                <li>Enter weight in ounces &mdash; 16 oz = 1 lb</li>
+                <li>Set QTY if you&apos;re bringing more than one of something</li>
+              </ul>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Tap Done when you&apos;re finished. The page saves automatically.
+              </p>
+            </section>
+
+            {/* Section 4 — filter */}
+            <section className="space-y-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                4. Filter the list
+              </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Use the filters above the list to focus on what&apos;s left:
+              </p>
+              <ul className="text-ink-muted text-[11px] leading-snug pl-4 space-y-1 list-disc marker:text-ink-faint">
+                <li>Hide non-packing &mdash; hides items marked Off</li>
+                <li>Hide packed &mdash; hides items you&apos;ve already checked off</li>
+              </ul>
+            </section>
+
+          </div>
+        )}
+      </div>
+
+      {/* ───── Sticky calc bar — always compact, drawer pushes content ───── */}
       <div className="sticky top-0 z-30 -mx-6 !mt-0" style={{ overflowAnchor: "none" }}>
 
-        {/* Colored status bar — dual-layer with CSS transitions */}
-        <div
-          ref={boxRef}
-          className={`relative overflow-hidden ${compact ? "shadow-md" : "shadow-sm"}`}
-          style={{
-            ...statusStyle,
-            height: boxHeight === "auto" ? "auto" : `${boxHeight}px`,
-            transition: boxHeight === "auto" ? undefined : "height 250ms ease-out",
-          }}
-        >
+        {/* ── Status bar (always visible) ── */}
+        <div className="bg-surface border-b border-border shadow-sm">
+          <div className="max-w-[900px] mx-auto px-6 py-3">
 
-          {/* ── Expanded layer ── */}
-          <div
-            ref={expandedRef}
-            className="py-5"
-            style={{ opacity: compact ? 0 : 1, transition: "opacity 200ms", pointerEvents: compact ? "none" : undefined }}
-          >
-            <div className="max-w-[900px] mx-auto px-6">
-              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                  Body weight
+            {/* Top row: Est Max + buttons */}
+            <div className="flex items-baseline justify-between gap-3 mb-1">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
+                <span className="font-mono text-[22px] sm:text-[24px] font-semibold leading-none text-ink">
+                  {fmt(totalDay1Lbs)} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
                 </span>
-                {status && (
-                  <StatusBadge tone={status}>
-                    {status === "ok" ? "ON TARGET" : status === "warn" ? "ABOVE TARGET" : status === "over" ? "OVER 25%" : "OVER HARD MAX"}
-                  </StatusBadge>
-                )}
               </div>
-              <div className="flex items-center gap-3 mb-3">
-                <input
-                  type="range"
-                  min={100}
-                  max={220}
-                  step={5}
-                  value={bodyWeight ?? 160}
-                  onChange={(e) => onBodyWeightChange(Number(e.target.value))}
-                  className="flex-1 accent-current opacity-80"
-                />
-                <input
-                  type="number"
-                  min={100}
-                  max={220}
-                  step={5}
-                  value={bodyWeight ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    onBodyWeightChange(v === "" ? null : Number(v));
-                  }}
-                  placeholder="160"
-                  className="w-20 font-mono text-[13px] bg-bg/40 border border-current/20 rounded px-2 py-1 text-right"
-                />
-                <span className="font-mono text-[11px] opacity-70 shrink-0">lbs</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                <Stat label="Base" value={`${fmt(baseLbs)} lbs`} />
-                <Stat label="Worn" value={`${fmt(ozToLbs(totals.wornOz))} lbs`} />
-                <Stat label="Consumable" value={`${fmt(ozToLbs(totals.consumableOz))} lbs`} />
-              </div>
-
-              <div className="border-t border-current/10 pt-2">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-80">
-                    Total Day 1
-                  </span>
-                  <span className="font-mono text-[20px] font-semibold">
-                    {fmt(totalDay1Lbs)} lbs
-                  </span>
-                </div>
-                <div className="font-mono text-[10px] opacity-75 mt-0.5">
-                  {fmt(baseLbs)} base + {GF} Gear &amp; Food
-                </div>
-              </div>
-
-              {deltaLines.length > 0 && (
-                <div className="mt-2 space-y-0.5">
-                  {deltaLines.map((line) => (
-                    <div key={line} className="font-mono text-[12px] font-semibold text-center">
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!bodyWeight && (
-                <p className="text-[11px] mt-2 opacity-75 text-center">
-                  Enter your body weight to see target / status.
-                </p>
-              )}
-
-              <div className="flex justify-end mt-3">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
+                  type="button"
+                  onClick={() => setAdjustOpen((o) => !o)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                  style={{ borderWidth: "0.5px" }}
+                  aria-expanded={adjustOpen}
+                >
+                  Adjust
+                  <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
+                    <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                  className="inline-flex items-center px-3 py-1.5 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
+                  className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                  style={{ borderWidth: "0.5px" }}
                 >
                   {isEditMode ? "Done" : "Edit List"}
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* ── Compact layer (absolute overlay) ── */}
-          <div
-            ref={compactRef}
-            className="absolute inset-x-0 top-0 pt-5 pb-2"
-            style={{ opacity: compact ? 1 : 0, transition: "opacity 200ms", pointerEvents: compact ? undefined : "none" }}
-          >
-            <div className="max-w-[900px] mx-auto px-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 font-mono text-[12px] min-w-0">
-                  <span className="whitespace-nowrap">
-                    <span className="opacity-70 text-[10px] uppercase tracking-[0.06em]">Base </span>
-                    <span className="font-semibold">{fmt(baseLbs)} lbs</span>
-                  </span>
-                  <span className="opacity-30">|</span>
-                  <span className="whitespace-nowrap">
-                    <span className="opacity-70 text-[10px] uppercase tracking-[0.06em]">Est. Max </span>
-                    <span className="font-semibold">{fmt(totalDay1Lbs)} lbs</span>
-                  </span>
-                </div>
-                <button
-                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                  className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-current/10 border border-current/20 hover:bg-current/20 active:scale-95 transition-all"
-                >
-                  {isEditMode ? "Done" : "Edit"}
-                </button>
+            {/* Delta line */}
+            {targets && deltaLines.length > 0 && (
+              <div className="font-mono text-[11px] text-ink mb-2.5 leading-snug">
+                {deltaLines[0]}
               </div>
+            )}
+
+            {/* Progress bar */}
+            {targets ? (
+              <div className="mb-1.5">
+                {/* % labels above the bar */}
+                <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
+                  <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
+                  <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
+                  <span className="absolute right-0">30%</span>
+                </div>
+                <div className="relative pt-2.5">
+                  {/* Down arrow marker above bar */}
+                  <div
+                    className="absolute top-0 z-10"
+                    style={{
+                      left: `${markerPct}%`,
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    <div
+                      className="w-0 h-0"
+                      style={{
+                        borderLeft: "7px solid transparent",
+                        borderRight: "7px solid transparent",
+                        borderTop: `9px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
+                        filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
+                      }}
+                    />
+                  </div>
+                  {/* The bar — 30px, rounded outside corners, numbers inside */}
+                  <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+                    <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
+                    <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
+                    <div style={{ width: `${overEdgePct - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
+                    {/* Weight numbers overlaid inside the bar */}
+                    <div className="absolute inset-0 pointer-events-none font-mono text-ink">
+                      <div className="absolute top-1/2 left-2 -translate-y-1/2 text-[18px] font-bold leading-none">
+                        0
+                      </div>
+                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none"
+                           style={{ left: `${okPct}%` }}>
+                        {fmt(targets.target20, 0)}
+                      </div>
+                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none"
+                           style={{ left: `${warnEdgePct}%` }}>
+                        {fmt(targets.max25, 0)}
+                      </div>
+                      <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
+                        {fmt(targets.hardMax30, 0)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2 mb-1">
+                Enter your body weight in <strong>Adjust</strong> to see targets.
+              </div>
+            )}
+
+            {/* Active source */}
+            <div className="flex items-baseline justify-between gap-2 mt-2 font-mono text-[10px] text-ink-muted">
+              <span>
+                Using {useActualBase ? "actual" : "calc"} base · {fmt(activeBaseLbs)} lbs
+                <span className="text-ink-faint"> + {GF} gear &amp; food</span>
+              </span>
             </div>
           </div>
+        </div>
 
-        </div>{/* end colored bar */}
+        {/* ── Adjust drawer (pushes content) ── */}
+        {adjustOpen && (
+          <div className="bg-surface-2 border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
+            <div className="max-w-[900px] mx-auto px-6 py-4 space-y-4">
+
+              {/* Body weight */}
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Body weight</span>
+                  <span className="font-mono text-[10px] text-ink-faint">drives target zones</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={100} max={220} step={5}
+                    value={bodyWeight ?? 160}
+                    onChange={(e) => onBodyWeightChange(Number(e.target.value))}
+                    className="flex-1 accent-ink"
+                  />
+                  <input
+                    type="number"
+                    min={100} max={220} step={5}
+                    value={bodyWeight ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      onBodyWeightChange(v === "" ? null : Number(v));
+                    }}
+                    placeholder="160"
+                    className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
+                  />
+                  <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
+                </div>
+              </div>
+
+              {/* "I weighed my full pack" — plain-language toggle */}
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={useActualBase}
+                  onChange={(e) => {
+                    const v = e.target.checked;
+                    setUseActualBase(v);
+                    startTransition(() => saveMyBaseWeightMode(v));
+                  }}
+                  className="accent-ok-text shrink-0 mt-0.5"
+                />
+                <span className="text-[12px] text-ink leading-snug">
+                  <strong>I weighed my full pack</strong> — use that as my base
+                  <span className="block text-ink-muted text-[11px] mt-0.5">
+                    Otherwise we&apos;ll sum the weights you entered in the list below.
+                  </span>
+                </span>
+              </label>
+
+              {/* Actual base slider — dims when toggle off */}
+              <div style={{ opacity: useActualBase ? 1 : 0.45 }}>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Actual base weight</span>
+                  <span className="font-mono text-[10px] text-ink-faint">pack minus body, no worn / no food</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={5} max={50} step={0.5}
+                    value={actualBase}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setActualBase(v);
+                      startTransition(() => saveMyActualBaseWeight(v));
+                    }}
+                    className="flex-1 accent-ink"
+                  />
+                  <input
+                    type="number"
+                    min={0} max={100} step={0.5}
+                    value={actualBase}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setActualBase(v);
+                      startTransition(() => saveMyActualBaseWeight(v));
+                    }}
+                    className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
+                  />
+                  <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
+                </div>
+              </div>
+
+              {/* Reference values */}
+              <div className="pt-3 border-t border-border" style={{ borderWidth: "0.5px" }}>
+                <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-1.5">Reference</div>
+                <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
+                  <div>
+                    <div className="text-ink-muted">Target base</div>
+                    <div className="text-ink font-semibold text-[13px]">{targets ? `${fmt(targets.targetBase)}–${fmt(targets.maxBase)}` : "—"}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">20%–25%</div>
+                  </div>
+                  <div>
+                    <div className="text-ink-muted">Actual</div>
+                    <div className="text-ink font-semibold text-[13px]">{fmt(actualBase)}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">your scale</div>
+                  </div>
+                  <div>
+                    <div className="text-ink-muted">Calc</div>
+                    <div className="text-ink font-semibold text-[13px]">{fmt(baseLbs)}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">sum of list</div>
+                  </div>
+                </div>
+                {!useActualBase && (
+                  <div className="font-mono text-[10px] text-ink-faint mt-2">
+                    Worn {fmt(ozToLbs(totals.wornOz))} lbs · Consumable {fmt(ozToLbs(totals.consumableOz))} lbs
+                  </div>
+                )}
+                {deltaLines.length > 1 && (
+                  <div className="mt-2 font-mono text-[11px] text-ink-muted">
+                    {deltaLines.slice(1).map((line) => (
+                      <div key={line}>{line}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )}
+
 
         {/* Column headers — edit mode only */}
         {isEditMode && (
@@ -584,19 +753,6 @@ export function PackingListEditor({
           );
         })}
       </div>{/* end space-y-4 */}
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="font-mono text-[16px] font-semibold leading-none">
-        {value}
-      </div>
-      <div className="font-mono text-[9px] uppercase tracking-[0.05em] opacity-75 mt-1">
-        {label}
-      </div>
     </div>
   );
 }

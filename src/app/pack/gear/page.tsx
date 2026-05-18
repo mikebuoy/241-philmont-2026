@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Page } from "@/components/primitives/Page";
-import { Box } from "@/components/primitives/Box";
 import { SubNav } from "@/components/nav/SubNav";
 import { PACK_SUB } from "@/components/nav/navItems";
 import { createClient } from "@/lib/supabase/server";
@@ -68,16 +67,11 @@ export default async function PackGearPage() {
       <PackingListEditor
         items={items}
         bodyWeightLbs={me.bodyWeightLbs}
+        actualBaseWeightLbs={me.actualBaseWeightLbs}
+        useActualBaseWeight={me.useActualBaseWeight}
         categoryOrder={categoryOrder}
         aboveHeader={<SubNav key="subnav" items={PACK_SUB} />}
-      >
-        <Box key="info" variant="info">
-          <strong>Your personal packing list.</strong> Items pre-seeded from the
-          troop gear list. Edit weights as you weigh your gear. Mark items
-          you&apos;re not bringing as not-packing. Add personal items below each
-          category. Saves automatically.
-        </Box>
-      </PackingListEditor>
+      />
     </Page>
   );
 }

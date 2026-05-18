@@ -94,3 +94,28 @@ export async function saveMyBodyWeight(lbs: number | null): Promise<void> {
   if (error) throw new Error(error.message);
   revalidatePath("/pack/gear");
 }
+
+export async function saveMyBaseWeightMode(useActual: boolean): Promise<void> {
+  const me = await requireMyCrewMember();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("crew_members")
+    .update({ use_actual_base_weight: useActual })
+    .eq("id", me.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/pack/gear");
+  revalidatePath("/crew/weights");
+}
+
+export async function saveMyActualBaseWeight(lbs: number | null): Promise<void> {
+  const me = await requireMyCrewMember();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("crew_members")
+    .update({ actual_base_weight_lbs: lbs })
+    .eq("id", me.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/pack/gear");
+  revalidatePath("/pack/calculator");
+  revalidatePath("/crew/weights");
+}
