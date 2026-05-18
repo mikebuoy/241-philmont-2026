@@ -30,6 +30,14 @@ function getStatus(totalLbs: number, bw: number): WeightStatus {
   return "critical";
 }
 
+function StatusCell({ status }: { status: WeightStatus | null }) {
+  if (status === "ok")       return <StatusBadge tone="ok">ON TARGET</StatusBadge>;
+  if (status === "warn")     return <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>;
+  if (status === "over")     return <StatusBadge tone="over">OVER 25%</StatusBadge>;
+  if (status === "critical") return <StatusBadge tone="critical">OVER MAX</StatusBadge>;
+  return <span className="text-ink-faint font-mono text-[10px]">—</span>;
+}
+
 export default async function CrewWeightsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -40,7 +48,6 @@ export default async function CrewWeightsPage() {
     getAllPackingItems(),
   ]);
 
-  // Group packing items by crew_member_id for O(1) lookup
   const itemsByMember = new Map<string, typeof allItems>();
   for (const item of allItems) {
     const list = itemsByMember.get(item.crewMemberId) ?? [];
@@ -56,12 +63,10 @@ export default async function CrewWeightsPage() {
     const targetMax = actualBase != null ? actualBase + GF : null;
 
     const memberItems = itemsByMember.get(m.id) ?? [];
-    const hasItems = memberItems.length > 0;
-    const totals = hasItems ? computeTotals(memberItems) : null;
+    const totals = memberItems.length > 0 ? computeTotals(memberItems) : null;
     const calcBase = totals ? totals.baseOz / 16 : null;
     const calcMax = calcBase != null ? calcBase + GF : null;
 
-    // Prefer calc max (actual items) for status; fall back to target max
     const statusWeight = calcMax ?? targetMax;
     const status: WeightStatus | null =
       statusWeight != null && bw ? getStatus(statusWeight, bw) : null;
@@ -71,6 +76,8 @@ export default async function CrewWeightsPage() {
 
   const entered = rows.filter((r) => r.bw != null).length;
   const onTarget = rows.filter((r) => r.status === "ok").length;
+
+  const dash = <span className="text-ink-faint">—</span>;
 
   return (
     <Page
@@ -82,65 +89,114 @@ export default async function CrewWeightsPage() {
 
       <Section num="01" title="Weight summary">
         <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
+
+        {/* ── DESKTOP TABLE (md+) ── */}
         <div
-          className="bg-surface border border-border rounded-md overflow-hidden overflow-x-auto print:overflow-visible"
+          className="hidden md:block bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
         >
-          <table className="w-full text-[11px] min-w-[680px]">
+          <table className="w-full text-[11px]">
             <thead className="bg-surface-2 border-b border-border">
               <tr>
-                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Name</th>
-                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Status</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Body<br/>WT</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Actual<br/>Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Target<br/>Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Calc<br/>Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Target<br/>Max</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Calc<br/>Max</th>
+                {[
+                  ["Name",             "text-left"],
+                  ["Status",           "text-left"],
+                  ["Body\nWT",         "text-right"],
+                  ["Actual\nBase",     "text-right"],
+                  ["Target\nBase–Max", "text-right"],
+                  ["Calc\nBase",       "text-right"],
+                  ["Target\nMax",      "text-right"],
+                  ["Calc\nMax",        "text-right"],
+                ].map(([label, align]) => (
+                  <th
+                    key={label}
+                    className={`${align} font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight whitespace-pre-line`}
+                  >
+                    {label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }) => (
-                <tr key={m.id} className="border-b border-border last:border-0">
+              {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+                <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
                   <td className="px-2.5 py-2 font-medium">{m.name}</td>
-                  <td className="px-2.5 py-2">
-                    {status === "ok" && <StatusBadge tone="ok">ON TARGET</StatusBadge>}
-                    {status === "warn" && <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>}
-                    {status === "over" && <StatusBadge tone="over">OVER 25%</StatusBadge>}
-                    {status === "critical" && <StatusBadge tone="critical">OVER MAX</StatusBadge>}
-                    {status === null && <span className="text-ink-faint font-mono text-[10px]">—</span>}
+                  <td className="px-2.5 py-2"><StatusCell status={status} /></td>
+                  <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {actualBase != null ? fmt(actualBase) : dash}
                   </td>
                   <td className="px-2.5 py-2 font-mono text-right">
-                    {bw != null ? bw : <span className="text-ink-faint">—</span>}
+                    {targets
+                      ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}`
+                      : dash}
                   </td>
                   <td className="px-2.5 py-2 font-mono text-right">
-                    {actualBase != null ? fmt(actualBase) : <span className="text-ink-faint">—</span>}
+                    {calcBase != null ? fmt(calcBase) : dash}
                   </td>
                   <td className="px-2.5 py-2 font-mono text-right">
-                    {targets ? `≤ ${fmt(targets.targetBase)}` : <span className="text-ink-faint">—</span>}
+                    {targetMax != null ? fmt(targetMax) : dash}
                   </td>
                   <td className="px-2.5 py-2 font-mono text-right">
-                    {calcBase != null ? fmt(calcBase) : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {targetMax != null ? fmt(targetMax) : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {calcMax != null ? fmt(calcMax) : <span className="text-ink-faint">—</span>}
+                    {calcMax != null ? fmt(calcMax) : dash}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* ── MOBILE CARDS (< md) ── */}
+        <div className="md:hidden space-y-2">
+          {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+            <div
+              key={m.id}
+              className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}
+              style={{ borderWidth: "0.5px" }}
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-medium text-[13px]">{m.name}</span>
+                <StatusCell status={status} />
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Body WT</span>
+                  <span>{bw != null ? bw : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Actual Base</span>
+                  <span>{actualBase != null ? fmt(actualBase) : "—"}</span>
+                </div>
+                <div className="flex justify-between col-span-2">
+                  <span className="text-ink-muted">Target Base–Max</span>
+                  <span>
+                    {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Calc Base</span>
+                  <span>{calcBase != null ? fmt(calcBase) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Calc Max</span>
+                  <span>{calcMax != null ? fmt(calcMax) : "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Target Max</span>
+                  <span>{targetMax != null ? fmt(targetMax) : "—"}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Section>
 
       <Section num="02" title="Column guide">
         <div
-          className="bg-surface border border-border rounded-md overflow-hidden overflow-x-auto"
+          className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
         >
-          <table className="w-full text-[11px] min-w-[400px]">
+          <table className="w-full text-[11px]">
             <thead className="bg-surface-2 border-b border-border">
               <tr>
                 <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Column</th>
@@ -148,15 +204,15 @@ export default async function CrewWeightsPage() {
               </tr>
             </thead>
             <tbody>
-              {[
-                ["Body WT", "Entered on Estimator or My Gear page"],
-                ["Actual Base", "Base weight entered on the Estimator page"],
-                ["Target Base", "20% of body weight minus 14.7 lb gear & food constant"],
-                ["Calc Base", "Live sum of My Gear packing list (excludes worn & not-packing)"],
-                ["Target Max", "Actual Base + 14.7 lb gear & food estimate"],
-                ["Calc Max", "Calc Base + 14.7 lb gear & food estimate"],
-                ["Status", "Based on Calc Max if available, otherwise Target Max vs. body weight thresholds"],
-              ].map(([col, desc]) => (
+              {([
+                ["Body WT",        "Entered on Estimator or My Gear page"],
+                ["Actual Base",    "Base weight entered on the Estimator page"],
+                ["Target Base–Max","Acceptable base weight range: 20% goal to 25% crew max (both minus 14.7 lb gear & food)"],
+                ["Calc Base",      "Live sum of My Gear packing list (excludes worn & not-packing)"],
+                ["Target Max",     "Actual Base + 14.7 lb gear & food estimate"],
+                ["Calc Max",       "Calc Base + 14.7 lb gear & food estimate"],
+                ["Status",         "Based on Calc Max if available, otherwise Target Max vs. body weight thresholds"],
+              ] as const).map(([col, desc]) => (
                 <tr key={col} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-1.5 font-mono font-medium whitespace-nowrap">{col}</td>
                   <td className="px-2.5 py-1.5 text-ink-muted">{desc}</td>
