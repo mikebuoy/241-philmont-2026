@@ -200,8 +200,8 @@ function RosterRow({
         <span className="font-medium truncate">{name}</span>
       </span>
       <span className="flex items-center gap-1.5 shrink-0">
-        <PackWeightBadge weight={weight} />
         <StatusBadge tone={ROLE_TONE[role]}>{ROLE_LABEL[role]}</StatusBadge>
+        <PackWeightBadge weight={weight} />
       </span>
     </li>
   );
