@@ -149,12 +149,10 @@ function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
   const bw = weight?.bodyWeightLbs;
   const base = weight?.actualBaseWeightLbs;
 
+  const pillClass = "font-mono text-[10px] py-0.5 rounded inline-flex items-center justify-center w-10";
+
   if (base == null || bw == null) {
-    return (
-      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-2 text-ink-faint">
-        TBD
-      </span>
-    );
+    return <span className={`${pillClass} bg-surface-2 text-ink-faint`}>TBD</span>;
   }
 
   const estMax = base + GF;
@@ -167,10 +165,7 @@ function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
   }
   const { bg, text } = WEIGHT_COLORS[zone];
   return (
-    <span
-      className="font-mono text-[10px] px-1.5 py-0.5 rounded"
-      style={{ backgroundColor: bg, color: text }}
-    >
+    <span className={pillClass} style={{ backgroundColor: bg, color: text }}>
       {estMax.toFixed(1)}
     </span>
   );
