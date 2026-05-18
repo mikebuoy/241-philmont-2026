@@ -8,6 +8,18 @@ import { CREWS, ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
+import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
+
+const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+
+const WEIGHT_COLORS = {
+  ok:       { bg: "#d4edda", text: "#155724" },
+  warn:     { bg: "#fff3cd", text: "#856404" },
+  over:     { bg: "#f8d7da", text: "#721c24" },
+  critical: { bg: "#dc3545", text: "#ffffff" },
+} as const;
+
+type WeightInfo = { bodyWeightLbs: number | null; actualBaseWeightLbs: number | null };
 
 export const metadata: Metadata = { title: "Crew Roster" };
 export const dynamic = "force-dynamic";
@@ -23,11 +35,16 @@ export default async function RosterPage() {
   // Fetch claim status from Supabase (best-effort — if it fails, render
   // the static roster without claim indicators)
   let claimedNames = new Set<string>();
+  const weightByName = new Map<string, WeightInfo>();
   try {
     const members = await getAllCrewMembers();
-    claimedNames = new Set(
-      members.filter((m) => m.userId).map((m) => m.name),
-    );
+    claimedNames = new Set(members.filter((m) => m.userId).map((m) => m.name));
+    for (const m of members) {
+      weightByName.set(m.name, {
+        bodyWeightLbs: m.bodyWeightLbs,
+        actualBaseWeightLbs: m.actualBaseWeightLbs,
+      });
+    }
   } catch {
     // Public visitors who can't read the table see no indicators — fine
   }
@@ -66,6 +83,7 @@ export default async function RosterPage() {
                           name={cl.name}
                           role={cl.role}
                           claimed={claimedNames.has(cl.name)}
+                          weight={weightByName.get(cl.name)}
                         />
                       )}
                       {scouts.map((m) => (
@@ -74,6 +92,7 @@ export default async function RosterPage() {
                           name={m.name}
                           role={m.role}
                           claimed={claimedNames.has(m.name)}
+                          weight={weightByName.get(m.name)}
                         />
                       ))}
                     </ul>
@@ -90,6 +109,7 @@ export default async function RosterPage() {
                           name={la.name}
                           role={la.role}
                           claimed={claimedNames.has(la.name)}
+                          weight={weightByName.get(la.name)}
                         />
                       )}
                       {advisors.map((m) => (
@@ -98,6 +118,7 @@ export default async function RosterPage() {
                           name={m.name}
                           role={m.role}
                           claimed={claimedNames.has(m.name)}
+                          weight={weightByName.get(m.name)}
                         />
                       ))}
                     </ul>
@@ -124,17 +145,50 @@ export default async function RosterPage() {
   );
 }
 
+function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
+  const bw = weight?.bodyWeightLbs;
+  const base = weight?.actualBaseWeightLbs;
+
+  if (base == null || bw == null) {
+    return (
+      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-2 text-ink-faint">
+        TBD
+      </span>
+    );
+  }
+
+  const estMax = base + GF;
+  const targets = computeTargets(bw);
+  let zone: keyof typeof WEIGHT_COLORS = "critical";
+  if (targets) {
+    if (estMax <= targets.target20) zone = "ok";
+    else if (estMax <= targets.max25) zone = "warn";
+    else if (estMax <= targets.hardMax30) zone = "over";
+  }
+  const { bg, text } = WEIGHT_COLORS[zone];
+  return (
+    <span
+      className="font-mono text-[10px] px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: bg, color: text }}
+    >
+      {estMax.toFixed(1)}
+    </span>
+  );
+}
+
 function RosterRow({
   name,
   role,
   claimed,
+  weight,
 }: {
   name: string;
   role: CrewRole;
   claimed: boolean;
+  weight?: WeightInfo;
 }) {
   return (
-    <li className="flex items-center justify-between gap-3 text-[12px]">
+    <li className="flex items-center justify-between gap-2 text-[12px]">
       <span className="flex items-center gap-1.5 min-w-0">
         {claimed && (
           <span
@@ -145,7 +199,10 @@ function RosterRow({
         )}
         <span className="font-medium truncate">{name}</span>
       </span>
-      <StatusBadge tone={ROLE_TONE[role]}>{ROLE_LABEL[role]}</StatusBadge>
+      <span className="flex items-center gap-1.5 shrink-0">
+        <PackWeightBadge weight={weight} />
+        <StatusBadge tone={ROLE_TONE[role]}>{ROLE_LABEL[role]}</StatusBadge>
+      </span>
     </li>
   );
 }
