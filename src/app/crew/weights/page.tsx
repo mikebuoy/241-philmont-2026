@@ -86,6 +86,19 @@ export default async function CrewWeightsPage() {
       <SubNav items={CREW_SUB} />
 
       <Section num="01" title="Weight summary">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3">
+          {([
+            ["#d4edda", "#155724", "On target (≤20%)"],
+            ["#fff3cd", "#856404", "Above goal (20–25%)"],
+            ["#f8d7da", "#721c24", "Over 25% standard"],
+            ["#dc3545", "#ffffff", "Over 30% hard max"],
+          ] as const).map(([bg, text, label]) => (
+            <span key={label} className="flex items-center gap-1.5 text-[11px]">
+              <span className="inline-block w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: bg }} />
+              <span style={{ color: text === "#ffffff" ? "#721c24" : text }}>{label}</span>
+            </span>
+          ))}
+        </div>
         <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
 
         {/* ── DESKTOP TABLE (md+) ── */}
