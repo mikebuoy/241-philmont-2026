@@ -40,10 +40,10 @@ export default async function AdminLayout({
           </Link>
           <div className="flex items-center gap-3 shrink-0">
             <Link
-              href="/"
+              href={currentPath === "/admin/gear" ? "/pack/gear" : "/"}
               className="text-[11px] font-mono text-ink-muted hover:text-ink"
             >
-              ‹ View site
+              {currentPath === "/admin/gear" ? "‹ Back" : "‹ View site"}
             </Link>
             <span className="text-[11px] font-mono text-ink-muted hidden sm:inline">
               {user.email}
