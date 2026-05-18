@@ -53,20 +53,20 @@ export default async function CrewWeightsPage() {
     const targets = bw ? computeTargets(bw) : null;
 
     const actualBase = m.actualBaseWeightLbs;
-    const estMax = actualBase != null ? actualBase + GF : null;
+    const targetMax = actualBase != null ? actualBase + GF : null;
 
     const memberItems = itemsByMember.get(m.id) ?? [];
     const hasItems = memberItems.length > 0;
     const totals = hasItems ? computeTotals(memberItems) : null;
-    const gearBase = totals ? totals.baseOz / 16 : null;
-    const gearMax = gearBase != null ? gearBase + GF : null;
+    const calcBase = totals ? totals.baseOz / 16 : null;
+    const calcMax = calcBase != null ? calcBase + GF : null;
 
-    // Prefer gear max (actual items) for status; fall back to est max
-    const statusWeight = gearMax ?? estMax;
+    // Prefer calc max (actual items) for status; fall back to target max
+    const statusWeight = calcMax ?? targetMax;
     const status: WeightStatus | null =
       statusWeight != null && bw ? getStatus(statusWeight, bw) : null;
 
-    return { m, bw, targets, actualBase, estMax, gearBase, gearMax, status };
+    return { m, bw, targets, actualBase, targetMax, calcBase, calcMax, status };
   });
 
   const entered = rows.filter((r) => r.bw != null).length;
@@ -81,6 +81,7 @@ export default async function CrewWeightsPage() {
       <SubNav items={CREW_SUB} />
 
       <Section num="01" title="Weight summary">
+        <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
         <div
           className="bg-surface border border-border rounded-md overflow-hidden overflow-x-auto print:overflow-visible"
           style={{ borderWidth: "0.5px" }}
@@ -88,44 +89,44 @@ export default async function CrewWeightsPage() {
           <table className="w-full text-[11px] min-w-[680px]">
             <thead className="bg-surface-2 border-b border-border">
               <tr>
-                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Name</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Body Wt</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Target Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Actual Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Est Max</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Gear Base</th>
-                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Gear Max</th>
-                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-2">Status</th>
+                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Name</th>
+                <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Status</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Body<br/>WT</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Actual<br/>Base</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Target<br/>Base</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Calc<br/>Base</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Target<br/>Max</th>
+                <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight">Calc<br/>Max</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ m, bw, targets, actualBase, estMax, gearBase, gearMax, status }) => (
+              {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }) => (
                 <tr key={m.id} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-2 font-medium">{m.name}</td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {bw != null ? `${bw} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {targets ? `≤ ${fmt(targets.targetBase)} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {actualBase != null ? `${fmt(actualBase)} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {estMax != null ? `${fmt(estMax)} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {gearBase != null ? `${fmt(gearBase)} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="px-2.5 py-2 font-mono text-right">
-                    {gearMax != null ? `${fmt(gearMax)} lb` : <span className="text-ink-faint">—</span>}
-                  </td>
                   <td className="px-2.5 py-2">
                     {status === "ok" && <StatusBadge tone="ok">ON TARGET</StatusBadge>}
                     {status === "warn" && <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>}
                     {status === "over" && <StatusBadge tone="over">OVER 25%</StatusBadge>}
                     {status === "critical" && <StatusBadge tone="critical">OVER MAX</StatusBadge>}
-                    {status === null && <span className="text-ink-faint font-mono text-[10px]">no data</span>}
+                    {status === null && <span className="text-ink-faint font-mono text-[10px]">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {bw != null ? bw : <span className="text-ink-faint">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {actualBase != null ? fmt(actualBase) : <span className="text-ink-faint">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {targets ? `≤ ${fmt(targets.targetBase)}` : <span className="text-ink-faint">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {calcBase != null ? fmt(calcBase) : <span className="text-ink-faint">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {targetMax != null ? fmt(targetMax) : <span className="text-ink-faint">—</span>}
+                  </td>
+                  <td className="px-2.5 py-2 font-mono text-right">
+                    {calcMax != null ? fmt(calcMax) : <span className="text-ink-faint">—</span>}
                   </td>
                 </tr>
               ))}
@@ -148,13 +149,13 @@ export default async function CrewWeightsPage() {
             </thead>
             <tbody>
               {[
-                ["Body Wt", "Entered on Estimator or My Gear page"],
-                ["Target Base", "20% of body weight minus 14.7 lb gear & food"],
+                ["Body WT", "Entered on Estimator or My Gear page"],
                 ["Actual Base", "Base weight entered on the Estimator page"],
-                ["Est Max", "Actual Base + 14.7 lb gear & food estimate"],
-                ["Gear Base", "Live sum of My Gear packing list (excludes worn & not-packing)"],
-                ["Gear Max", "Gear Base + 14.7 lb gear & food estimate"],
-                ["Status", "Based on Gear Max if available, otherwise Est Max vs. body weight thresholds"],
+                ["Target Base", "20% of body weight minus 14.7 lb gear & food constant"],
+                ["Calc Base", "Live sum of My Gear packing list (excludes worn & not-packing)"],
+                ["Target Max", "Actual Base + 14.7 lb gear & food estimate"],
+                ["Calc Max", "Calc Base + 14.7 lb gear & food estimate"],
+                ["Status", "Based on Calc Max if available, otherwise Target Max vs. body weight thresholds"],
               ].map(([col, desc]) => (
                 <tr key={col} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-1.5 font-mono font-medium whitespace-nowrap">{col}</td>
