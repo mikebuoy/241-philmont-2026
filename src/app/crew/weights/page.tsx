@@ -4,7 +4,6 @@ import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
-import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { createClient } from "@/lib/supabase/server";
 import { getAllCrewMembers } from "@/lib/crew";
 import { getAllPackingItems, computeTotals } from "@/lib/packing";
@@ -21,6 +20,13 @@ function fmt(n: number, d = 1) {
 
 type WeightStatus = "ok" | "warn" | "over" | "critical";
 
+const STATUS_COLORS: Record<WeightStatus, { bg: string; text: string }> = {
+  ok:       { bg: "#d4edda", text: "#155724" },
+  warn:     { bg: "#fff3cd", text: "#856404" },
+  over:     { bg: "#f8d7da", text: "#721c24" },
+  critical: { bg: "#dc3545", text: "#ffffff" },
+};
+
 function getStatus(totalLbs: number, bw: number): WeightStatus {
   const targets = computeTargets(bw);
   if (!targets) return "critical";
@@ -28,14 +34,6 @@ function getStatus(totalLbs: number, bw: number): WeightStatus {
   if (totalLbs <= targets.max25) return "warn";
   if (totalLbs <= targets.hardMax30) return "over";
   return "critical";
-}
-
-function StatusCell({ status }: { status: WeightStatus | null }) {
-  if (status === "ok")       return <StatusBadge tone="ok">ON TARGET</StatusBadge>;
-  if (status === "warn")     return <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>;
-  if (status === "over")     return <StatusBadge tone="over">OVER 25%</StatusBadge>;
-  if (status === "critical") return <StatusBadge tone="critical">OVER MAX</StatusBadge>;
-  return <span className="text-ink-faint font-mono text-[10px]">—</span>;
 }
 
 export default async function CrewWeightsPage() {
@@ -100,7 +98,6 @@ export default async function CrewWeightsPage() {
               <tr>
                 {[
                   ["Name",             "text-left"],
-                  ["Status",           "text-left"],
                   ["Body\nWT",         "text-right"],
                   ["Actual\nBase",     "text-right"],
                   ["Target\nBase–Max", "text-right"],
@@ -120,8 +117,12 @@ export default async function CrewWeightsPage() {
             <tbody>
               {rows.map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
                 <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
-                  <td className="px-2.5 py-2 font-medium">{m.name}</td>
-                  <td className="px-2.5 py-2"><StatusCell status={status} /></td>
+                  <td
+                    className="px-2.5 py-2 font-medium"
+                    style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
+                  >
+                    {m.name}
+                  </td>
                   <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
                   <td className="px-2.5 py-2 font-mono text-right">
                     {actualBase != null ? fmt(actualBase) : dash}
@@ -154,9 +155,11 @@ export default async function CrewWeightsPage() {
               className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}
               style={{ borderWidth: "0.5px" }}
             >
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="font-medium text-[13px]">{m.name}</span>
-                <StatusCell status={status} />
+              <div
+                className="font-medium text-[13px] px-2 py-1 rounded mb-2 -mx-1"
+                style={status ? { backgroundColor: STATUS_COLORS[status].bg, color: STATUS_COLORS[status].text } : undefined}
+              >
+                {m.name}
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
                 <div className="flex justify-between">
@@ -211,7 +214,7 @@ export default async function CrewWeightsPage() {
                 ["Calc Base",      "Live sum of My Gear packing list (excludes worn & not-packing)"],
                 ["Target Max",     "Actual Base + 14.7 lb gear & food estimate"],
                 ["Calc Max",       "Calc Base + 14.7 lb gear & food estimate"],
-                ["Status",         "Based on Calc Max if available, otherwise Target Max vs. body weight thresholds"],
+                ["Name color",     "Green = on target · Amber = above 20% goal · Pink = over 25% · Red = over 30% hard max"],
               ] as const).map(([col, desc]) => (
                 <tr key={col} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-1.5 font-mono font-medium whitespace-nowrap">{col}</td>
