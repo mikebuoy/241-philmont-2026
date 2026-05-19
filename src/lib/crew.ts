@@ -1,6 +1,8 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import type { CrewRole } from "@/data/roster";
 
+export type CertificationStatus = "certified" | "not_certified" | "tbd";
+
 export type CrewMember = {
   id: string;
   name: string;
@@ -12,6 +14,8 @@ export type CrewMember = {
   actualBaseWeightLbs: number | null;
   useActualBaseWeight: boolean;
   actualPackWeightIncludesTent: boolean;
+  wfaCertificationStatus: CertificationStatus | null;
+  cprCertificationStatus: CertificationStatus | null;
   claimedAt: string | null;
 };
 
@@ -26,6 +30,8 @@ type Row = {
   actual_base_weight_lbs: number | null;
   use_actual_base_weight: boolean;
   actual_pack_weight_includes_tent: boolean | null;
+  wfa_certification_status: CertificationStatus | null;
+  cpr_certification_status: CertificationStatus | null;
   claimed_at: string | null;
 };
 
@@ -41,6 +47,8 @@ function rowToMember(r: Row): CrewMember {
     actualBaseWeightLbs: r.actual_base_weight_lbs,
     useActualBaseWeight: r.use_actual_base_weight ?? false,
     actualPackWeightIncludesTent: r.actual_pack_weight_includes_tent ?? false,
+    wfaCertificationStatus: r.wfa_certification_status,
+    cprCertificationStatus: r.cpr_certification_status,
     claimedAt: r.claimed_at,
   };
 }

@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient, isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { seedCoreItemsForCrewMember } from "@/lib/packing";
-import type { CrewMember } from "@/lib/crew";
+import type { CertificationStatus, CrewMember } from "@/lib/crew";
+
+const CERTIFICATION_COLUMNS = {
+  wfa: "wfa_certification_status",
+  cpr: "cpr_certification_status",
+} as const;
+
+type CertificationField = keyof typeof CERTIFICATION_COLUMNS;
 
 export async function unbindCrewMember(crewMemberId: string) {
   if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
@@ -13,6 +20,28 @@ export async function unbindCrewMember(crewMemberId: string) {
     .update({ user_id: null, claimed_at: null })
     .eq("id", crewMemberId);
   if (error) throw new Error(`Unbind failed: ${error.message}`);
+  revalidatePath("/admin/roster");
+  revalidatePath("/crew/roster");
+}
+
+export async function updateCrewMemberCertification(
+  crewMemberId: string,
+  field: CertificationField,
+  status: CertificationStatus | null,
+) {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+  if (!(field in CERTIFICATION_COLUMNS)) throw new Error("Invalid certification field");
+  if (status !== null && !["certified", "not_certified", "tbd"].includes(status)) {
+    throw new Error("Invalid certification status");
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("crew_members")
+    .update({ [CERTIFICATION_COLUMNS[field]]: status })
+    .eq("id", crewMemberId);
+  if (error) throw new Error(`Certification update failed: ${error.message}`);
+
   revalidatePath("/admin/roster");
   revalidatePath("/crew/roster");
 }
@@ -48,6 +77,8 @@ export async function resetCrewMemberGearList(crewMemberId: string) {
     actualBaseWeightLbs: null,
     useActualBaseWeight: false,
     actualPackWeightIncludesTent: false,
+    wfaCertificationStatus: null,
+    cprCertificationStatus: null,
     claimedAt: row.claimed_at,
   };
   await seedCoreItemsForCrewMember(member);

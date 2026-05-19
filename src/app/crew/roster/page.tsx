@@ -6,11 +6,15 @@ import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
 import { CREWS, ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
-import { getAllCrewMembers } from "@/lib/crew";
+import { getAllCrewMembers, type CertificationStatus } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 
-const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+const BASE_ADD_ON_LBS =
+  PACK_WEIGHT_CONSTANTS.foodPerPersonLbs +
+  PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs +
+  PACK_WEIGHT_CONSTANTS.crewGearAvgLbs;
+const PHILMONT_TENT_LBS = PACK_WEIGHT_CONSTANTS.philmontTentOz / 16;
 
 const WEIGHT_COLORS = {
   ok:       { bg: "#d4edda", text: "#155724" },
@@ -18,8 +22,15 @@ const WEIGHT_COLORS = {
   over:     { bg: "#f8d7da", text: "#721c24" },
   critical: { bg: "#dc3545", text: "#ffffff" },
 } as const;
+const ROSTER_ROW_CLASS = "flex items-center gap-1.5";
 
-type WeightInfo = { bodyWeightLbs: number | null; actualBaseWeightLbs: number | null };
+type WeightInfo = {
+  bodyWeightLbs: number | null;
+  actualBaseWeightLbs: number | null;
+  actualPackWeightIncludesTent: boolean;
+  wfaCertificationStatus: CertificationStatus | null;
+  cprCertificationStatus: CertificationStatus | null;
+};
 
 export const metadata: Metadata = { title: "Crew Roster" };
 export const dynamic = "force-dynamic";
@@ -43,6 +54,9 @@ export default async function RosterPage() {
       weightByName.set(m.name, {
         bodyWeightLbs: m.bodyWeightLbs,
         actualBaseWeightLbs: m.actualBaseWeightLbs,
+        actualPackWeightIncludesTent: m.actualPackWeightIncludesTent,
+        wfaCertificationStatus: m.wfaCertificationStatus,
+        cprCertificationStatus: m.cprCertificationStatus,
       });
     }
   } catch {
@@ -55,7 +69,7 @@ export default async function RosterPage() {
       eyebrow="My Crew"
       title="Crew Roster"
       meta={`Two sister crews · 22 members · ${claimedCount} signed in`}
-      action={<EditPageButton href="/admin/roster" label="Manage claims" />}
+      action={<EditPageButton href="/admin/roster" label="Manage Crew" />}
     >
       <SubNav items={CREW_SUB} />
 
@@ -76,7 +90,8 @@ export default async function RosterPage() {
                     <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
                       Scouts ({(cl ? 1 : 0) + scouts.length})
                     </div>
-                    <ul className="space-y-1">
+                    <RosterHeader />
+                    <ul className="space-y-0.5">
                       {cl && (
                         <RosterRow
                           key={cl.name}
@@ -102,7 +117,8 @@ export default async function RosterPage() {
                     <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
                       Advisors ({(la ? 1 : 0) + advisors.length})
                     </div>
-                    <ul className="space-y-1">
+                    <RosterHeader />
+                    <ul className="space-y-0.5">
                       {la && (
                         <RosterRow
                           key={la.name}
@@ -148,14 +164,16 @@ export default async function RosterPage() {
 function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
   const bw = weight?.bodyWeightLbs;
   const base = weight?.actualBaseWeightLbs;
+  const actualPackWeightIncludesTent = weight?.actualPackWeightIncludesTent;
 
-  const pillClass = "font-mono text-[10px] py-0.5 rounded inline-flex items-center justify-center w-10";
+  const pillClass = "font-mono text-[10px] py-0.5 rounded inline-flex items-center justify-center w-12";
 
-  if (base == null || bw == null) {
+  if (base == null || bw == null || actualPackWeightIncludesTent == null) {
     return <span className={`${pillClass} bg-surface-2 text-ink-faint`}>TBD</span>;
   }
 
-  const estMax = base + GF;
+  const addOnLbs = BASE_ADD_ON_LBS + (actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS);
+  const estMax = base + addOnLbs;
   const targets = computeTargets(bw);
   let zone: keyof typeof WEIGHT_COLORS = "critical";
   if (targets) {
@@ -165,9 +183,69 @@ function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
   }
   const { bg, text } = WEIGHT_COLORS[zone];
   return (
-    <span className={pillClass} style={{ backgroundColor: bg, color: text }}>
+    <span
+      className={pillClass}
+      style={{ backgroundColor: bg, color: text }}
+      title={`Est Max ${estMax.toFixed(1)} lbs`}
+    >
       {estMax.toFixed(1)}
     </span>
+  );
+}
+
+function CertificationFlag({
+  label,
+  status,
+}: {
+  label: "WFA" | "CPR";
+  status: CertificationStatus | null | undefined;
+}) {
+  if (!status) return null;
+
+  const styles = {
+    certified: "bg-ok-bg text-ok-text border-ok-border",
+    not_certified: "bg-danger-bg text-danger-text border-danger-border",
+    tbd: "bg-pink-50 text-pink-700 border-pink-200",
+  } satisfies Record<CertificationStatus, string>;
+  const text = status === "not_certified" ? `NO ${label}` : label;
+
+  return (
+    <span
+      className={`font-mono text-[9px] py-0.5 px-1 rounded border inline-flex w-full items-center justify-center ${styles[status]}`}
+      title={`${label}: ${status === "certified" ? "certified" : status === "tbd" ? "TBD" : "not certified"}`}
+    >
+      {text}
+    </span>
+  );
+}
+
+function CertificationCell({
+  label,
+  status,
+}: {
+  label: "WFA" | "CPR";
+  status: CertificationStatus | null | undefined;
+}) {
+  return (
+    <span className="min-w-0">
+      <CertificationFlag label={label} status={status} />
+    </span>
+  );
+}
+
+function RosterHeader() {
+  return (
+    <div
+      className={`${ROSTER_ROW_CLASS} mb-1 px-2 font-mono text-[9px] uppercase tracking-[0.05em] text-ink-faint`}
+    >
+      <span className="w-2 shrink-0" aria-hidden="true" />
+      <span className="w-[88px] shrink-0">Role</span>
+      <span className="shrink-0">Name</span>
+      <span className="min-w-2 flex-1" aria-hidden="true" />
+      <span className="w-9 shrink-0 text-center">WFA</span>
+      <span className="w-9 shrink-0 text-center">CPR</span>
+      <span className="w-12 shrink-0 text-right">Est Wgt</span>
+    </div>
   );
 }
 
@@ -183,20 +261,32 @@ function RosterRow({
   weight?: WeightInfo;
 }) {
   return (
-    <li className="flex items-center justify-between gap-2 text-[12px]">
-      <span className="flex items-center gap-1.5 min-w-0">
-        {claimed && (
-          <span
-            className="w-1.5 h-1.5 rounded-full bg-ok-text shrink-0"
-            title="Signed in"
-            aria-label="Signed in"
-          />
-        )}
-        <span className="font-medium truncate">{name}</span>
+    <li
+      className={`${ROSTER_ROW_CLASS} px-1 text-[12px]`}
+    >
+      <span className="flex w-2 shrink-0 items-center">
+        <span
+          className={`w-1.5 h-1.5 shrink-0 rounded-full ${claimed ? "bg-ok-text" : "bg-transparent"}`}
+          title={claimed ? "Signed in" : undefined}
+          aria-label={claimed ? "Signed in" : undefined}
+          aria-hidden={claimed ? undefined : true}
+        />
       </span>
-      <span className="flex items-center gap-1.5 shrink-0">
-        <StatusBadge tone={ROLE_TONE[role]}>{ROLE_LABEL[role]}</StatusBadge>
-        <PackWeightBadge weight={weight} />
+      <StatusBadge tone={ROLE_TONE[role]} className="w-[88px] shrink-0 justify-start px-1 text-[9px]">
+        {ROLE_LABEL[role]}
+      </StatusBadge>
+      <span className="flex flex-1 items-center gap-1.5 border-b border-border/40 py-1">
+        <span className="shrink-0 whitespace-nowrap font-medium text-left">{name}</span>
+        <span className="min-w-2 flex-1" aria-hidden="true" />
+        <span className="w-9 shrink-0">
+          <CertificationCell label="WFA" status={weight?.wfaCertificationStatus} />
+        </span>
+        <span className="w-9 shrink-0">
+          <CertificationCell label="CPR" status={weight?.cprCertificationStatus} />
+        </span>
+        <span className="w-12 shrink-0">
+          <PackWeightBadge weight={weight} />
+        </span>
       </span>
     </li>
   );
