@@ -318,7 +318,7 @@ export function PackingListEditor({
                 1. Pick your weight method
               </h3>
               <p className="text-ink-muted text-[11px] leading-snug">
-                Open <strong className="text-ink">Weight Settings</strong>. Use your scale weight if you weighed your pack, or use the gear list if you weighed each item.
+                Open <strong className="text-ink">Settings</strong>. Use your scale weight if you weighed your pack, or use the gear list if you weighed each item.
               </p>
             </section>
 
@@ -373,12 +373,12 @@ export function PackingListEditor({
               <div className="flex items-baseline gap-2 min-w-0">
                 <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
                 <div className="min-w-0">
-                  <span className="font-mono text-[22px] sm:text-[24px] font-semibold leading-none text-ink">
+                  <span className="font-mono text-[20px] sm:text-[20px] font-semibold leading-none text-ink">
                     {fmt(totalDay1Lbs)} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
                   </span>
-                  <span className="block text-[10px] text-ink-muted leading-tight mt-0.5">
+                  {/*<span className="block text-[10px] text-ink-muted leading-tight mt-0.5">
                     Heaviest pack estimate
-                  </span>
+                  </span>*/}
                 </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -389,7 +389,7 @@ export function PackingListEditor({
                   style={{ borderWidth: "0.5px" }}
                   aria-expanded={adjustOpen}
                 >
-                  Weight Settings
+                  Settings
                   <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
                     <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -407,16 +407,16 @@ export function PackingListEditor({
 
             {/* Delta line */}
             {targets && deltaLines.length > 0 && (
-              <div className="font-mono text-[11px] text-ink mb-2.5 leading-snug">
+              <div className="font-mono text-[11px] text-ink mb-1.6 leading-snug">
                 {deltaLines[0]}
               </div>
             )}
 
             {/* Progress bar */}
             {targets ? (
-              <div className="mb-1.5">
+              <div className="mb-1.0">
                 {/* Percent labels above the bar — centered above the weight numbers inside */}
-                <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
+                <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-0">
                   <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
                   <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
                   <span className="absolute right-0">30%</span>
@@ -500,6 +500,7 @@ export function PackingListEditor({
             )}
 
             {/* Legend — explains the in-bar labels & color fills */}
+            {/*}
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-ink-muted">
               <div className="flex items-center gap-2">
                 <span
@@ -526,7 +527,7 @@ export function PackingListEditor({
                   <strong className="text-ink">Trail Load</strong> &mdash; {fmt(trailLoadLbs, 1)} lbs
                 </span>
               </div>
-            </div>
+            </div>*/}
             <div className="mt-1 font-mono text-[10px] text-ink-faint">
               Base Pack Weight + Trail Load = Est Max
             </div>
@@ -667,7 +668,7 @@ export function PackingListEditor({
 
               {/* Reference values */}
               <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
-                <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-2">Reference</div>
+                {/* <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-2">Reference</div>*/}
 
                 {/* Trail Load breakdown */}
                 <div className="font-mono text-[11px] space-y-0.5 mb-2">
