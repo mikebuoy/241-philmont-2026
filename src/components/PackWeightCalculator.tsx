@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "./primitives/StatusBadge";
 
 // Estimator uses the full 14.7 lb constant including tent estimate.
 // My Gear uses 12.2 (no tent) since users track actual tent weight there.
 const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+const SAVE_DEBOUNCE_MS = 400;
 
 function fmt(n: number, digits = 1): string {
   return n.toFixed(digits);
@@ -48,6 +49,10 @@ export function PackWeightCalculator({
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
 
+  // Debounce server saves so rapid slider drags don't queue dozens of POSTs
+  const bwSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actualSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const seen = localStorage.getItem("estimator-help-seen");
     if (!seen) {
@@ -56,18 +61,28 @@ export function PackWeightCalculator({
     }
   }, []);
 
+  // Clear any pending save timers on unmount so we don't write after navigating away
+  useEffect(() => () => {
+    if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
+    if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
+  }, []);
+
   function handleBwChange(val: number) {
-    setBw(val);
-    if (onBodyWeightChange && val > 0) {
+    setBw(val);                                       // immediate UI update
+    if (!onBodyWeightChange || val <= 0) return;
+    if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
+    bwSaveTimer.current = setTimeout(() => {
       startTransition(() => { onBodyWeightChange(val); });
-    }
+    }, SAVE_DEBOUNCE_MS);
   }
 
   function handleActualChange(val: number) {
-    setActual(val);
-    if (onActualBaseWeightChange && val > 0) {
+    setActual(val);                                   // immediate UI update
+    if (!onActualBaseWeightChange || val <= 0) return;
+    if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
+    actualSaveTimer.current = setTimeout(() => {
       startTransition(() => { onActualBaseWeightChange(val); });
-    }
+    }, SAVE_DEBOUNCE_MS);
   }
   const targets = computeTargets(bw);
   const actualNum = actual;
@@ -111,6 +126,9 @@ export function PackWeightCalculator({
   const warnEdgePct = (25 / 30) * 100;
   const markerPct = targets && totalDay1 != null
     ? Math.min(100, Math.max(0, (totalDay1 / targets.hardMax30) * 100))
+    : 0;
+  const basePct = targets
+    ? Math.min(100, Math.max(0, (actualNum / targets.hardMax30) * 100))
     : 0;
   const isCritical = status === "critical";
 
@@ -197,117 +215,16 @@ export function PackWeightCalculator({
         )}
       </div>
 
-      {/* ───── Target Base hero — what you control ───── */}
-      <div
-        className="bg-info-bg text-info-text rounded-lg p-4 sm:p-5"
-        style={{ borderLeft: "5px solid var(--color-info-border)" }}
-      >
-        <p className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.1em] opacity-80 mb-2">
-          Target Base Weight &mdash; what you control
+      {/* ───── CALCULATOR card — body weight + Target Base + Est Max bar ───── */}
+      <div className="bg-surface border border-border rounded-lg p-3.5 space-y-3" style={{ borderWidth: "0.5px" }}>
+        <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+          Calculator
         </p>
-        <div className="flex items-baseline gap-2 flex-wrap mb-1.5">
-          <span className="font-mono text-[34px] sm:text-[44px] font-bold leading-none">
-            {targets ? `≤ ${fmt(targets.targetBase)}` : "—"}
-          </span>
-          <span className="font-mono text-[16px] sm:text-[18px] opacity-80">lbs</span>
-        </div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75 mb-2">
-          20% of your body weight
-        </p>
-        <p className="text-[12px] sm:text-[13px] leading-relaxed opacity-90">
-          Everything you stuff in your pack. <strong>Weigh it at home</strong> before you leave. Does <strong>not</strong> include worn clothes, food, water, shelter, or crew gear.
-        </p>
-      </div>
 
-      {/* ───── Progress bar card — where your total will land ───── */}
-      <div className="bg-surface border border-border rounded-lg" style={{ borderWidth: "0.5px" }}>
-        <div className="px-4 py-3">
-
-          {/* Top: Est Max + percent */}
-          <div className="flex items-baseline justify-between gap-3 mb-1">
-            <div className="flex items-baseline gap-2 min-w-0">
-              <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
-              <span className="font-mono text-[22px] sm:text-[24px] font-semibold leading-none text-ink">
-                {totalDay1 != null ? fmt(totalDay1) : "—"} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
-              </span>
-            </div>
-            {pctOfBody != null && (
-              <span className="font-mono text-[11px] text-ink-muted shrink-0">{fmt(pctOfBody, 1)}% of body</span>
-            )}
-          </div>
-
-          {/* Delta line */}
-          {targets && deltaLines.length > 0 && (
-            <div className="font-mono text-[11px] text-ink mb-2.5 leading-snug">
-              {deltaLines[0]}
-            </div>
-          )}
-
-          {/* Progress bar */}
-          {targets ? (
-            <div className="mb-1.5">
-              {/* % labels above the bar */}
-              <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
-                <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
-                <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
-                <span className="absolute right-0">30%</span>
-              </div>
-              <div className="relative pt-2.5">
-                {/* Down arrow marker above bar */}
-                <div className="absolute top-0 z-10" style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}>
-                  <div
-                    className="w-0 h-0"
-                    style={{
-                      borderLeft: "7px solid transparent",
-                      borderRight: "7px solid transparent",
-                      borderTop: `9px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
-                      filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
-                    }}
-                  />
-                </div>
-                {/* The bar */}
-                <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
-                  <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
-                  <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
-                  <div style={{ width: `${100 - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
-                  <div className="absolute inset-0 pointer-events-none font-mono text-ink">
-                    <div className="absolute top-1/2 left-2 -translate-y-1/2 text-[18px] font-bold leading-none">0</div>
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${okPct}%` }}>
-                      {fmt(targets.target20, 0)}
-                    </div>
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${warnEdgePct}%` }}>
-                      {fmt(targets.max25, 0)}
-                    </div>
-                    <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
-                      {fmt(targets.hardMax30, 0)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2 mb-1">
-              Enter your body weight below to see targets.
-            </div>
-          )}
-
-          {/* Active source line */}
-          <div className="font-mono text-[10px] text-ink-muted mt-2">
-            Using base {fmt(actualNum)} lbs <span className="text-ink-faint">+ {GF} gear &amp; food</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ───── Inputs card (always visible) ───── */}
-      <div className="bg-surface-2 border border-border rounded-lg px-4 py-3" style={{ borderWidth: "0.5px" }}>
-
-        {/* Body weight */}
-        <div>
-          <div className="flex items-baseline justify-between mb-1.5">
-            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Body weight</span>
-            <span className="font-mono text-[10px] text-ink-faint">drives target zones</span>
-          </div>
-          <div className="flex items-center gap-3">
+        {/* Body weight slider */}
+        <label className="block">
+          <span className="text-[12px] font-medium text-ink">Your body weight (lbs)</span>
+          <div className="mt-2 flex items-center gap-3">
             <input
               type="range"
               min={100} max={220} step={5}
@@ -320,19 +237,15 @@ export function PackWeightCalculator({
               min={100} max={220} step={5}
               value={bw}
               onChange={(e) => handleBwChange(Number(e.target.value) || 0)}
-              className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
+              className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
             />
-            <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
           </div>
-        </div>
+        </label>
 
-        {/* Actual base weight */}
-        <div className="border-t border-border pt-3 mt-3" style={{ borderWidth: "0.5px" }}>
-          <div className="flex items-baseline justify-between mb-1.5">
-            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Actual base weight</span>
-            <span className="font-mono text-[10px] text-ink-faint">pack minus body, no worn / no food</span>
-          </div>
-          <div className="flex items-center gap-3">
+        {/* Actual base weight slider */}
+        <label className="block">
+          <span className="text-[12px] font-medium text-ink">Your actual base weight (lbs)</span>
+          <div className="mt-2 flex items-center gap-3">
             <input
               type="range"
               min={5} max={50} step={0.5}
@@ -345,11 +258,191 @@ export function PackWeightCalculator({
               min={0} max={100} step={0.5}
               value={actual}
               onChange={(e) => handleActualChange(Number(e.target.value) || 0)}
-              className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
+              className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
             />
-            <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
           </div>
+        </label>
+
+        {/* Base weight definition */}
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Base weight is everything in your pack. <strong className="text-ink">Weigh it at home</strong> before you leave. Does <strong>NOT</strong> include worn clothes, food, water, shelter, or crew gear.
+        </p>
+
+        {/* Two key numbers — stack on mobile, side-by-side on sm+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Target Base Weight — info-blue */}
+          <div
+            className="bg-info-bg text-info-text rounded-lg p-3.5 text-center"
+            style={{ borderLeft: "4px solid var(--color-info-border)" }}
+          >
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
+              Target Base Weight
+            </p>
+            <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
+              {targets ? `≤ ${fmt(targets.targetBase)} lbs` : "—"}
+            </div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75">
+              20% of body weight
+            </p>
+          </div>
+
+          {/* Est Max Pack Weight — status-colored */}
+          {status && totalDay1 != null && pctOfBody != null ? (
+            <div
+              className="rounded-lg p-3.5 text-center"
+              style={{
+                backgroundColor: STATUS_COLORS[status].bg,
+                color: STATUS_COLORS[status].text,
+                borderLeft: `4px solid ${STATUS_COLORS[status].border}`,
+              }}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
+                Est Max Pack Weight
+              </p>
+              <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
+                {fmt(totalDay1)} lbs
+              </div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75 mb-2">
+                {fmt(pctOfBody, 1)}% of body weight
+              </p>
+              <div className="flex justify-center">
+                {status === "ok" && <StatusBadge tone="ok">ON TARGET</StatusBadge>}
+                {status === "warn" && <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>}
+                {status === "over" && <StatusBadge tone="over">OVER 25%</StatusBadge>}
+                {status === "critical" && <StatusBadge tone="critical">OVER HARD MAX</StatusBadge>}
+              </div>
+            </div>
+          ) : (
+            <div
+              className="bg-surface-2 border border-border rounded-lg p-3.5 text-center"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-muted mb-1.5">
+                Est Max Pack Weight
+              </p>
+              <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1 text-ink-faint">
+                &mdash;
+              </div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
+                enter body weight
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Progress bar */}
+        {targets ? (
+          <div>
+            {/* % labels above the bar */}
+            <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
+              <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
+              <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
+              <span className="absolute right-0">30%</span>
+            </div>
+            <div className="relative pt-2.5">
+              {/* Down arrow marker above bar */}
+              <div className="absolute top-0 z-20" style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}>
+                <div
+                  className="w-0 h-0"
+                  style={{
+                    borderLeft: "7px solid transparent",
+                    borderRight: "7px solid transparent",
+                    borderTop: `9px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
+                    filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
+                  }}
+                />
+              </div>
+              {/* The bar — zones + blue base fill + striped gear/food + Est Max line */}
+              <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+                <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
+                <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
+                <div style={{ width: `${100 - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
+                <div
+                  className="absolute left-0 top-0 bottom-0"
+                  style={{
+                    width: `${basePct}%`,
+                    backgroundColor: "rgba(30, 106, 145, 0.35)",
+                    borderRight: "2px solid #1e6a91",
+                  }}
+                />
+                {markerPct > basePct && (
+                  <div
+                    className="absolute top-0 bottom-0"
+                    style={{
+                      left: `${basePct}%`,
+                      width: `${markerPct - basePct}%`,
+                      backgroundColor: "rgba(30, 106, 145, 0.1)",
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+                    }}
+                  />
+                )}
+                <div
+                  className="absolute top-0 bottom-0 z-10 pointer-events-none"
+                  style={{
+                    left: `${markerPct}%`,
+                    width: "2px",
+                    transform: "translateX(-50%)",
+                    backgroundColor: isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)",
+                  }}
+                />
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-[12px] sm:text-[13px] font-bold whitespace-nowrap pointer-events-none" style={{ color: "#0d3d5a" }}>
+                  Base: {fmt(actualNum, 1)}
+                </div>
+                <div className="absolute inset-0 pointer-events-none font-mono text-ink">
+                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${okPct}%` }}>
+                    {fmt(targets.target20, 0)}
+                  </div>
+                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${warnEdgePct}%` }}>
+                    {fmt(targets.max25, 0)}
+                  </div>
+                  <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
+                    {fmt(targets.hardMax30, 0)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Legend — Base swatch caption */}
+            <div className="mt-2 font-mono text-[10px] text-ink-muted">
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
+                  style={{ backgroundColor: "rgba(30, 106, 145, 0.35)", borderWidth: "0.5px" }}
+                  aria-hidden="true"
+                />
+                <span>
+                  <strong className="text-ink">Base</strong> &mdash; your estimated pack weight &middot; {fmt(actualNum, 1)} lbs
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2">
+            Enter your body weight above to see targets.
+          </div>
+        )}
+
+        {/* Delta weight info */}
+        {deltaLines.length > 0 && (
+          <div className="space-y-0.5 text-center">
+            {deltaLines.map((line) => (
+              <div key={line} className="font-mono text-[13px] font-semibold text-ink">
+                {line}
+              </div>
+            ))}
+            {status === "over" && (
+              <p className="text-[12px] mt-1 font-semibold" style={{ color: STATUS_COLORS.over.text }}>
+                Above 25% crew standard. Cut weight before departure.
+              </p>
+            )}
+            {status === "critical" && (
+              <p className="text-[12px] mt-1 font-semibold" style={{ color: STATUS_COLORS.critical.bg }}>
+                Above the 30% hard ceiling. Must cut weight. No exceptions.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ───── Day-1 Gear & Food breakdown (what gets stacked) ───── */}

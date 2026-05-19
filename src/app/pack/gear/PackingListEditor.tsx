@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
+import React, { type ReactNode, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
@@ -18,6 +18,7 @@ import {
 
 // Shelter is tracked as an actual packing item, so exclude it from the Day-1 constant
 const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs;
+const SAVE_DEBOUNCE_MS = 400;
 
 function ozToLbs(oz: number): number {
   return oz / 16;
@@ -222,11 +223,31 @@ export function PackingListEditor({
     }
   }
 
+  // Debounce slider saves so rapid drags don't queue dozens of POSTs
+  const bwSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actualSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
+    if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
+  }, []);
+
   function onBodyWeightChange(lbs: number | null) {
-    setBodyWeight(lbs);
-    startTransition(async () => {
-      await saveMyBodyWeight(lbs);
-    });
+    setBodyWeight(lbs);                                       // immediate UI update
+    if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
+    bwSaveTimer.current = setTimeout(() => {
+      startTransition(async () => {
+        await saveMyBodyWeight(lbs);
+      });
+    }, SAVE_DEBOUNCE_MS);
+  }
+
+  function onActualBaseChange(lbs: number) {
+    setActualBase(lbs);                                       // immediate UI update
+    if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
+    actualSaveTimer.current = setTimeout(() => {
+      startTransition(() => saveMyActualBaseWeight(lbs));
+    }, SAVE_DEBOUNCE_MS);
   }
 
   // Progress bar zone widths (proportional to body weight percentages)
@@ -584,22 +605,14 @@ export function PackingListEditor({
                     type="range"
                     min={5} max={50} step={0.5}
                     value={actualBase}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setActualBase(v);
-                      startTransition(() => saveMyActualBaseWeight(v));
-                    }}
+                    onChange={(e) => onActualBaseChange(Number(e.target.value))}
                     className="flex-1 accent-ink"
                   />
                   <input
                     type="number"
                     min={0} max={100} step={0.5}
                     value={actualBase}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      setActualBase(v);
-                      startTransition(() => saveMyActualBaseWeight(v));
-                    }}
+                    onChange={(e) => onActualBaseChange(Number(e.target.value))}
                     className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
                   />
                   <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
