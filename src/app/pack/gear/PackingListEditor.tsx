@@ -536,7 +536,7 @@ export function PackingListEditor({
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
           <div className="bg-surface-2 border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
-            <div className="max-w-[900px] mx-auto px-6 py-4 space-y-4">
+            <div className="max-w-[600px] mx-auto px-6 py-4 space-y-4">
 
               {/* Body weight */}
               <div>
@@ -632,7 +632,7 @@ export function PackingListEditor({
                 </div>
 
                 {useActualBase ? (
-                  <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.5px" }}>
+                  <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.0px" }}>
                     <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
                     <label className="flex items-start gap-3 cursor-pointer select-none">
                       <input
