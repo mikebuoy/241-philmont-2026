@@ -666,7 +666,7 @@ export function PackingListEditor({
               </div>
 
               {/* Reference values */}
-              <div className="pt-3 border-t border-border" style={{ borderWidth: "0.5px" }}>
+              <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
                 <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-2">Reference</div>
 
                 {/* Trail Load breakdown */}
@@ -697,23 +697,7 @@ export function PackingListEditor({
                 </div>
 
                 {/* Base + targets */}
-                <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
-                  <div>
-                    <div className="text-ink-muted">Target Base</div>
-                    <div className="text-ink font-semibold text-[13px]">{targets ? `${fmt(targets.targetBase)}–${fmt(targets.maxBase)}` : "—"}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">20%–25%</div>
-                  </div>
-                  <div>
-                    <div className="text-ink-muted">{useActualBase ? "Actual" : "Calc"}</div>
-                    <div className="text-ink font-semibold text-[13px]">{fmt(activeBaseLbs)}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">{useActualBase ? "scale weight" : "item list"}</div>
-                  </div>
-                  <div>
-                    <div className="text-ink-muted">Est Max</div>
-                    <div className="text-ink font-semibold text-[13px]">{fmt(totalDay1Lbs)}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">base + trail load</div>
-                  </div>
-                </div>
+
                 {!useActualBase && (
                   <div className="font-mono text-[10px] text-ink-faint mt-2">
                     Worn {fmt(ozToLbs(totals.wornOz))} lbs · Consumable {fmt(ozToLbs(totals.consumableOz))} lbs
