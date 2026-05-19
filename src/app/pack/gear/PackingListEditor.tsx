@@ -71,7 +71,7 @@ export function PackingListEditor({
   const [items, setItems] = useState<PackingItem[]>(initialItems);
   const [bodyWeight, setBodyWeight] = useState<number | null>(initialBodyWeight);
   const [actualBase, setActualBase] = useState<number>(initialActualBase ?? 18);
-  const [useActualBase, setUseActualBase] = useState(initialUseActual ?? false);
+  const [useActualBase, setUseActualBase] = useState(initialUseActual ?? true);
   const [usesPhilmontTent, setUsesPhilmontTent] = useState(initialUsesPhilmontTent ?? true);
   const [hideNotPacking, setHideNotPacking] = useState(false);
   const [hidePacked, setHidePacked] = useState(false);

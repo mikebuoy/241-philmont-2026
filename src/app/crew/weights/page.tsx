@@ -209,7 +209,7 @@ export default async function CrewWeightsPage() {
     const calcBase = totals ? totals.baseOz / 16 : null;
     const useActual = m.useActualBaseWeight && actualBase != null;
     const activeBase = useActual ? actualBase : calcBase;
-    const sourceLabel = useActual ? "Actual" : "Calc";
+    const sourceLabel = useActual ? "Actual" : "Calculated";
     const readiness = getReadiness({
       bodyWeight: bw,
       baseWeight: activeBase,
@@ -256,7 +256,7 @@ export default async function CrewWeightsPage() {
         <div className="hidden md:block space-y-4">
           {crews.map((crewId) => (
             <div key={crewId}>
-              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-1.5">
+              <p className="font-mono text-[14px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-1.5">
                 Crew {crewId}
               </p>
               <div
@@ -268,7 +268,7 @@ export default async function CrewWeightsPage() {
                     <tr>
                       {[
                         ["Name",          "text-left"],
-                        ["Body\nWeight",  "text-right"],
+                        ["Body\nWeight",  "text-left"],
                         ["Pack Progress", "text-left"],
                       ].map(([label, align]) => (
                         <th
@@ -282,7 +282,7 @@ export default async function CrewWeightsPage() {
                   </thead>
                   <tbody>
                     {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
-                      <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
+                      <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}>
                         <td className="px-2.5 py-3 align-top w-[170px]">
                           {status
                             ? <StatusBadge tone={status}>{m.name}</StatusBadge>
@@ -312,20 +312,22 @@ export default async function CrewWeightsPage() {
           {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
             <div
               key={m.id}
-              className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}
+              className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}
               style={{ borderWidth: "0.5px" }}
             >
               <div className="mb-2">
                 {status
                   ? <StatusBadge tone={status}>{m.name}</StatusBadge>
-                  : <span className="font-medium text-[13px]">{m.name}</span>}
+                  : <span className="font-medium text-[13px]">{m.name}</span>}  <span>{bw != null ? bw : "—"} lbs</span>             
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
+                {/*}
                 <div className="flex justify-between">
                   <span className="text-ink-muted">Body Weight</span>
                   <span>{bw != null ? bw : "—"}</span>
                 </div>
-                <div />
+                */}
+                <div/>
                 <div className="col-span-2 pt-2">
                   <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
                 </div>
