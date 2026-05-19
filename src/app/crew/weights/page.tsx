@@ -13,7 +13,11 @@ import { StatusBadge } from "@/components/primitives/StatusBadge";
 export const metadata: Metadata = { title: "Crew Pack Weights" };
 export const dynamic = "force-dynamic";
 
-const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+const BASE_ADD_ON_LBS =
+  PACK_WEIGHT_CONSTANTS.foodPerPersonLbs +
+  PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs +
+  PACK_WEIGHT_CONSTANTS.crewGearAvgLbs;
+const PHILMONT_TENT_LBS = PACK_WEIGHT_CONSTANTS.philmontTentOz / 16;
 
 function fmt(n: number, d = 1) {
   return n.toFixed(d);
@@ -21,15 +25,163 @@ function fmt(n: number, d = 1) {
 
 type WeightStatus = "ok" | "warn" | "over" | "critical";
 
+const STATUS_COLORS = {
+  ok:       { bg: "#d4edda", text: "#155724", border: "#b8ddb8" },
+  warn:     { bg: "#fff3cd", text: "#856404", border: "#f0d090" },
+  over:     { bg: "#f8d7da", text: "#721c24", border: "#f0b8b8" },
+  critical: { bg: "#dc3545", text: "#ffffff", border: "#b02a37" },
+} as const;
 
+function formatLbsOz(decimalLbs: number): string {
+  const abs = Math.abs(decimalLbs);
+  let whole = Math.floor(abs);
+  let oz = Math.round((abs - whole) * 16);
+  if (oz === 16) {
+    whole += 1;
+    oz = 0;
+  }
+  const lbsLabel = whole === 1 ? "lb" : "lbs";
+  return `${whole} ${lbsLabel} ${oz} oz`;
+}
 
-function getStatus(totalLbs: number, bw: number): WeightStatus {
-  const targets = computeTargets(bw);
-  if (!targets) return "critical";
-  if (totalLbs <= targets.target20) return "ok";
-  if (totalLbs <= targets.max25) return "warn";
-  if (totalLbs <= targets.hardMax30) return "over";
-  return "critical";
+function getReadiness({
+  bodyWeight,
+  baseWeight,
+  actualPackWeightIncludesTent,
+}: {
+  bodyWeight: number | null;
+  baseWeight: number | null;
+  actualPackWeightIncludesTent: boolean;
+}) {
+  const targets = bodyWeight ? computeTargets(bodyWeight) : null;
+  if (!targets || bodyWeight == null || baseWeight == null || baseWeight <= 0) return null;
+
+  const shelterAddonLbs = actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS;
+  const addOnLbs = BASE_ADD_ON_LBS + shelterAddonLbs;
+  const totalDay1 = baseWeight + addOnLbs;
+  const pctOfBody = (totalDay1 / bodyWeight) * 100;
+
+  let status: WeightStatus;
+  if (totalDay1 <= targets.target20) status = "ok";
+  else if (totalDay1 <= targets.max25) status = "warn";
+  else if (totalDay1 <= targets.hardMax30) status = "over";
+  else status = "critical";
+
+  const deltaTarget = totalDay1 - targets.target20;
+  const deltaLines: string[] = [];
+  if (totalDay1 > targets.hardMax30) {
+    deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.hardMax30)} to hit 30% hard max`);
+    deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+  } else if (totalDay1 > targets.max25) {
+    deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.max25)} to hit 25% crew standard`);
+    deltaLines.push(`${formatLbsOz(targets.hardMax30 - totalDay1)} under 30% hard max`);
+  } else if (deltaTarget > 0) {
+    deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+    deltaLines.push(`${formatLbsOz(targets.max25 - totalDay1)} under 25% crew standard`);
+  } else if (deltaTarget < -0.05) {
+    deltaLines.push(`${formatLbsOz(-deltaTarget)} under 20% target`);
+  } else {
+    deltaLines.push("At 20% target");
+  }
+
+  return { targets, status, baseWeight, addOnLbs, totalDay1, pctOfBody, deltaLines };
+}
+
+function PackProgress({
+  readiness,
+  sourceLabel,
+}: {
+  readiness: ReturnType<typeof getReadiness>;
+  sourceLabel: string;
+}) {
+  if (!readiness) {
+    return (
+      <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-[11px] text-ink-muted" style={{ borderWidth: "0.5px" }}>
+        Need body weight and active base weight.
+      </div>
+    );
+  }
+
+  const okPct = (20 / 30) * 100;
+  const warnEdgePct = (25 / 30) * 100;
+  const markerPct = Math.min(100, Math.max(0, (readiness.totalDay1 / readiness.targets.hardMax30) * 100));
+  const basePct = Math.min(100, Math.max(0, (readiness.baseWeight / readiness.targets.hardMax30) * 100));
+  const isCritical = readiness.status === "critical";
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="font-mono text-[10px] text-ink-muted">
+          {sourceLabel} base {fmt(readiness.baseWeight)} + add-on {fmt(readiness.addOnLbs)}
+        </div>
+        <div className="font-mono text-[11px] font-semibold text-ink whitespace-nowrap">
+          {fmt(readiness.totalDay1)} lbs · {fmt(readiness.pctOfBody, 1)}%
+        </div>
+      </div>
+      <div className="relative h-3 font-mono text-[9px] font-semibold text-ink-muted leading-none">
+        <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
+        <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
+        <span className="absolute right-0">30%</span>
+      </div>
+      <div className="relative pt-2.5">
+        <div className="absolute top-0 z-20" style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}>
+          <div
+            className="w-0 h-0"
+            style={{
+              borderLeft: "6px solid transparent",
+              borderRight: "6px solid transparent",
+              borderTop: `8px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
+              filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
+            }}
+          />
+        </div>
+        <div className="relative flex h-[24px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+          <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
+          <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
+          <div style={{ width: `${100 - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
+          <div
+            className="absolute left-0 top-0 bottom-0"
+            style={{
+              width: `${basePct}%`,
+              backgroundColor: "rgba(30, 106, 145, 0.35)",
+              borderRight: "2px solid #1e6a91",
+            }}
+          />
+          {markerPct > basePct && (
+            <div
+              className="absolute top-0 bottom-0"
+              style={{
+                left: `${basePct}%`,
+                width: `${markerPct - basePct}%`,
+                backgroundColor: "rgba(30, 106, 145, 0.1)",
+                backgroundImage:
+                  "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+              }}
+            />
+          )}
+          <div
+            className="absolute top-0 bottom-0 z-10 pointer-events-none"
+            style={{
+              left: `${markerPct}%`,
+              width: "2px",
+              transform: "translateX(-50%)",
+              backgroundColor: isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)",
+            }}
+          />
+          <div className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-[11px] font-bold whitespace-nowrap pointer-events-none" style={{ color: "#0d3d5a" }}>
+            Base: {fmt(readiness.baseWeight)}
+          </div>
+        </div>
+      </div>
+      <div className="space-y-0.5">
+        {readiness.deltaLines.map((line) => (
+          <div key={line} className="font-mono text-[11px] font-semibold text-ink">
+            {line}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default async function CrewWeightsPage() {
@@ -51,22 +203,21 @@ export default async function CrewWeightsPage() {
 
   const rows = members.map((m) => {
     const bw = m.bodyWeightLbs;
-    const targets = bw ? computeTargets(bw) : null;
-
     const actualBase = m.actualBaseWeightLbs;
-    const targetMax = actualBase != null ? actualBase + GF : null;
-
     const memberItems = itemsByMember.get(m.id) ?? [];
     const totals = memberItems.length > 0 ? computeTotals(memberItems) : null;
     const calcBase = totals ? totals.baseOz / 16 : null;
-    const calcMax = calcBase != null ? calcBase + GF : null;
-
     const useActual = m.useActualBaseWeight && actualBase != null;
-    const statusWeight = useActual ? targetMax : (calcMax ?? targetMax);
-    const status: WeightStatus | null =
-      statusWeight != null && bw ? getStatus(statusWeight, bw) : null;
+    const activeBase = useActual ? actualBase : calcBase;
+    const sourceLabel = useActual ? "Actual" : "Calc";
+    const readiness = getReadiness({
+      bodyWeight: bw,
+      baseWeight: activeBase,
+      actualPackWeightIncludesTent: m.actualPackWeightIncludesTent,
+    });
+    const status = readiness?.status ?? null;
 
-    return { m, bw, targets, actualBase, targetMax, calcBase, calcMax, status, useActual };
+    return { m, bw, status, readiness, sourceLabel };
   });
 
   const entered = rows.filter((r) => r.bw != null).length;
@@ -116,13 +267,9 @@ export default async function CrewWeightsPage() {
                   <thead className="bg-surface-2 border-b border-border">
                     <tr>
                       {[
-                        ["Name",             "text-left"],
-                        ["Body\nWT",         "text-right"],
-                        ["Actual\nBase",     "text-right"],
-                        ["Target\nBase–Max", "text-right"],
-                        ["Calc\nBase",       "text-right"],
-                        ["Target\nMax",      "text-right"],
-                        ["Calc\nMax",        "text-right"],
+                        ["Name",          "text-left"],
+                        ["Body\nWeight",  "text-right"],
+                        ["Pack Progress", "text-left"],
                       ].map(([label, align]) => (
                         <th
                           key={label}
@@ -134,28 +281,16 @@ export default async function CrewWeightsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+                    {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
                       <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}>
-                        <td className="px-2.5 py-2">
+                        <td className="px-2.5 py-3 align-top w-[170px]">
                           {status
                             ? <StatusBadge tone={status}>{m.name}</StatusBadge>
                             : <span className="font-medium text-[11px]">{m.name}</span>}
                         </td>
-                        <td className="px-2.5 py-2 font-mono text-right">{bw != null ? bw : dash}</td>
-                        <td className="px-2.5 py-2 font-mono text-right">
-                          {actualBase != null ? fmt(actualBase) : dash}
-                        </td>
-                        <td className="px-2.5 py-2 font-mono text-right">
-                          {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : dash}
-                        </td>
-                        <td className="px-2.5 py-2 font-mono text-right">
-                          {calcBase != null ? fmt(calcBase) : dash}
-                        </td>
-                        <td className="px-2.5 py-2 font-mono text-right">
-                          {targetMax != null ? fmt(targetMax) : dash}
-                        </td>
-                        <td className="px-2.5 py-2 font-mono text-right">
-                          {calcMax != null ? fmt(calcMax) : dash}
+                        <td className="px-2.5 py-3 font-mono text-right align-top w-[90px]">{bw != null ? bw : dash}</td>
+                        <td className="px-2.5 py-3">
+                          <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
                         </td>
                       </tr>
                     ))}
@@ -174,7 +309,7 @@ export default async function CrewWeightsPage() {
                 Crew {crewId}
               </p>
               <div className="space-y-2">
-          {rowsByCrew(crewId).map(({ m, bw, targets, actualBase, targetMax, calcBase, calcMax, status }, i) => (
+          {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
             <div
               key={m.id}
               className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface-2" : "bg-surface"}`}
@@ -187,30 +322,12 @@ export default async function CrewWeightsPage() {
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
                 <div className="flex justify-between">
-                  <span className="text-ink-muted">Body WT</span>
+                  <span className="text-ink-muted">Body Weight</span>
                   <span>{bw != null ? bw : "—"}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-muted">Actual Base</span>
-                  <span>{actualBase != null ? fmt(actualBase) : "—"}</span>
-                </div>
-                <div className="flex justify-between col-span-2">
-                  <span className="text-ink-muted">Target Base–Max</span>
-                  <span>
-                    {targets ? `${fmt(targets.targetBase)} – ${fmt(targets.maxBase)}` : "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-muted">Calc Base</span>
-                  <span>{calcBase != null ? fmt(calcBase) : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-muted">Calc Max</span>
-                  <span>{calcMax != null ? fmt(calcMax) : "—"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-ink-muted">Target Max</span>
-                  <span>{targetMax != null ? fmt(targetMax) : "—"}</span>
+                <div />
+                <div className="col-span-2 pt-2">
+                  <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
                 </div>
               </div>
             </div>
@@ -235,13 +352,11 @@ export default async function CrewWeightsPage() {
             </thead>
             <tbody>
               {([
-                ["Body WT",        "Entered on Estimator or My Gear page"],
-                ["Actual Base",    "Base weight entered on the Estimator page"],
-                ["Target Base–Max","Acceptable base weight range: 20% goal to 25% crew max (both minus 14.7 lb gear & food)"],
-                ["Calc Base",      "Live sum of My Gear packing list (excludes worn & not-packing)"],
-                ["Target Max",     "Actual Base + 14.7 lb gear & food estimate"],
-                ["Calc Max",       "Calc Base + 14.7 lb gear & food estimate"],
-                ["Name color",     "Green text = on target · Amber = above 20% goal · Pink = over 25% · Red = over 30% hard max"],
+                ["Body Weight",   "Entered on Estimator or My Gear page"],
+                ["Pack Progress", "Uses actual base when that mode is enabled; otherwise uses live My Gear calculated base"],
+                ["Add-on",        "Food, water, and crew gear are added to the active base; Philmont tent is added when the pack weight does not already include tent"],
+                ["Delta line",    "Shows the same cut or margin guidance used by the pack calculator"],
+                ["Name color",    "Green text = on target · Amber = above 20% goal · Pink = over 25% · Red = over 30% hard max"],
               ] as const).map(([col, desc]) => (
                 <tr key={col} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-1.5 font-mono font-medium whitespace-nowrap">{col}</td>
