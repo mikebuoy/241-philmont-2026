@@ -69,6 +69,7 @@ export default async function PackGearPage() {
         bodyWeightLbs={me.bodyWeightLbs}
         actualBaseWeightLbs={me.actualBaseWeightLbs}
         useActualBaseWeight={me.useActualBaseWeight}
+        actualPackWeightIncludesTent={me.actualPackWeightIncludesTent}
         categoryOrder={categoryOrder}
         aboveHeader={<SubNav key="subnav" items={PACK_SUB} />}
       />

@@ -107,6 +107,18 @@ export async function saveMyBaseWeightMode(useActual: boolean): Promise<void> {
   revalidatePath("/crew/weights");
 }
 
+export async function saveActualPackWeightIncludesTent(includesTent: boolean): Promise<void> {
+  const me = await requireMyCrewMember();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("crew_members")
+    .update({ actual_pack_weight_includes_tent: includesTent })
+    .eq("id", me.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/pack/gear");
+  revalidatePath("/crew/weights");
+}
+
 export async function saveMyActualBaseWeight(lbs: number | null): Promise<void> {
   const me = await requireMyCrewMember();
   const supabase = await createClient();

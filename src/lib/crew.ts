@@ -11,6 +11,7 @@ export type CrewMember = {
   bodyWeightLbs: number | null;
   actualBaseWeightLbs: number | null;
   useActualBaseWeight: boolean;
+  actualPackWeightIncludesTent: boolean;
   claimedAt: string | null;
 };
 
@@ -24,6 +25,7 @@ type Row = {
   body_weight_lbs: number | null;
   actual_base_weight_lbs: number | null;
   use_actual_base_weight: boolean;
+  actual_pack_weight_includes_tent: boolean | null;
   claimed_at: string | null;
 };
 
@@ -38,6 +40,7 @@ function rowToMember(r: Row): CrewMember {
     bodyWeightLbs: r.body_weight_lbs,
     actualBaseWeightLbs: r.actual_base_weight_lbs,
     useActualBaseWeight: r.use_actual_base_weight ?? false,
+    actualPackWeightIncludesTent: r.actual_pack_weight_includes_tent ?? false,
     claimedAt: r.claimed_at,
   };
 }

@@ -47,6 +47,7 @@ export async function resetCrewMemberGearList(crewMemberId: string) {
     bodyWeightLbs: row.body_weight_lbs,
     actualBaseWeightLbs: null,
     useActualBaseWeight: false,
+    actualPackWeightIncludesTent: false,
     claimedAt: row.claimed_at,
   };
   await seedCoreItemsForCrewMember(member);

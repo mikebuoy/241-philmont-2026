@@ -5,7 +5,6 @@ import type { PackingItem } from "@/lib/packing-types";
 import { computeTotals } from "@/lib/packing-types";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { TRAVEL_ONLY_CATEGORIES } from "@/data/coreItems";
-import { StatusBadge } from "@/components/primitives/StatusBadge";
 import {
   updateItemField,
   toggleItemFlag,
@@ -14,10 +13,12 @@ import {
   saveMyBodyWeight,
   saveMyActualBaseWeight,
   saveMyBaseWeightMode,
+  saveActualPackWeightIncludesTent,
 } from "./actions";
 
 // Shelter is tracked as an actual packing item, so exclude it from the Day-1 constant
 const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs;
+const PHILMONT_TENT_OZ = PACK_WEIGHT_CONSTANTS.philmontTentOz;
 const SAVE_DEBOUNCE_MS = 400;
 
 function ozToLbs(oz: number): number {
@@ -52,6 +53,7 @@ export function PackingListEditor({
   bodyWeightLbs: initialBodyWeight,
   actualBaseWeightLbs: initialActualBase,
   useActualBaseWeight: initialUseActual,
+  actualPackWeightIncludesTent: initialActualPackWeightIncludesTent,
   categoryOrder: propCategoryOrder,
   aboveHeader,
   children,
@@ -60,6 +62,7 @@ export function PackingListEditor({
   bodyWeightLbs: number | null;
   actualBaseWeightLbs?: number | null;
   useActualBaseWeight?: boolean;
+  actualPackWeightIncludesTent?: boolean;
   categoryOrder?: string[];
   /** Renders above the sticky green box (e.g. SubNav). Scrolls away on scroll. */
   aboveHeader?: ReactNode;
@@ -69,6 +72,7 @@ export function PackingListEditor({
   const [bodyWeight, setBodyWeight] = useState<number | null>(initialBodyWeight);
   const [actualBase, setActualBase] = useState<number>(initialActualBase ?? 18);
   const [useActualBase, setUseActualBase] = useState(initialUseActual ?? false);
+  const [actualPackWeightIncludesTent, setActualPackWeightIncludesTent] = useState(initialActualPackWeightIncludesTent ?? false);
   const [hideNotPacking, setHideNotPacking] = useState(false);
   const [hidePacked, setHidePacked] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -81,7 +85,7 @@ export function PackingListEditor({
     if (typeof window === "undefined") return;
     const seen = window.localStorage.getItem("pack-gear-howto-seen");
     if (!seen) {
-      setHelpOpen(true);
+      window.setTimeout(() => setHelpOpen(true), 0);
       window.localStorage.setItem("pack-gear-howto-seen", "1");
     }
   }, []);
@@ -106,7 +110,9 @@ export function PackingListEditor({
   // Build status + delta lines using 4-zone Philmont model
   const baseLbs = ozToLbs(totals.baseOz);
   const activeBaseLbs = useActualBase ? actualBase : baseLbs;
-  const totalDay1Lbs = activeBaseLbs + GF;
+  // Add Philmont tent weight when actual pack weight does not already include a tent.
+  const shelterAddonLbs = useActualBase && !actualPackWeightIncludesTent ? PHILMONT_TENT_OZ / 16 : 0;
+  const totalDay1Lbs = activeBaseLbs + GF + shelterAddonLbs;
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   const deltaLines: string[] = [];
   if (targets) {
@@ -248,6 +254,11 @@ export function PackingListEditor({
     actualSaveTimer.current = setTimeout(() => {
       startTransition(() => saveMyActualBaseWeight(lbs));
     }, SAVE_DEBOUNCE_MS);
+  }
+
+  function onActualPackWeightIncludesTentChange(v: boolean) {
+    setActualPackWeightIncludesTent(v);
+    startTransition(() => saveActualPackWeightIncludesTent(v));
   }
 
   // Progress bar zone widths (proportional to body weight percentages)
@@ -619,9 +630,56 @@ export function PackingListEditor({
                 </div>
               </div>
 
+              {/* Shelter — only when "I weighed my full pack" is on */}
+              {useActualBase && (
+                <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.5px" }}>
+                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={actualPackWeightIncludesTent}
+                      onChange={(e) => onActualPackWeightIncludesTentChange(e.target.checked)}
+                      className="accent-ok-text shrink-0 mt-0.5"
+                    />
+                    <span className="text-[12px] text-ink leading-snug">
+                      Actual pack weight includes tent
+                      {!actualPackWeightIncludesTent && (
+                        <span className="font-mono text-ink-muted ml-1.5 text-[11px]">(adds Philmont tent: {PHILMONT_TENT_OZ} oz · {fmt(PHILMONT_TENT_OZ / 16, 1)} lbs)</span>
+                      )}
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {/* Reference values */}
               <div className="pt-3 border-t border-border" style={{ borderWidth: "0.5px" }}>
-                <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-1.5">Reference</div>
+                <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-2">Reference</div>
+
+                {/* Add-on weight breakdown */}
+                <div className="font-mono text-[11px] space-y-0.5 mb-2">
+                  {([
+                    ["Food",      PACK_WEIGHT_CONSTANTS.foodPerPersonLbs],
+                    ["Water",     PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs],
+                    ["Crew gear", PACK_WEIGHT_CONSTANTS.crewGearAvgLbs],
+                  ] as [string, number][]).map(([label, lbs]) => (
+                    <div key={label} className="flex justify-between gap-4">
+                      <span className="text-ink-muted">{label}</span>
+                      <span className="text-ink-faint">{fmt(lbs, 1)} lbs</span>
+                    </div>
+                  ))}
+                  {useActualBase && !actualPackWeightIncludesTent && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-ink-muted">Philmont tent</span>
+                      <span className="text-ink-faint">{fmt(PHILMONT_TENT_OZ / 16, 1)} lbs</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4 border-t border-border pt-0.5 mt-0.5" style={{ borderWidth: "0.5px" }}>
+                    <span className="text-ink font-medium">Total stacked on base</span>
+                    <span className="text-ink font-semibold">{fmt(GF + shelterAddonLbs, 1)} lbs</span>
+                  </div>
+                </div>
+
+                {/* Base + targets */}
                 <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
                   <div>
                     <div className="text-ink-muted">Target base</div>
@@ -629,14 +687,14 @@ export function PackingListEditor({
                     <div className="text-ink-faint text-[9px] mt-0.5">20%–25%</div>
                   </div>
                   <div>
-                    <div className="text-ink-muted">Actual</div>
-                    <div className="text-ink font-semibold text-[13px]">{fmt(actualBase)}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">your scale</div>
+                    <div className="text-ink-muted">{useActualBase ? "Actual" : "Calc"}</div>
+                    <div className="text-ink font-semibold text-[13px]">{fmt(activeBaseLbs)}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">{useActualBase ? "your scale" : "sum of list"}</div>
                   </div>
                   <div>
-                    <div className="text-ink-muted">Calc</div>
-                    <div className="text-ink font-semibold text-[13px]">{fmt(baseLbs)}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">sum of list</div>
+                    <div className="text-ink-muted">Est Max</div>
+                    <div className="text-ink font-semibold text-[13px]">{fmt(totalDay1Lbs)}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">base + add-on</div>
                   </div>
                 </div>
                 {!useActualBase && (

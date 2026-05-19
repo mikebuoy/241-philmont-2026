@@ -11,6 +11,7 @@ export const PACK_WEIGHT_CONSTANTS = {
   waterTwoLitersLbs: 4.4,
   crewGearAvgLbs: 2.0,
   shelterLbs: 2.5,
+  philmontTentOz: 43,
   /** Food consumed per day per person */
   dropRatePerDayLbs: 1.45,
 } as const;

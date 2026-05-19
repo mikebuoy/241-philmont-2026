@@ -8,7 +8,11 @@ import { PACK_SUB } from "@/components/nav/navItems";
 import { PackWeightCalculator } from "@/components/PackWeightCalculator";
 import { PACK_WEIGHT_TABLE, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { getMyCrewMember } from "@/lib/crew";
-import { saveMyBodyWeight, saveMyActualBaseWeight } from "./actions";
+import {
+  saveMyBodyWeight,
+  saveMyActualBaseWeight,
+  saveActualPackWeightIncludesTent,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Pack Weight Calculator" };
 
@@ -35,6 +39,8 @@ export default async function CalculatorPage() {
         onBodyWeightChange={saveMyBodyWeight}
         initialActualBaseWeight={me?.actualBaseWeightLbs}
         onActualBaseWeightChange={saveMyActualBaseWeight}
+        initialActualPackWeightIncludesTent={me?.actualPackWeightIncludesTent}
+        onActualPackWeightIncludesTentChange={saveActualPackWeightIncludesTent}
       />
 
       <Box variant="info">
@@ -89,7 +95,7 @@ export default async function CalculatorPage() {
           </table>
         </div>
         <p className="text-[11px] text-ink-faint mt-2">
-          Target Base excludes {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs} lbs of estimated Day-1 Gear &amp; Food (food, water, tent, crew gear). Use My Gear for exact weights.
+          Reference target base values use a fixed {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs} lb Day-1 estimate. The live calculator above adjusts the tent add-on based on whether your weighed pack already includes tent.
         </p>
       </Section>
 

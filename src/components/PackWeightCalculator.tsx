@@ -4,9 +4,12 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "./primitives/StatusBadge";
 
-// Estimator uses the full 14.7 lb constant including tent estimate.
-// My Gear uses 12.2 (no tent) since users track actual tent weight there.
-const GF = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs;
+const BASE_ADD_ON_LBS =
+  PACK_WEIGHT_CONSTANTS.foodPerPersonLbs +
+  PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs +
+  PACK_WEIGHT_CONSTANTS.crewGearAvgLbs;
+const PHILMONT_TENT_OZ = PACK_WEIGHT_CONSTANTS.philmontTentOz;
+const PHILMONT_TENT_LBS = PHILMONT_TENT_OZ / 16;
 const SAVE_DEBOUNCE_MS = 400;
 
 function fmt(n: number, digits = 1): string {
@@ -38,14 +41,19 @@ export function PackWeightCalculator({
   onBodyWeightChange,
   initialActualBaseWeight,
   onActualBaseWeightChange,
+  initialActualPackWeightIncludesTent,
+  onActualPackWeightIncludesTentChange,
 }: {
   initialBodyWeight?: number | null;
   onBodyWeightChange?: (lbs: number) => void;
   initialActualBaseWeight?: number | null;
   onActualBaseWeightChange?: (lbs: number) => void;
+  initialActualPackWeightIncludesTent?: boolean | null;
+  onActualPackWeightIncludesTentChange?: (includesTent: boolean) => void;
 } = {}) {
   const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
   const [actual, setActual] = useState<number>(initialActualBaseWeight ?? 18);
+  const [actualPackWeightIncludesTent, setActualPackWeightIncludesTent] = useState(initialActualPackWeightIncludesTent ?? false);
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -56,7 +64,7 @@ export function PackWeightCalculator({
   useEffect(() => {
     const seen = localStorage.getItem("estimator-help-seen");
     if (!seen) {
-      setHelpOpen(true);
+      window.setTimeout(() => setHelpOpen(true), 0);
       localStorage.setItem("estimator-help-seen", "1");
     }
   }, []);
@@ -84,9 +92,26 @@ export function PackWeightCalculator({
       startTransition(() => { onActualBaseWeightChange(val); });
     }, SAVE_DEBOUNCE_MS);
   }
+  function handleActualPackWeightIncludesTentChange(includesTent: boolean) {
+    setActualPackWeightIncludesTent(includesTent);
+    if (!onActualPackWeightIncludesTentChange) return;
+    startTransition(() => {
+      onActualPackWeightIncludesTentChange(includesTent);
+    });
+  }
   const targets = computeTargets(bw);
   const actualNum = actual;
   const validActual = actualNum > 0;
+  const shelterAddonLbs = actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS;
+  const addOnLbs = BASE_ADD_ON_LBS + shelterAddonLbs;
+  const liveTargets = targets
+    ? {
+        ...targets,
+        targetBase: targets.target20 - addOnLbs,
+        maxBase: targets.max25 - addOnLbs,
+        hardMaxBase: targets.hardMax30 - addOnLbs,
+      }
+    : null;
 
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   let totalDay1: number | null = null;
@@ -94,7 +119,7 @@ export function PackWeightCalculator({
   const deltaLines: string[] = [];
 
   if (validActual && targets) {
-    totalDay1 = actualNum + GF;
+    totalDay1 = actualNum + addOnLbs;
     pctOfBody = (totalDay1 / bw) * 100;
     const deltaTarget = totalDay1 - targets.target20;
 
@@ -263,9 +288,26 @@ export function PackWeightCalculator({
           </div>
         </label>
 
+        <label className="flex items-start gap-2.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={actualPackWeightIncludesTent}
+            onChange={(e) => handleActualPackWeightIncludesTentChange(e.target.checked)}
+            className="accent-ok-text shrink-0 mt-0.5"
+          />
+          <span className="text-[12px] text-ink leading-snug">
+            Actual pack weight includes tent
+            {!actualPackWeightIncludesTent && (
+              <span className="font-mono text-ink-muted ml-1.5 text-[11px]">
+                (adds Philmont tent: {PHILMONT_TENT_OZ} oz &middot; {fmt(PHILMONT_TENT_LBS, 1)} lbs)
+              </span>
+            )}
+          </span>
+        </label>
+
         {/* Base weight definition */}
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Base weight is everything in your pack. <strong className="text-ink">Weigh it at home</strong> before you leave. Does <strong>NOT</strong> include worn clothes, food, water, shelter, or crew gear.
+          Base weight is everything in your pack. <strong className="text-ink">Weigh it at home</strong> before you leave. Does <strong>NOT</strong> include worn clothes, food, water, or crew gear.
         </p>
 
         {/* Two key numbers — stack on mobile, side-by-side on sm+ */}
@@ -279,7 +321,7 @@ export function PackWeightCalculator({
               Target Base Weight
             </p>
             <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
-              {targets ? `≤ ${fmt(targets.targetBase)} lbs` : "—"}
+              {liveTargets ? `≤ ${fmt(liveTargets.targetBase)} lbs` : "—"}
             </div>
             <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75">
               20% of body weight
@@ -452,7 +494,7 @@ export function PackWeightCalculator({
             What&apos;s stacked on your base
           </p>
           <p className="font-mono text-[9px] text-ink-faint mt-0.5">
-            The {GF} lbs added on top to get your Est Max
+            The {fmt(addOnLbs)} lbs added on top to get your Est Max
           </p>
         </div>
         <ul className="text-[12px] text-ink-muted divide-y divide-border" style={{ borderWidth: "0.5px" }}>
@@ -468,17 +510,19 @@ export function PackWeightCalculator({
             <span>Crew gear (avg, varies 0&ndash;3 lbs)</span>
             <span className="font-mono">{PACK_WEIGHT_CONSTANTS.crewGearAvgLbs} lbs</span>
           </li>
-          <li className="flex justify-between px-4 py-1.5">
-            <span>Tent (estimated &middot; 2&ndash;3 lbs typical)</span>
-            <span className="font-mono">{PACK_WEIGHT_CONSTANTS.shelterLbs} lbs</span>
-          </li>
+          {!actualPackWeightIncludesTent && (
+            <li className="flex justify-between px-4 py-1.5">
+              <span>Philmont tent</span>
+              <span className="font-mono">{fmt(PHILMONT_TENT_LBS)} lbs</span>
+            </li>
+          )}
           <li className="flex justify-between px-4 py-2 bg-surface-2 text-ink font-medium">
             <span>Total stacked on base</span>
-            <span className="font-mono">{GF} lbs</span>
+            <span className="font-mono">{fmt(addOnLbs)} lbs</span>
           </li>
         </ul>
         <p className="text-[11px] text-ink-faint px-4 py-2 border-t border-border leading-snug" style={{ borderWidth: "0.5px" }}>
-          Estimated values. Actual tent weight is tracked in My Gear.
+          Estimated values. If your weighed pack does not include a tent, the Philmont tent is added here.
         </p>
       </div>
 
