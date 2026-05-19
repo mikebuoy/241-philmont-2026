@@ -649,7 +649,7 @@ export function PackingListEditor({
                         <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
                       </span>
                       <span className="text-[12px] text-ink leading-snug">
-                        I&apos;m using a Philmont tent
+                        <strong>I&apos;m using a Philmont tent</strong>
                         <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
                           {usesPhilmontTent
                             ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_OZ / 16, 1)} lbs.`
