@@ -110,9 +110,11 @@ export function PackingListEditor({
   // Build status + delta lines using 4-zone Philmont model
   const baseLbs = ozToLbs(totals.baseOz);
   const activeBaseLbs = useActualBase ? actualBase : baseLbs;
-  // Add Philmont tent weight when Base Pack Weight does not already include a tent.
-  const shelterTrailLoadLbs = usesPhilmontTent ? PHILMONT_TENT_OZ / 16 : 0;
-  const totalDay1Lbs = activeBaseLbs + BASE_TRAIL_LOAD_LBS + shelterTrailLoadLbs;
+  // Add Philmont tent weight only when using a typed scale weight. In item-list
+  // mode, tent weight is already represented by the tent line item.
+  const shelterTrailLoadLbs = useActualBase && usesPhilmontTent ? PHILMONT_TENT_OZ / 16 : 0;
+  const trailLoadLbs = BASE_TRAIL_LOAD_LBS + shelterTrailLoadLbs;
+  const totalDay1Lbs = activeBaseLbs + trailLoadLbs;
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   const deltaLines: string[] = [];
   if (targets) {
@@ -311,91 +313,48 @@ export function PackingListEditor({
         {helpOpen && (
           <div className="px-4 pb-4 pt-3 text-[12px] text-ink border-t border-border space-y-4" style={{ borderWidth: "0.5px" }}>
 
-            {/* Section 1 — weigh */}
-            <section className="space-y-2.5">
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
-                1. Pick how to weigh your pack
-              </h3>
-              <div className="space-y-2.5">
-                <div>
-                  <p className="font-semibold leading-tight">🎯 Weigh each item</p>
-                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
-                    Open the Edit list mode. Type each item&apos;s weight in ounces as you weigh it. The bar updates live. Most accurate.
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold leading-tight">🎒 Weigh your packed pack</p>
-                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
-                    Stand on a scale holding your full pack. Subtract your body weight. Open Adjust, enter that number as Base Pack Weight, and check &ldquo;I weighed my full pack.&rdquo; Fastest.
-                  </p>
-                </div>
-                <div>
-                  <p className="font-semibold leading-tight">🤝 Mix both</p>
-                  <p className="text-ink-muted text-[11px] leading-snug mt-0.5">
-                    Weigh what you can. Use the toggle to fall back to your Base Pack Weight any time. No judgment either way.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Section 2 — pack */}
             <section className="space-y-2">
               <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
-                2. Use the list as your packing list
+                1. Pick your weight method
+              </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Open <strong className="text-ink">Weight Settings</strong>. Use your scale weight if you weighed your pack, or use the gear list if you weighed each item.
+              </p>
+            </section>
+
+            <section className="space-y-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                2. Check off packed items
               </h3>
               <p className="text-ink-muted text-[11px] leading-snug">
                 Check the box next to an item once it&apos;s in your pack.
               </p>
-              <p className="text-ink-muted text-[11px] leading-snug">
-                Tap a badge to mark an item:
-              </p>
               <div className="space-y-1.5">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-ok-bg text-ok-text rounded shrink-0 inline-flex items-center justify-center w-9 h-5">W</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Wearing it. Does not count toward pack weight.</span>
+                  <span className="font-mono text-[10px] font-semibold bg-ok-bg text-ok-text rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Wear</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">You wear it, so it does not count in Base Pack Weight.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-info-bg text-info-text rounded shrink-0 inline-flex items-center justify-center w-9 h-5">C</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Consumable like food or water. Not counted on day 1.</span>
+                  <span className="font-mono text-[10px] font-semibold bg-info-bg text-info-text rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Food/water</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Consumable items are tracked separately from Base Pack Weight.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-surface-2 text-ink-muted rounded shrink-0 inline-flex items-center justify-center w-9 h-5">Off</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Not taking it. Skipped from your totals.</span>
+                  <span className="font-mono text-[10px] font-semibold bg-surface-2 text-ink-muted rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Not taking</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">You are not bringing it. It is skipped from your totals.</span>
                 </div>
               </div>
             </section>
 
-            {/* Section 3 — edit */}
             <section className="space-y-2">
               <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
-                3. Edit your gear
+                3. Edit gear only when needed
               </h3>
               <p className="text-ink-muted text-[11px] leading-snug">
-                Tap the Edit list button at the top of the page. You can:
+                Tap <strong className="text-ink">Edit Gear</strong> to change weights, quantities, item names, or mark items as Wear, Food/water, or Not taking.
               </p>
-              <ul className="text-ink-muted text-[11px] leading-snug pl-4 space-y-1 list-disc marker:text-ink-faint">
-                <li>Change weights, quantities, or item names</li>
-                <li>Add your own personal items at the bottom of each category</li>
-                <li>Enter weight in ounces &mdash; 16 oz = 1 lb</li>
-                <li>Set QTY if you&apos;re bringing more than one of something</li>
-              </ul>
               <p className="text-ink-muted text-[11px] leading-snug">
                 Tap Done when you&apos;re finished. The page saves automatically.
               </p>
-            </section>
-
-            {/* Section 4 — filter */}
-            <section className="space-y-2">
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
-                4. Filter the list
-              </h3>
-              <p className="text-ink-muted text-[11px] leading-snug">
-                Use the filters above the list to focus on what&apos;s left:
-              </p>
-              <ul className="text-ink-muted text-[11px] leading-snug pl-4 space-y-1 list-disc marker:text-ink-faint">
-                <li>Hide non-packing &mdash; hides items marked Off</li>
-                <li>Hide packed &mdash; hides items you&apos;ve already checked off</li>
-              </ul>
             </section>
 
           </div>
@@ -413,9 +372,14 @@ export function PackingListEditor({
             <div className="flex items-baseline justify-between gap-3 mb-1">
               <div className="flex items-baseline gap-2 min-w-0">
                 <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
-                <span className="font-mono text-[22px] sm:text-[24px] font-semibold leading-none text-ink">
-                  {fmt(totalDay1Lbs)} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
-                </span>
+                <div className="min-w-0">
+                  <span className="font-mono text-[22px] sm:text-[24px] font-semibold leading-none text-ink">
+                    {fmt(totalDay1Lbs)} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
+                  </span>
+                  <span className="block text-[10px] text-ink-muted leading-tight mt-0.5">
+                    Heaviest pack estimate
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
@@ -425,7 +389,7 @@ export function PackingListEditor({
                   style={{ borderWidth: "0.5px" }}
                   aria-expanded={adjustOpen}
                 >
-                  Pack Math
+                  Weight Settings
                   <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
                     <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -436,7 +400,7 @@ export function PackingListEditor({
                   className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
                   style={{ borderWidth: "0.5px" }}
                 >
-                  {isEditMode ? "Done" : "Edit Weights"}
+                  {isEditMode ? "Done" : "Edit Gear"}
                 </button>
               </div>
             </div>
@@ -531,7 +495,7 @@ export function PackingListEditor({
               </div>
             ) : (
               <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2 mb-1">
-                Enter your body weight in <strong>Adjust</strong> to see targets.
+                Enter your body weight in <strong>Weight Settings</strong> to see targets.
               </div>
             )}
 
@@ -559,9 +523,12 @@ export function PackingListEditor({
                   aria-hidden="true"
                 />
                 <span>
-                  <strong className="text-ink">Trail Load</strong> &mdash; {fmt(BASE_TRAIL_LOAD_LBS + shelterTrailLoadLbs, 1)} lbs
+                  <strong className="text-ink">Trail Load</strong> &mdash; {fmt(trailLoadLbs, 1)} lbs
                 </span>
               </div>
+            </div>
+            <div className="mt-1 font-mono text-[10px] text-ink-faint">
+              Base Pack Weight + Trail Load = Est Max
             </div>
           </div>
         </div>
@@ -600,89 +567,103 @@ export function PackingListEditor({
                 </div>
               </div>
 
-              {/* "I weighed my full pack" — plain-language toggle */}
-              <label className="flex items-start gap-3 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  role="switch"
-                  checked={useActualBase}
-                  onChange={(e) => {
-                    const v = e.target.checked;
-                    setUseActualBase(v);
-                    startTransition(() => saveMyBaseWeightMode(v));
-                  }}
-                  className="peer sr-only"
-                />
-                <span
-                  className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
-                  aria-hidden="true"
-                >
-                  <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
-                </span>
-                <span className="text-[12px] text-ink leading-snug">
-                  <strong>I weighed my full pack</strong>
-                  <span className="block text-ink-muted text-[11px] mt-0.5">
-                    {useActualBase
-                      ? "Use my scale weight for Base Pack Weight."
-                      : "Add up the item weights in my list."}
+              <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
+                <div>
+                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+                    Base Pack Weight
+                  </div>
+                  <div className="text-[11px] text-ink-muted mt-0.5">
+                    Pack weight before Trail Load
+                  </div>
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={useActualBase}
+                    onChange={(e) => {
+                      const v = e.target.checked;
+                      setUseActualBase(v);
+                      startTransition(() => saveMyBaseWeightMode(v));
+                    }}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface-2 p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
+                    aria-hidden="true"
+                  >
+                    <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
                   </span>
-                </span>
-              </label>
+                  <span className="text-[12px] text-ink leading-snug">
+                    <strong>Use my scale weight</strong>
+                    <span className="block text-ink-muted text-[11px] mt-0.5">
+                      {useActualBase
+                        ? "Using the pack weight I entered."
+                        : "Using item weights from my gear list."}
+                    </span>
+                  </span>
+                </label>
 
-              {/* Base Pack Weight slider — dims when toggle off */}
-              <div style={{ opacity: useActualBase ? 1 : 0.45 }}>
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Base Pack Weight</span>
-                  <span className="font-mono text-[10px] text-ink-faint">Pack weight before Trail Load</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={5} max={50} step={0.5}
-                    value={actualBase}
-                    onChange={(e) => onActualBaseChange(Number(e.target.value))}
-                    className="flex-1 accent-ink"
-                  />
-                  <input
-                    type="number"
-                    min={0} max={100} step={0.5}
-                    value={actualBase}
-                    onChange={(e) => onActualBaseChange(Number(e.target.value))}
-                    className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right"
-                  />
-                  <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
-                </div>
-              </div>
-
-              {/* Shelter — only when "I weighed my full pack" is on */}
-              {useActualBase && (
-                <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.5px" }}>
-                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
-                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                <div className={useActualBase ? "" : "opacity-40"}>
+                  <div className="flex items-baseline justify-between mb-1.5">
+                    <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Scale weight</span>
+                    <span className="font-mono text-[10px] text-ink-faint">Base Pack Weight</span>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <input
-                      type="checkbox"
-                      role="switch"
-                      checked={usesPhilmontTent}
-                      onChange={(e) => onUsesPhilmontTentChange(e.target.checked)}
-                      className="peer sr-only"
+                      type="range"
+                      min={5} max={50} step={0.5}
+                      value={actualBase}
+                      disabled={!useActualBase}
+                      onChange={(e) => onActualBaseChange(Number(e.target.value))}
+                      className="flex-1 accent-ink disabled:cursor-not-allowed"
                     />
-                    <span
-                      className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
-                      aria-hidden="true"
-                    >
-                      <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
-                    </span>
-                    <span className="text-[12px] text-ink leading-snug">
-                      I&apos;m using a Philmont tent
-                      <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
-                        {usesPhilmontTent
-                          ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_OZ / 16, 1)} lbs.`
-                          : "Using your own tent. Count it in Base Pack Weight."}
-                      </span>
-                    </span>
-                  </label>
+                    <input
+                      type="number"
+                      min={0} max={100} step={0.5}
+                      value={actualBase}
+                      disabled={!useActualBase}
+                      onChange={(e) => onActualBaseChange(Number(e.target.value))}
+                      className="w-20 font-mono text-[13px] bg-surface border border-border rounded px-2 py-1 text-right disabled:cursor-not-allowed"
+                    />
+                    <span className="font-mono text-[11px] text-ink-muted shrink-0">lbs</span>
+                  </div>
                 </div>
-              )}
+
+                {useActualBase ? (
+                  <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.5px" }}>
+                    <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        checked={usesPhilmontTent}
+                        onChange={(e) => onUsesPhilmontTentChange(e.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <span
+                        className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
+                        aria-hidden="true"
+                      >
+                        <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
+                      </span>
+                      <span className="text-[12px] text-ink leading-snug">
+                        I&apos;m using a Philmont tent
+                        <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
+                          {usesPhilmontTent
+                            ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_OZ / 16, 1)} lbs.`
+                            : "Tent weight included in Base Pack Weight."}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="rounded-md bg-surface-2 px-3 py-2 text-[11px] text-ink-muted leading-snug">
+                    Base Pack Weight comes from your gear list. Tent weight comes from your gear list too.
+                  </div>
+                )}
+              </div>
 
               {/* Reference values */}
               <div className="pt-3 border-t border-border" style={{ borderWidth: "0.5px" }}>
@@ -703,7 +684,7 @@ export function PackingListEditor({
                       <span className="text-ink-faint">{fmt(lbs, 1)} lbs</span>
                     </div>
                   ))}
-                  {usesPhilmontTent && (
+                  {useActualBase && usesPhilmontTent && (
                     <div className="flex justify-between gap-4">
                       <span className="text-ink-muted">Philmont tent</span>
                       <span className="text-ink-faint">{fmt(PHILMONT_TENT_OZ / 16, 1)} lbs</span>
@@ -711,7 +692,7 @@ export function PackingListEditor({
                   )}
                   <div className="flex justify-between gap-4 border-t border-border pt-0.5 mt-0.5" style={{ borderWidth: "0.5px" }}>
                     <span className="text-ink font-medium">Total Trail Load</span>
-                    <span className="text-ink font-semibold">{fmt(BASE_TRAIL_LOAD_LBS + shelterTrailLoadLbs, 1)} lbs</span>
+                    <span className="text-ink font-semibold">{fmt(trailLoadLbs, 1)} lbs</span>
                   </div>
                 </div>
 
@@ -762,9 +743,9 @@ export function PackingListEditor({
             <span className="flex-1 min-w-0">Item</span>
             <span className="w-12 text-center shrink-0">QTY</span>
             <span className="w-16 text-right shrink-0">oz</span>
-            <span className="w-5 text-center shrink-0">W</span>
-            <span className="w-5 text-center shrink-0">C</span>
-            <span className="w-8 text-center shrink-0">Off</span>
+            <span className="w-9 text-center shrink-0">Wear</span>
+            <span className="w-10 text-center shrink-0">Food</span>
+            <span className="w-8 text-center shrink-0">Not</span>
           </div>
         )}
       </div>{/* end sticky header */}
@@ -773,28 +754,33 @@ export function PackingListEditor({
       {children}
 
       {/* ───── Filters ───── */}
-      <div className="flex items-center justify-end gap-4 text-[11px] font-mono text-ink-muted">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 opacity-50">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={hideNotPacking}
-            onChange={(e) => setHideNotPacking(e.target.checked)}
-            className="accent-ink"
-          />
-          Hide non-packing ({totals.notPackingCount})
-        </label>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={hidePacked}
-            onChange={(e) => setHidePacked(e.target.checked)}
-            className="accent-ink"
-          />
-          Hide packed ({totals.unpackedCount})
-        </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setHidePacked((v) => !v)}
+          aria-pressed={hidePacked}
+          className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            hidePacked
+              ? "border-info-text bg-info-bg text-info-text"
+              : "border-border bg-surface text-ink-muted hover:text-ink"
+          }`}
+          style={{ borderWidth: "0.5px" }}
+        >
+          Still need to pack ({totals.unpackedCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setHideNotPacking((v) => !v)}
+          aria-pressed={hideNotPacking}
+          className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            hideNotPacking
+              ? "border-info-text bg-info-bg text-info-text"
+              : "border-border bg-surface text-ink-muted hover:text-ink"
+          }`}
+          style={{ borderWidth: "0.5px" }}
+        >
+          Hide items marked not taking ({totals.notPackingCount})
+        </button>
       </div>
 
       {/* ───── Pack categories (counted) ───── */}
@@ -810,11 +796,11 @@ export function PackingListEditor({
 
           return (
             <section key={cat}>
-              <div className="flex items-baseline justify-between mb-1.5 px-1">
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+              <div className="flex items-baseline justify-between mb-2 rounded-md bg-info-bg px-2 py-1">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-info-text font-semibold">
                   {cat}
                 </h2>
-                <span className="font-mono text-[10px] text-ink-faint">
+                <span className="font-mono text-[10px] text-info-text">
                   {catItems.length} · {fmt(catSubtotalOz, 1)} oz
                 </span>
               </div>
@@ -838,7 +824,7 @@ export function PackingListEditor({
                       onClick={() => onAddPersonal(cat)}
                       className="font-mono text-[11px] text-ink-muted hover:text-ink"
                     >
-                      + Add personal item
+                      + Add gear
                     </button>
                   </li>
                 )}
@@ -888,7 +874,7 @@ export function PackingListEditor({
                       onClick={() => onAddPersonal(cat)}
                       className="font-mono text-[11px] text-ink-muted hover:text-ink"
                     >
-                      + Add personal item
+                      + Add gear
                     </button>
                   </li>
                 )}
@@ -974,15 +960,17 @@ function PackRow({
 
   return (
     <li className={`px-3 py-2.5 flex items-center gap-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
-      <input
-        type="checkbox"
-        checked={item.isPacked}
-        disabled={item.isNotPacking}
-        onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
-        className="accent-ink shrink-0 w-4 h-4 disabled:opacity-30 disabled:cursor-not-allowed"
-        aria-label="Packed"
-        title="Packed"
-      />
+      <label className="shrink-0 -m-2 flex h-9 w-9 items-center justify-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={item.isPacked}
+          disabled={item.isNotPacking}
+          onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
+          className="accent-ink w-5 h-5 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Packed"
+          title="Packed"
+        />
+      </label>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
@@ -998,10 +986,10 @@ function PackRow({
       </div>
       <div className="flex items-center gap-1 shrink-0">
         {item.isWorn && (
-          <span className="font-mono text-[10px] font-semibold text-ok-text" title="Worn">W</span>
+          <span className="rounded bg-ok-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-ok-text" title="Wear">Wear</span>
         )}
         {item.isConsumable && (
-          <span className="font-mono text-[10px] font-semibold text-info-text" title="Consumable">C</span>
+          <span className="rounded bg-info-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-info-text" title="Food/water">Food</span>
         )}
       </div>
       <div className="shrink-0 font-mono text-[11px] text-ink-muted text-right whitespace-nowrap">
@@ -1117,15 +1105,15 @@ function EditRow({
       <FlagButton
         active={item.isWorn}
         onClick={() => onToggle(item.id, "isWorn", !item.isWorn)}
-        label="W"
-        title="Worn"
+        label="Wear"
+        title="Wear"
         tone="ok"
       />
       <FlagButton
         active={item.isConsumable}
         onClick={() => onToggle(item.id, "isConsumable", !item.isConsumable)}
-        label="C"
-        title="Consumable"
+        label="Food"
+        title="Food/water"
         tone="info"
       />
 
@@ -1134,8 +1122,8 @@ function EditRow({
         className={`shrink-0 w-5 h-5 flex items-center justify-center rounded transition-colors ${
           item.isNotPacking ? "text-ink" : "text-ink-faint hover:text-ink"
         }`}
-        title={item.isNotPacking ? "Mark as packing" : "Mark as not packing"}
-        aria-label={item.isNotPacking ? "Mark as packing" : "Mark as not packing"}
+        title={item.isNotPacking ? "Mark as taking" : "Mark as not taking"}
+        aria-label={item.isNotPacking ? "Mark as taking" : "Mark as not taking"}
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
           <circle cx="7" cy="7" r="6" />
@@ -1148,7 +1136,7 @@ function EditRow({
           onClick={onDelete}
           className="text-ink-faint hover:text-danger-text shrink-0"
           aria-label="Delete"
-          title="Delete personal item"
+          title="Delete gear"
         >
           &#x2715;
         </button>
@@ -1220,7 +1208,7 @@ function FlagButton({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`shrink-0 font-mono text-[10px] font-semibold w-5 h-5 rounded transition-colors ${
+      className={`shrink-0 font-mono text-[9px] font-semibold min-w-9 h-5 px-1 rounded transition-colors ${
         active ? activeCls : "text-ink-faint hover:text-ink"
       }`}
     >
