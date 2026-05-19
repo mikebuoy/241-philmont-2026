@@ -425,7 +425,7 @@ export function PackingListEditor({
                   style={{ borderWidth: "0.5px" }}
                   aria-expanded={adjustOpen}
                 >
-                  Adjust
+                  Pack Math
                   <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
                     <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -436,7 +436,7 @@ export function PackingListEditor({
                   className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
                   style={{ borderWidth: "0.5px" }}
                 >
-                  {isEditMode ? "Done" : "Edit List"}
+                  {isEditMode ? "Done" : "Edit Weights"}
                 </button>
               </div>
             </div>
@@ -544,7 +544,7 @@ export function PackingListEditor({
                   aria-hidden="true"
                 />
                 <span>
-                  <strong className="text-ink">Base Pack Weight</strong> &mdash; {useActualBase ? "your scale" : "sum of list"} &middot; {fmt(activeBaseLbs, 1)} lbs
+                  <strong className="text-ink">Base Pack Weight</strong> &mdash; {useActualBase ? "scale weight" : "item list"} &middot; {fmt(activeBaseLbs, 1)} lbs
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -601,21 +601,30 @@ export function PackingListEditor({
               </div>
 
               {/* "I weighed my full pack" — plain-language toggle */}
-              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
+                  role="switch"
                   checked={useActualBase}
                   onChange={(e) => {
                     const v = e.target.checked;
                     setUseActualBase(v);
                     startTransition(() => saveMyBaseWeightMode(v));
                   }}
-                  className="accent-ok-text shrink-0 mt-0.5"
+                  className="peer sr-only"
                 />
+                <span
+                  className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
+                  aria-hidden="true"
+                >
+                  <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
+                </span>
                 <span className="text-[12px] text-ink leading-snug">
-                  <strong>I weighed my full pack</strong> — use that as my base
+                  <strong>I weighed my full pack</strong>
                   <span className="block text-ink-muted text-[11px] mt-0.5">
-                    Otherwise we&apos;ll sum the weights you entered in the list below.
+                    {useActualBase
+                      ? "Use my scale weight for Base Pack Weight."
+                      : "Add up the item weights in my list."}
                   </span>
                 </span>
               </label>
@@ -624,7 +633,7 @@ export function PackingListEditor({
               <div style={{ opacity: useActualBase ? 1 : 0.45 }}>
                 <div className="flex items-baseline justify-between mb-1.5">
                   <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Base Pack Weight</span>
-                  <span className="font-mono text-[10px] text-ink-faint">pack before food, water, crew gear</span>
+                  <span className="font-mono text-[10px] text-ink-faint">Pack weight before Trail Load</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
@@ -649,13 +658,20 @@ export function PackingListEditor({
               {useActualBase && (
                 <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.5px" }}>
                   <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
-                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
+                      role="switch"
                       checked={usesPhilmontTent}
                       onChange={(e) => onUsesPhilmontTentChange(e.target.checked)}
-                      className="accent-ok-text shrink-0 mt-0.5"
+                      className="peer sr-only"
                     />
+                    <span
+                      className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
+                      aria-hidden="true"
+                    >
+                      <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
+                    </span>
                     <span className="text-[12px] text-ink leading-snug">
                       I&apos;m using a Philmont tent
                       <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
@@ -709,7 +725,7 @@ export function PackingListEditor({
                   <div>
                     <div className="text-ink-muted">{useActualBase ? "Actual" : "Calc"}</div>
                     <div className="text-ink font-semibold text-[13px]">{fmt(activeBaseLbs)}</div>
-                    <div className="text-ink-faint text-[9px] mt-0.5">{useActualBase ? "your scale" : "sum of list"}</div>
+                    <div className="text-ink-faint text-[9px] mt-0.5">{useActualBase ? "scale weight" : "item list"}</div>
                   </div>
                   <div>
                     <div className="text-ink-muted">Est Max</div>
