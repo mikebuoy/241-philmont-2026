@@ -766,7 +766,7 @@ export function PackingListEditor({
           }`}
           style={{ borderWidth: "0.5px" }}
         >
-          Still need to pack ({totals.unpackedCount})
+          Hide packed items ({totals.packedCount})
         </button>
         <button
           type="button"
@@ -779,7 +779,7 @@ export function PackingListEditor({
           }`}
           style={{ borderWidth: "0.5px" }}
         >
-          Hide items marked not taking ({totals.notPackingCount})
+          Hide items marked <b>Not Taking</b> ({totals.notPackingCount})
         </button>
       </div>
 
