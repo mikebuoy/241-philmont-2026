@@ -1046,11 +1046,16 @@ function EditRow({
               className="flex-1 font-medium bg-transparent border-b border-transparent focus:border-border-strong outline-none"
             />
           )}
+          {/* -- Hides item description in edit mode to save space, but could be re-added if desired — would need some design tweaks to avoid looking too cluttered --*/}
+          {/*
+          }
+          }
           {item.description && (
             <span className="text-ink-muted font-normal text-[11px] leading-snug shrink-0">
               {item.description}
             </span>
           )}
+          */}
         </div>
       </div>
 
