@@ -5,7 +5,7 @@ export const PACK_WEIGHT_CONSTANTS = {
   maxPct: 0.25,
   /** Philmont hard ceiling — 30% of body weight. No exceptions. */
   hardMaxPct: 0.30,
-  /** Day-1 Gear & Food: food 5.8 + water 4.4 + crew gear 2.0 + shelter 2.5 = 14.7 lbs. */
+  /** Legacy fixed Trail Load estimate: food 5.8 + water 4.4 + crew gear 2.0 + shelter 2.5 = 14.7 lbs. */
   gearAndFoodLbs: 14.7,
   foodPerPersonLbs: 5.8,
   waterTwoLitersLbs: 4.4,
@@ -28,7 +28,7 @@ export type PackWeightRow = {
   note: string;
 };
 
-// Base = pct × bw − 14.7 lbs GF constant
+// Base Pack Weight = pct × body weight − legacy fixed Trail Load estimate
 export const PACK_WEIGHT_TABLE: PackWeightRow[] = [
   { bodyWeight: 100, target20: 20.0, max25: 25.0, hardMax30: 30.0, targetBase:  5.3, maxBase: 10.3, hardMaxBase: 15.3, shade: "danger", note: "UL setup required · review every item" },
   { bodyWeight: 120, target20: 24.0, max25: 30.0, hardMax30: 36.0, targetBase:  9.3, maxBase: 15.3, hardMaxBase: 21.3, shade: "danger", note: "UL setup required · bear bag only" },
@@ -52,7 +52,7 @@ export const GEAR_ASSIGNMENT: AssignmentTier[] = [
     eligibility: "None",
     eligible: [],
     excluded: ["Dining fly", "Cook kit", "Issued pots", "Bear ropes", "Fuel"],
-    notes: "Base weight must be ≤ 7–9 lbs. Review every item.",
+    notes: "Base Pack Weight must be ≤ 7–9 lbs. Review every item.",
   },
   {
     bodyWeightLabel: "130 lbs",

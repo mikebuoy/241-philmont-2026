@@ -47,18 +47,18 @@ function formatLbsOz(decimalLbs: number): string {
 function getReadiness({
   bodyWeight,
   baseWeight,
-  actualPackWeightIncludesTent,
+  usesPhilmontTent,
 }: {
   bodyWeight: number | null;
   baseWeight: number | null;
-  actualPackWeightIncludesTent: boolean;
+  usesPhilmontTent: boolean;
 }) {
   const targets = bodyWeight ? computeTargets(bodyWeight) : null;
   if (!targets || bodyWeight == null || baseWeight == null || baseWeight <= 0) return null;
 
-  const shelterAddonLbs = actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS;
-  const addOnLbs = BASE_ADD_ON_LBS + shelterAddonLbs;
-  const totalDay1 = baseWeight + addOnLbs;
+  const shelterTrailLoadLbs = usesPhilmontTent ? PHILMONT_TENT_LBS : 0;
+  const trailLoadLbs = BASE_ADD_ON_LBS + shelterTrailLoadLbs;
+  const totalDay1 = baseWeight + trailLoadLbs;
   const pctOfBody = (totalDay1 / bodyWeight) * 100;
 
   let status: WeightStatus;
@@ -84,7 +84,7 @@ function getReadiness({
     deltaLines.push("At 20% target");
   }
 
-  return { targets, status, baseWeight, addOnLbs, totalDay1, pctOfBody, deltaLines };
+  return { targets, status, baseWeight, trailLoadLbs, totalDay1, pctOfBody, deltaLines };
 }
 
 function PackProgress({
@@ -97,7 +97,7 @@ function PackProgress({
   if (!readiness) {
     return (
       <div className="rounded-md border border-border bg-surface-2 px-3 py-2 text-[11px] text-ink-muted" style={{ borderWidth: "0.5px" }}>
-        Need body weight and active base weight.
+        Need body weight and Base Pack Weight.
       </div>
     );
   }
@@ -112,7 +112,7 @@ function PackProgress({
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
         <div className="font-mono text-[10px] text-ink-muted">
-          {sourceLabel} base {fmt(readiness.baseWeight)} + add-on {fmt(readiness.addOnLbs)}
+          {sourceLabel} Base {fmt(readiness.baseWeight)} + Trail Load {fmt(readiness.trailLoadLbs)}
         </div>
         <div className="font-mono text-[11px] font-semibold text-ink whitespace-nowrap">
           {fmt(readiness.totalDay1)} lbs · {fmt(readiness.pctOfBody, 1)}%
@@ -213,7 +213,7 @@ export default async function CrewWeightsPage() {
     const readiness = getReadiness({
       bodyWeight: bw,
       baseWeight: activeBase,
-      actualPackWeightIncludesTent: m.actualPackWeightIncludesTent,
+      usesPhilmontTent: m.usesPhilmontTent,
     });
     const status = readiness?.status ?? null;
 
@@ -353,8 +353,8 @@ export default async function CrewWeightsPage() {
             <tbody>
               {([
                 ["Body Weight",   "Entered on Estimator or My Gear page"],
-                ["Pack Progress", "Uses actual base when that mode is enabled; otherwise uses live My Gear calculated base"],
-                ["Add-on",        "Food, water, and crew gear are added to the active base; Philmont tent is added when the pack weight does not already include tent"],
+                ["Pack Progress", "Uses Base Pack Weight from the scale when that mode is enabled; otherwise uses live My Gear calculated Base Pack Weight"],
+                ["Trail Load",    "Food, water, crew gear, and Philmont tent when the crew member is using one"],
                 ["Delta line",    "Shows the same cut or margin guidance used by the pack calculator"],
                 ["Name color",    "Green text = on target · Amber = above 20% goal · Pink = over 25% · Red = over 30% hard max"],
               ] as const).map(([col, desc]) => (

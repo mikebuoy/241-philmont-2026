@@ -11,7 +11,7 @@ import { getMyCrewMember } from "@/lib/crew";
 import {
   saveMyBodyWeight,
   saveMyActualBaseWeight,
-  saveActualPackWeightIncludesTent,
+  saveUsesPhilmontTent,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Pack Weight Calculator" };
@@ -39,8 +39,8 @@ export default async function CalculatorPage() {
         onBodyWeightChange={saveMyBodyWeight}
         initialActualBaseWeight={me?.actualBaseWeightLbs}
         onActualBaseWeightChange={saveMyActualBaseWeight}
-        initialActualPackWeightIncludesTent={me?.actualPackWeightIncludesTent}
-        onActualPackWeightIncludesTentChange={saveActualPackWeightIncludesTent}
+        initialUsesPhilmontTent={me?.usesPhilmontTent}
+        onUsesPhilmontTentChange={saveUsesPhilmontTent}
       />
 
       <Box variant="info">
@@ -52,8 +52,8 @@ export default async function CalculatorPage() {
 
       <Box variant="warn">
         <strong>Gear assignment may need to be uneven.</strong> Lighter crew
-        members may need to carry less shared crew gear so their Day-1 total
-        stays under their Absolute Max. Heavier crew members pick up the
+        members may need to carry less shared crew gear so their Estimated Max
+        Pack Weight stays under their Absolute Max. Heavier crew members pick up the
         slack — they have margin. See{" "}
         <Link
           href="/reference/gear"
@@ -95,7 +95,7 @@ export default async function CalculatorPage() {
           </table>
         </div>
         <p className="text-[11px] text-ink-faint mt-2">
-          Reference target base values use a fixed {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs} lb Day-1 estimate. The live calculator above adjusts the tent add-on based on whether your weighed pack already includes tent.
+          Reference Target Base values use a fixed {PACK_WEIGHT_CONSTANTS.gearAndFoodLbs} lb Trail Load estimate. The live calculator above adjusts Trail Load based on whether you are using a Philmont tent.
         </p>
       </Section>
 
@@ -148,7 +148,7 @@ export default async function CalculatorPage() {
             <tbody>
               <tr className="border-b border-border">
                 <td className="px-2 py-1.5 font-medium">Crew standard</td>
-                <td className="px-2 py-1.5 text-ink-muted">25% or less after food, water, and crew gear are added</td>
+                <td className="px-2 py-1.5 text-ink-muted">25% or less after Trail Load is added</td>
               </tr>
               <tr className="border-b border-border">
                 <td className="px-2 py-1.5 font-medium">Smaller or underweight youth</td>

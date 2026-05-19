@@ -32,13 +32,13 @@ export async function saveMyActualBaseWeight(lbs: number | null): Promise<void> 
   revalidatePath("/crew/weights");
 }
 
-export async function saveActualPackWeightIncludesTent(includesTent: boolean): Promise<void> {
+export async function saveUsesPhilmontTent(usesPhilmontTent: boolean): Promise<void> {
   const me = await getMyCrewMember();
   if (!me) return;
   const supabase = await createClient();
   const { error } = await supabase
     .from("crew_members")
-    .update({ actual_pack_weight_includes_tent: includesTent })
+    .update({ uses_philmont_tent: usesPhilmontTent })
     .eq("id", me.id);
   if (error) throw new Error(error.message);
   revalidatePath("/pack/calculator");

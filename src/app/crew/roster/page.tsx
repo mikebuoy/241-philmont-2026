@@ -27,7 +27,7 @@ const ROSTER_ROW_CLASS = "flex items-center gap-1.5";
 type WeightInfo = {
   bodyWeightLbs: number | null;
   actualBaseWeightLbs: number | null;
-  actualPackWeightIncludesTent: boolean;
+  usesPhilmontTent: boolean;
   wfaCertificationStatus: CertificationStatus | null;
   cprCertificationStatus: CertificationStatus | null;
 };
@@ -54,7 +54,7 @@ export default async function RosterPage() {
       weightByName.set(m.name, {
         bodyWeightLbs: m.bodyWeightLbs,
         actualBaseWeightLbs: m.actualBaseWeightLbs,
-        actualPackWeightIncludesTent: m.actualPackWeightIncludesTent,
+        usesPhilmontTent: m.usesPhilmontTent,
         wfaCertificationStatus: m.wfaCertificationStatus,
         cprCertificationStatus: m.cprCertificationStatus,
       });
@@ -164,16 +164,16 @@ export default async function RosterPage() {
 function PackWeightBadge({ weight }: { weight: WeightInfo | undefined }) {
   const bw = weight?.bodyWeightLbs;
   const base = weight?.actualBaseWeightLbs;
-  const actualPackWeightIncludesTent = weight?.actualPackWeightIncludesTent;
+  const usesPhilmontTent = weight?.usesPhilmontTent;
 
   const pillClass = "font-mono text-[10px] py-0.5 rounded inline-flex items-center justify-center w-12";
 
-  if (base == null || bw == null || actualPackWeightIncludesTent == null) {
+  if (base == null || bw == null || usesPhilmontTent == null) {
     return <span className={`${pillClass} bg-surface-2 text-ink-faint`}>TBD</span>;
   }
 
-  const addOnLbs = BASE_ADD_ON_LBS + (actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS);
-  const estMax = base + addOnLbs;
+  const trailLoadLbs = BASE_ADD_ON_LBS + (usesPhilmontTent ? PHILMONT_TENT_LBS : 0);
+  const estMax = base + trailLoadLbs;
   const targets = computeTargets(bw);
   let zone: keyof typeof WEIGHT_COLORS = "critical";
   if (targets) {

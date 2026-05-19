@@ -76,7 +76,7 @@ export async function resetCrewMemberGearList(crewMemberId: string) {
     bodyWeightLbs: row.body_weight_lbs,
     actualBaseWeightLbs: null,
     useActualBaseWeight: false,
-    actualPackWeightIncludesTent: false,
+    usesPhilmontTent: true,
     wfaCertificationStatus: null,
     cprCertificationStatus: null,
     claimedAt: row.claimed_at,

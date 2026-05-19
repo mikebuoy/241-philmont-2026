@@ -41,19 +41,19 @@ export function PackWeightCalculator({
   onBodyWeightChange,
   initialActualBaseWeight,
   onActualBaseWeightChange,
-  initialActualPackWeightIncludesTent,
-  onActualPackWeightIncludesTentChange,
+  initialUsesPhilmontTent,
+  onUsesPhilmontTentChange,
 }: {
   initialBodyWeight?: number | null;
   onBodyWeightChange?: (lbs: number) => void;
   initialActualBaseWeight?: number | null;
   onActualBaseWeightChange?: (lbs: number) => void;
-  initialActualPackWeightIncludesTent?: boolean | null;
-  onActualPackWeightIncludesTentChange?: (includesTent: boolean) => void;
+  initialUsesPhilmontTent?: boolean | null;
+  onUsesPhilmontTentChange?: (usesPhilmontTent: boolean) => void;
 } = {}) {
   const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
   const [actual, setActual] = useState<number>(initialActualBaseWeight ?? 18);
-  const [actualPackWeightIncludesTent, setActualPackWeightIncludesTent] = useState(initialActualPackWeightIncludesTent ?? false);
+  const [usesPhilmontTent, setUsesPhilmontTent] = useState(initialUsesPhilmontTent ?? true);
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -92,24 +92,24 @@ export function PackWeightCalculator({
       startTransition(() => { onActualBaseWeightChange(val); });
     }, SAVE_DEBOUNCE_MS);
   }
-  function handleActualPackWeightIncludesTentChange(includesTent: boolean) {
-    setActualPackWeightIncludesTent(includesTent);
-    if (!onActualPackWeightIncludesTentChange) return;
+  function handleUsesPhilmontTentChange(nextUsesPhilmontTent: boolean) {
+    setUsesPhilmontTent(nextUsesPhilmontTent);
+    if (!onUsesPhilmontTentChange) return;
     startTransition(() => {
-      onActualPackWeightIncludesTentChange(includesTent);
+      onUsesPhilmontTentChange(nextUsesPhilmontTent);
     });
   }
   const targets = computeTargets(bw);
   const actualNum = actual;
   const validActual = actualNum > 0;
-  const shelterAddonLbs = actualPackWeightIncludesTent ? 0 : PHILMONT_TENT_LBS;
-  const addOnLbs = BASE_ADD_ON_LBS + shelterAddonLbs;
+  const shelterTrailLoadLbs = usesPhilmontTent ? PHILMONT_TENT_LBS : 0;
+  const trailLoadLbs = BASE_ADD_ON_LBS + shelterTrailLoadLbs;
   const liveTargets = targets
     ? {
         ...targets,
-        targetBase: targets.target20 - addOnLbs,
-        maxBase: targets.max25 - addOnLbs,
-        hardMaxBase: targets.hardMax30 - addOnLbs,
+        targetBase: targets.target20 - trailLoadLbs,
+        maxBase: targets.max25 - trailLoadLbs,
+        hardMaxBase: targets.hardMax30 - trailLoadLbs,
       }
     : null;
 
@@ -119,7 +119,7 @@ export function PackWeightCalculator({
   const deltaLines: string[] = [];
 
   if (validActual && targets) {
-    totalDay1 = actualNum + addOnLbs;
+    totalDay1 = actualNum + trailLoadLbs;
     pctOfBody = (totalDay1 / bw) * 100;
     const deltaTarget = totalDay1 - targets.target20;
 
@@ -165,9 +165,9 @@ export function PackWeightCalculator({
         <button
           type="button"
           onClick={() => setHelpOpen((o) => !o)}
-          className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-surface-2 transition-colors"
+          className="w-full flex items-center justify-between bg-hcblue px-4 py-2.5 text-left text-white hover:bg-info-text transition-colors"
         >
-          <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+          <span className="font-mono text-[10px] uppercase tracking-[0.08em]">
             How to use this estimator
           </span>
           <svg
@@ -185,7 +185,7 @@ export function PackWeightCalculator({
                 1. What this does
               </h3>
               <p className="text-ink-muted text-[11px] leading-snug">
-                Plan your pack weight before you weigh anything. Play &ldquo;what if&rdquo; with body weight and base weight to see where you&apos;ll land.
+                Plan your pack weight before you weigh anything. Play &ldquo;what if&rdquo; with body weight and Base Pack Weight to see where you&apos;ll land.
               </p>
             </section>
 
@@ -240,7 +240,7 @@ export function PackWeightCalculator({
         )}
       </div>
 
-      {/* ───── CALCULATOR card — body weight + Target Base + Est Max bar ───── */}
+      {/* ───── CALCULATOR card — body weight + Target Base Pack Weight + Est Max bar ───── */}
       <div className="bg-surface border border-border rounded-lg p-3.5 space-y-3" style={{ borderWidth: "0.5px" }}>
         <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
           Calculator
@@ -267,9 +267,9 @@ export function PackWeightCalculator({
           </div>
         </label>
 
-        {/* Actual base weight slider */}
+        {/* Base Pack Weight slider */}
         <label className="block">
-          <span className="text-[12px] font-medium text-ink">Your actual base weight (lbs)</span>
+          <span className="text-[12px] font-medium text-ink">Your Base Pack Weight (lbs)</span>
           <div className="mt-2 flex items-center gap-3">
             <input
               type="range"
@@ -291,34 +291,34 @@ export function PackWeightCalculator({
         <label className="flex items-start gap-2.5 cursor-pointer select-none">
           <input
             type="checkbox"
-            checked={actualPackWeightIncludesTent}
-            onChange={(e) => handleActualPackWeightIncludesTentChange(e.target.checked)}
+            checked={usesPhilmontTent}
+            onChange={(e) => handleUsesPhilmontTentChange(e.target.checked)}
             className="accent-ok-text shrink-0 mt-0.5"
           />
           <span className="text-[12px] text-ink leading-snug">
-            Actual pack weight includes tent
-            {!actualPackWeightIncludesTent && (
-              <span className="font-mono text-ink-muted ml-1.5 text-[11px]">
-                (adds Philmont tent: {PHILMONT_TENT_OZ} oz &middot; {fmt(PHILMONT_TENT_LBS, 1)} lbs)
-              </span>
-            )}
+            I&apos;m using a Philmont tent
+            <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
+              {usesPhilmontTent
+                ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_LBS, 1)} lbs.`
+                : "Using your own tent. Count it in Base Pack Weight."}
+            </span>
           </span>
         </label>
 
-        {/* Base weight definition */}
+        {/* Base Pack Weight definition */}
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Base weight is everything in your pack. <strong className="text-ink">Weigh it at home</strong> before you leave. Does <strong>NOT</strong> include worn clothes, food, water, or crew gear.
+          Base Pack Weight is your pack before food, water, crew gear, and worn clothes. <strong className="text-ink">Weigh it at home</strong> before you leave.
         </p>
 
         {/* Two key numbers — stack on mobile, side-by-side on sm+ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Target Base Weight — info-blue */}
+          {/* Target Base Pack Weight — info-blue */}
           <div
             className="bg-info-bg text-info-text rounded-lg p-3.5 text-center"
             style={{ borderLeft: "4px solid var(--color-info-border)" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
-              Target Base Weight
+              Target Base Pack Weight
             </p>
             <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
               {liveTargets ? `≤ ${fmt(liveTargets.targetBase)} lbs` : "—"}
@@ -328,7 +328,7 @@ export function PackWeightCalculator({
             </p>
           </div>
 
-          {/* Est Max Pack Weight — status-colored */}
+          {/* Estimated Max Pack Weight — status-colored */}
           {status && totalDay1 != null && pctOfBody != null ? (
             <div
               className="rounded-lg p-3.5 text-center"
@@ -339,7 +339,7 @@ export function PackWeightCalculator({
               }}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
-                Est Max Pack Weight
+                Estimated Max Pack Weight
               </p>
               <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
                 {fmt(totalDay1)} lbs
@@ -360,7 +360,7 @@ export function PackWeightCalculator({
               style={{ borderWidth: "0.5px" }}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-muted mb-1.5">
-                Est Max Pack Weight
+                Estimated Max Pack Weight
               </p>
               <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1 text-ink-faint">
                 &mdash;
@@ -394,7 +394,7 @@ export function PackWeightCalculator({
                   }}
                 />
               </div>
-              {/* The bar — zones + blue base fill + striped gear/food + Est Max line */}
+              {/* The bar — zones + blue base fill + striped Trail Load + Est Max line */}
               <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
                 <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
                 <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
@@ -445,8 +445,8 @@ export function PackWeightCalculator({
               </div>
             </div>
 
-            {/* Legend — Base swatch caption */}
-            <div className="mt-2 font-mono text-[10px] text-ink-muted">
+            {/* Legend — Base and Trail Load swatch captions */}
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-ink-muted">
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
@@ -454,7 +454,22 @@ export function PackWeightCalculator({
                   aria-hidden="true"
                 />
                 <span>
-                  <strong className="text-ink">Base</strong> &mdash; your estimated pack weight &middot; {fmt(actualNum, 1)} lbs
+                  <strong className="text-ink">Base Pack Weight</strong> &mdash; {fmt(actualNum, 1)} lbs
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
+                  style={{
+                    backgroundColor: "rgba(30, 106, 145, 0.1)",
+                    backgroundImage:
+                      "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+                    borderWidth: "0.5px",
+                  }}
+                  aria-hidden="true"
+                />
+                <span>
+                  <strong className="text-ink">Trail Load</strong> &mdash; {fmt(trailLoadLbs)} lbs
                 </span>
               </div>
             </div>
@@ -487,42 +502,42 @@ export function PackWeightCalculator({
         )}
       </div>
 
-      {/* ───── Day-1 Gear & Food breakdown (what gets stacked) ───── */}
-      <div className="bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
-        <div className="px-4 py-2.5 bg-surface-2 border-b border-border" style={{ borderWidth: "0.5px" }}>
-          <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
-            What&apos;s stacked on your base
+      {/* ───── Trail Load breakdown ───── */}
+      <div className="bg-surface border border-info-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
+        <div className="px-4 py-2.5 bg-info-bg border-b border-info-border" style={{ borderWidth: "0.5px" }}>
+          <p className="font-mono text-[10px] text-info-text uppercase tracking-[0.08em] font-semibold">
+            Trail Load
           </p>
-          <p className="font-mono text-[9px] text-ink-faint mt-0.5">
-            The {fmt(addOnLbs)} lbs added on top to get your Est Max
+          <p className="font-mono text-[9px] text-info-text mt-0.5">
+            Food, water, crew gear, and maybe a Philmont tent.
           </p>
         </div>
-        <ul className="text-[12px] text-ink-muted divide-y divide-border" style={{ borderWidth: "0.5px" }}>
-          <li className="flex justify-between px-4 py-1.5">
+        <ul className="text-[12px] text-ink divide-y divide-border" style={{ borderWidth: "0.5px" }}>
+          <li className="flex justify-between gap-4 px-4 py-1.5">
             <span>Food (per person, 1st carry segment)</span>
-            <span className="font-mono">{PACK_WEIGHT_CONSTANTS.foodPerPersonLbs} lbs</span>
+            <span className="font-mono font-semibold text-ink">{PACK_WEIGHT_CONSTANTS.foodPerPersonLbs} lbs</span>
           </li>
-          <li className="flex justify-between px-4 py-1.5">
+          <li className="flex justify-between gap-4 px-4 py-1.5">
             <span>Water (2L standard)</span>
-            <span className="font-mono">{PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs} lbs</span>
+            <span className="font-mono font-semibold text-ink">{PACK_WEIGHT_CONSTANTS.waterTwoLitersLbs} lbs</span>
           </li>
-          <li className="flex justify-between px-4 py-1.5">
+          <li className="flex justify-between gap-4 px-4 py-1.5">
             <span>Crew gear (avg, varies 0&ndash;3 lbs)</span>
-            <span className="font-mono">{PACK_WEIGHT_CONSTANTS.crewGearAvgLbs} lbs</span>
+            <span className="font-mono font-semibold text-ink">{PACK_WEIGHT_CONSTANTS.crewGearAvgLbs} lbs</span>
           </li>
-          {!actualPackWeightIncludesTent && (
-            <li className="flex justify-between px-4 py-1.5">
+          {usesPhilmontTent && (
+            <li className="flex justify-between gap-4 px-4 py-1.5">
               <span>Philmont tent</span>
-              <span className="font-mono">{fmt(PHILMONT_TENT_LBS)} lbs</span>
+              <span className="font-mono font-semibold text-ink">{fmt(PHILMONT_TENT_LBS)} lbs</span>
             </li>
           )}
-          <li className="flex justify-between px-4 py-2 bg-surface-2 text-ink font-medium">
-            <span>Total stacked on base</span>
-            <span className="font-mono">{fmt(addOnLbs)} lbs</span>
+          <li className="flex justify-between gap-4 px-4 py-2 bg-info-bg text-info-text font-semibold">
+            <span>Total Trail Load</span>
+            <span className="font-mono">{fmt(trailLoadLbs)} lbs</span>
           </li>
         </ul>
-        <p className="text-[11px] text-ink-faint px-4 py-2 border-t border-border leading-snug" style={{ borderWidth: "0.5px" }}>
-          Estimated values. If your weighed pack does not include a tent, the Philmont tent is added here.
+        <p className="text-[11px] text-ink-muted px-4 py-2 border-t border-info-border leading-snug" style={{ borderWidth: "0.5px" }}>
+          Trail Load is added to your Base Pack Weight to estimate your heaviest pack.
         </p>
       </div>
 
