@@ -301,7 +301,7 @@ export function PackingListEditor({
           className="w-full flex items-center justify-between bg-hcblue px-4 py-2.5 text-left text-white hover:bg-info-text transition-colors"
         >
           <span className="font-mono text-[10px] uppercase tracking-[0.08em]">
-            How to use this page
+            How to use the My Gear page
           </span>
           <svg
             width="12" height="12" viewBox="0 0 14 14" fill="none"
