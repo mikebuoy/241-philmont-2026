@@ -331,15 +331,15 @@ export function PackingListEditor({
               </p>
               <div className="space-y-1.5">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-ok-bg text-ok-text rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Wear</span>
+                  <span className="font-mono text-[10px] font-semibold bg-ok-bg text-ok-text rounded shrink-0 inline-flex items-center justify-center w-25 h-5">Wear</span>
                   <span className="text-ink-muted text-[11px] leading-snug">You wear it, so it does not count in Base Pack Weight.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-info-bg text-info-text rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Food/water</span>
+                  <span className="font-mono text-[10px] font-semibold bg-info-bg text-info-text rounded shrink-0 inline-flex items-center justify-center w-25 h-5">Food/water</span>
                   <span className="text-ink-muted text-[11px] leading-snug">Consumable items are tracked separately from Base Pack Weight.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[10px] font-semibold bg-surface-2 text-ink-muted rounded shrink-0 inline-flex items-center justify-center w-16 h-5">Not taking</span>
+                  <span className="font-mono text-[10px] font-semibold bg-surface-2 text-ink-muted rounded shrink-0 inline-flex items-center justify-center w-25 h-5">Not taking</span>
                   <span className="text-ink-muted text-[11px] leading-snug">You are not bringing it. It is skipped from your totals.</span>
                 </div>
               </div>
@@ -354,6 +354,15 @@ export function PackingListEditor({
               </p>
               <p className="text-ink-muted text-[11px] leading-snug">
                 Tap Done when you&apos;re finished. The page saves automatically.
+              </p>
+            </section>
+
+            <section className="space-y-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
+                4. Print for offline packing
+              </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                Use your browser&apos;s <strong className="text-ink">Print</strong> function (Cmd+P / Ctrl+P) to print this page as a packing checklist.
               </p>
             </section>
 
