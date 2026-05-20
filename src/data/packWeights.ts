@@ -30,10 +30,10 @@ export type PackWeightRow = {
 
 // Base Pack Weight = pct × body weight − legacy fixed Trail Load estimate
 export const PACK_WEIGHT_TABLE: PackWeightRow[] = [
-  { bodyWeight: 100, target20: 20.0, max25: 25.0, hardMax30: 30.0, targetBase:  5.3, maxBase: 10.3, hardMaxBase: 15.3, shade: "danger", note: "UL setup required · review every item" },
-  { bodyWeight: 120, target20: 24.0, max25: 30.0, hardMax30: 36.0, targetBase:  9.3, maxBase: 15.3, hardMaxBase: 21.3, shade: "danger", note: "UL setup required · bear bag only" },
-  { bodyWeight: 140, target20: 28.0, max25: 35.0, hardMax30: 42.0, targetBase: 13.3, maxBase: 20.3, hardMaxBase: 27.3, shade: "warn",   note: "Very tight · disciplined gear selection" },
-  { bodyWeight: 160, target20: 32.0, max25: 40.0, hardMax30: 48.0, targetBase: 17.3, maxBase: 25.3, hardMaxBase: 33.3, shade: "warn",   note: "Achievable · standard UL" },
+  { bodyWeight: 100, target20: 20.0, max25: 25.0, hardMax30: 30.0, targetBase:  5.3, maxBase: 10.3, hardMaxBase: 15.3, shade: "danger", note: "UL setup needed · minimal trail load" },
+  { bodyWeight: 120, target20: 24.0, max25: 30.0, hardMax30: 36.0, targetBase:  9.3, maxBase: 15.3, hardMaxBase: 21.3, shade: "danger", note: "UL setup required · lighter trail load" },
+  { bodyWeight: 140, target20: 28.0, max25: 35.0, hardMax30: 42.0, targetBase: 13.3, maxBase: 20.3, hardMaxBase: 27.3, shade: "warn",   note: "Achievable · disciplined gear selection" },
+  { bodyWeight: 160, target20: 32.0, max25: 40.0, hardMax30: 48.0, targetBase: 17.3, maxBase: 25.3, hardMaxBase: 33.3, shade: "ok",     note: "Small margin · standard trail load" },
   { bodyWeight: 180, target20: 36.0, max25: 45.0, hardMax30: 54.0, targetBase: 21.3, maxBase: 30.3, hardMaxBase: 39.3, shade: "ok",     note: "Good margin" },
   { bodyWeight: 200, target20: 40.0, max25: 50.0, hardMax30: 60.0, targetBase: 25.3, maxBase: 35.3, hardMaxBase: 45.3, shade: "ok",     note: "Good margin" },
 ];

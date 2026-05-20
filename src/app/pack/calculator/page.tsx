@@ -44,7 +44,7 @@ export default async function CalculatorPage() {
       />
 
       <Box variant="info">
-        <strong>Why 20% and not Philmont&apos;s 25–30%?</strong> The crew goal
+        <strong>Why 20% and not Philmont&apos;s 25–30%? </strong> The crew goal
         is 20% so we get an experience, not a survival march. 25% is the crew
         standard — above that you&apos;re carrying too much. 30% is Philmont&apos;s
         hard ceiling — no exceptions.
@@ -124,7 +124,7 @@ export default async function CalculatorPage() {
                 <td className="px-2 py-1.5 font-mono text-right">30% body weight</td>
               </tr>
               <tr className="border-b border-border last:border-0 bg-cell-danger text-cell-danger-text">
-                <td className="px-2 py-1.5">Smaller or underweight youth</td>
+                <td className="px-2 py-1.5">Smaller youth</td>
                 <td className="px-2 py-1.5 font-mono text-right">20–25% body weight</td>
                 <td className="px-2 py-1.5 font-mono text-right">25% preferred</td>
               </tr>

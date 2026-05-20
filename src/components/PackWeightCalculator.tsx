@@ -203,15 +203,15 @@ export function PackWeightCalculator({
                 </div>
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-[10px] font-semibold rounded shrink-0 inline-flex items-center justify-center w-9 h-5" style={{ backgroundColor: STATUS_COLORS.warn.bg, color: STATUS_COLORS.warn.text }}>20+</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Amber &mdash; above goal, still under crew standard.</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Yellow &mdash; above goal, still under crew standard.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-[10px] font-semibold rounded shrink-0 inline-flex items-center justify-center w-9 h-5" style={{ backgroundColor: STATUS_COLORS.over.bg, color: STATUS_COLORS.over.text }}>25+</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Pink &mdash; over crew standard. Cut weight.</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Red &mdash; over crew standard. Cut weight.</span>
                 </div>
                 <div className="flex items-baseline gap-2.5">
                   <span className="font-mono text-[10px] font-semibold rounded shrink-0 inline-flex items-center justify-center w-9 h-5" style={{ backgroundColor: STATUS_COLORS.critical.bg, color: STATUS_COLORS.critical.text }}>30+</span>
-                  <span className="text-ink-muted text-[11px] leading-snug">Red &mdash; over hard ceiling. No exceptions.</span>
+                  <span className="text-ink-muted text-[11px] leading-snug">Warning &mdash; over hard ceiling. No exceptions.</span>
                 </div>
               </div>
             </section>
@@ -220,6 +220,9 @@ export function PackWeightCalculator({
               <h3 className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold">
                 3. The zones
               </h3>
+              <p className="text-ink-muted text-[11px] leading-snug">
+                The zones are calculated based on your body weight:
+                </p>
               <ul className="text-ink-muted text-[11px] leading-snug pl-4 space-y-1 list-disc marker:text-ink-faint">
                 <li>20% &mdash; crew goal</li>
                 <li>25% &mdash; crew standard (don&apos;t go higher)</li>

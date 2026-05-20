@@ -358,7 +358,7 @@ export default async function CrewWeightsPage() {
                 ["Pack Progress", "Uses Base Pack Weight from the scale when that mode is enabled; otherwise uses live My Gear calculated Base Pack Weight"],
                 ["Trail Load",    "Food, water, crew gear, and Philmont tent when the crew member is using one"],
                 ["Delta line",    "Shows the same cut or margin guidance used by the pack calculator"],
-                ["Name color",    "Green text = on target · Amber = above 20% goal · Pink = over 25% · Red = over 30% hard max"],
+                ["Name color",    "Green text = on target · Yellow = above 20% goal · Red = over 25% · Warning = over 30% hard max"],
               ] as const).map(([col, desc]) => (
                 <tr key={col} className="border-b border-border last:border-0">
                   <td className="px-2.5 py-1.5 font-mono font-medium whitespace-nowrap">{col}</td>
