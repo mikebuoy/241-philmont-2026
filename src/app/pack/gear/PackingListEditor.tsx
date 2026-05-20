@@ -827,16 +827,18 @@ export function PackingListEditor({
 
           return (
             <section key={cat} className="pt-4 border-t border-border-strong">
-              <div className="flex items-baseline justify-between mb-1.5 px-1">
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">
+              <div className="flex items-baseline justify-between mb-1 rounded-md bg-info-bg px-2 py-1">
+                <h2 className="ffont-mono text-[11px] uppercase tracking-[0.06em] text-info-text font-semibold">
                   {cat}
                 </h2>
                 <span className="font-mono text-[10px] text-ink-faint italic">
                   not in pack totals
                 </span>
               </div>
+              <p className="text-[14px] text-ink-muted mb-2 px-2 italic strong leading-snug">
+                The items below travel to and from Philmont but DO NOT go on trail. We will leave any gear not going into the backcountry in the vans (such as duffle bags and other items listed below.) This allows you to pack extras for travel to/from Philmont, including standard toiletries or additional electonics.
+              </p>
               <p className="text-[11px] text-ink-faint mb-2 px-1 italic leading-snug">
-                These travel to and from Philmont but don&apos;t go on trail.
                 Not counted in Base Pack Weight or Trail Load.
               </p>
               <ul
