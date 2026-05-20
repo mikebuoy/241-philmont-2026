@@ -294,7 +294,7 @@ export function PackingListEditor({
 
       {/* ───── Sticky totals header ───── */}
       {/* ───── How to use (auto-open first visit; scrolls away) ───── */}
-      <div className="bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
+      <div className="print:hidden bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
         <button
           type="button"
           onClick={() => setHelpOpen((o) => !o)}
@@ -362,52 +362,23 @@ export function PackingListEditor({
       </div>
 
       {/* ───── Sticky calc bar — always compact, drawer pushes content ───── */}
-      <div className="sticky top-0 z-30 -mx-6 !mt-0" style={{ overflowAnchor: "none" }}>
+      <div className="sticky top-0 z-30 -mx-6 !mt-0 print:static print:mx-0 print:z-auto" style={{ overflowAnchor: "none" }}>
 
         {/* ── Status bar (always visible) ── */}
-        <div className="bg-surface border-b border-border shadow-sm">
+        <div className="bg-surface border-b border-border shadow-sm print:shadow-none print:border print:rounded-lg">
           <div className="max-w-[900px] mx-auto px-6 py-3">
 
-            {/* Top row: Est Max + buttons */}
-            <div className="flex items-baseline justify-between gap-3 mb-1">
-              <div className="flex items-baseline gap-2 min-w-0">
-                <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
-                <div className="min-w-0">
-                  <span className="font-mono text-[20px] sm:text-[20px] font-semibold leading-none text-ink">
-                    {fmt(totalDay1Lbs)} <span className="text-[14px] sm:text-[15px] text-ink-muted font-normal">lbs</span>
-                  </span>
-                  {/*<span className="block text-[10px] text-ink-muted leading-tight mt-0.5">
-                    Heaviest pack estimate
-                  </span>*/}
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setAdjustOpen((o) => !o)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
-                  style={{ borderWidth: "0.5px" }}
-                  aria-expanded={adjustOpen}
-                >
-                  Settings
-                  <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
-                    <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                  className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
-                  style={{ borderWidth: "0.5px" }}
-                >
-                  {isEditMode ? "Done" : "Edit Gear"}
-                </button>
-              </div>
+            {/* Top row: Est Max */}
+            <div className="flex items-baseline gap-2 min-w-0 mb-1">
+              <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
+              <span className="font-mono text-[20px] font-semibold leading-none text-ink">
+                {fmt(totalDay1Lbs)} <span className="text-[14px] text-ink-muted font-normal">lbs</span>
+              </span>
             </div>
 
             {/* Delta line */}
             {targets && deltaLines.length > 0 && (
-              <div className="font-mono text-[11px] text-ink mb-1.6 leading-snug">
+              <div className="font-mono text-[11px] text-ink mb-0.5 leading-snug">
                 {deltaLines[0]}
               </div>
             )}
@@ -528,15 +499,40 @@ export function PackingListEditor({
                 </span>
               </div>
             </div>*/}
-            <div className="mt-1 font-mono text-[10px] text-ink-faint">
-              Base Pack Weight + Trail Load = Est Max
+            {/* Bottom row: buttons (left) + legend (right) */}
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <div className="font-mono text-[10px] text-ink-faint">
+                Base Pack Weight + Trail Load = Est Max
+              </div>
+              <div className="print:hidden flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setAdjustOpen((o) => !o)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                  style={{ borderWidth: "0.5px" }}
+                  aria-expanded={adjustOpen}
+                >
+                  Settings
+                  <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
+                    <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                  className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                  style={{ borderWidth: "0.5px" }}
+                >
+                  {isEditMode ? "Done" : "Edit Gear"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
-          <div className="bg-surface-2 border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
+          <div className="print:hidden bg-surface-2 border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
             <div className="max-w-[600px] mx-auto px-6 py-4 space-y-4">
 
               {/* Body weight */}
@@ -721,7 +717,7 @@ export function PackingListEditor({
         {/* Column headers — edit mode only */}
         {isEditMode && (
           <div
-            className="bg-surface-2 border-x border-b border-border px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
+            className="print:hidden bg-surface-2 border-x border-b border-border px-3 py-1.5 flex items-center gap-2 text-[10px] font-mono text-ink-faint uppercase tracking-[0.05em] shadow-sm"
             style={{ borderWidth: "0.5px" }}
           >
             <span className="w-4 shrink-0" aria-hidden="true" />
@@ -739,7 +735,7 @@ export function PackingListEditor({
       {children}
 
       {/* ───── Filters ───── */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="print:hidden flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => setHidePacked((v) => !v)}
@@ -767,6 +763,21 @@ export function PackingListEditor({
           Hide items marked <b>Not Taking</b> ({totals.notPackingCount})
         </button>
       </div>
+      {(hidePacked || hideNotPacking) && (
+        <div className="hidden print:flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.06em]">Filtered:</span>
+          {hidePacked && (
+            <span className="font-mono text-[10px] bg-info-bg text-info-text rounded-full px-2.5 py-0.5">
+              Packed items hidden
+            </span>
+          )}
+          {hideNotPacking && (
+            <span className="font-mono text-[10px] bg-info-bg text-info-text rounded-full px-2.5 py-0.5">
+              Not Taking items hidden
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ───── Pack categories (counted) ───── */}
       {categoryOrder
@@ -804,7 +815,7 @@ export function PackingListEditor({
                   />
                 ))}
                 {isEditMode && (
-                  <li className="px-3 py-2 bg-surface-2/50">
+                  <li className="print:hidden px-3 py-2 bg-surface-2/50">
                     <button
                       onClick={() => onAddPersonal(cat)}
                       className="font-mono text-[11px] text-ink-muted hover:text-ink"
@@ -827,11 +838,11 @@ export function PackingListEditor({
 
           return (
             <section key={cat} className="pt-4 border-t border-border-strong">
-              <div className="flex items-baseline justify-between mb-1 rounded-md bg-info-bg px-2 py-1">
-                <h2 className="ffont-mono text-[11px] uppercase tracking-[0.06em] text-info-text font-semibold">
+              <div className="flex items-baseline justify-between mb-1 rounded-md bg-hcblue px-2 py-1">
+                <h2 className="font-mono text-[11px] uppercase tracking-[0.06em] text-white font-semibold">
                   {cat}
                 </h2>
-                <span className="font-mono text-[10px] text-ink-faint italic">
+                <span className="font-mono text-[10px] text-white/70 italic">
                   not in pack totals
                 </span>
               </div>
@@ -842,7 +853,7 @@ export function PackingListEditor({
                 Not counted in Base Pack Weight or Trail Load.
               </p>
               <ul
-                className="bg-surface-2 border border-border rounded-md overflow-hidden divide-y divide-border"
+                className="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border"
                 style={{ borderWidth: "0.5px" }}
               >
                 {catItems.map((it) => (
@@ -856,7 +867,7 @@ export function PackingListEditor({
                   />
                 ))}
                 {isEditMode && (
-                  <li className="px-3 py-2 bg-surface-2/70">
+                  <li className="print:hidden px-3 py-2 bg-surface-2/50">
                     <button
                       onClick={() => onAddPersonal(cat)}
                       className="font-mono text-[11px] text-ink-muted hover:text-ink"

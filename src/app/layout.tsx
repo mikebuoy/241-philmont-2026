@@ -62,10 +62,9 @@ export default function RootLayout({
       className={`${plexSans.variable} ${plexSansCondensed.variable} ${plexMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
-        <TopNav />
+        <div className="print:hidden"><TopNav /></div>
         <main className="flex-1">{children}</main>
-        <Footer />
-        <BottomNav />
+        <div className="print:hidden"><Footer /><BottomNav /></div>
       </body>
     </html>
   );

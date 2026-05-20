@@ -132,3 +132,25 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ============================================================
+   Print
+   ============================================================ */
+@media print {
+  /* Override the bone background token so it cascades to html/body and any
+     element using var(--color-bg) */
+  :root {
+    --color-bg: white;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  /* Preserve colored backgrounds (category headers, progress bar zones, badges) */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
