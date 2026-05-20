@@ -835,7 +835,7 @@ export function PackingListEditor({
                   not in pack totals
                 </span>
               </div>
-              <p className="text-[14px] text-ink-muted mb-2 px-2 italic strong leading-snug">
+              <p className="text-[14px] text-ink-muted mb-2 px-2 italic strongleading-snug">
                 The items below travel to and from Philmont but DO NOT go on trail. We will leave any gear not going into the backcountry in the vans (such as duffle bags and other items listed below.) This allows you to pack extras for travel to/from Philmont, including standard toiletries or additional electonics.
               </p>
               <p className="text-[11px] text-ink-faint mb-2 px-1 italic leading-snug">
