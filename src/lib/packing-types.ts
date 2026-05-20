@@ -19,6 +19,7 @@ export type PackingItem = {
   isPacked: boolean;
   isNotPacking: boolean;
   notes: string | null;
+  advisorNote: string | null;
   sortOrder: number;
   /** Description from core_gear_items, merged server-side. Not stored in packing_items. */
   description?: string;

@@ -11,7 +11,7 @@ import { getGearCategories, getCoreGearDescriptions } from "@/lib/gear";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { PackingListEditor } from "./PackingListEditor";
 
-export const metadata: Metadata = { title: "Gear List" };
+export const metadata: Metadata = { title: "My Packing List" };
 export const dynamic = "force-dynamic";
 
 export default async function PackGearPage() {
@@ -62,7 +62,7 @@ export default async function PackGearPage() {
   return (
     <Page
       eyebrow="My Pack"
-      title="Gear List"
+      title="My Packing List"
       meta={`${me.name} · ${items.filter((i) => !i.isNotPacking).length} items packing`}
       action={adminAction}
     >
@@ -73,6 +73,7 @@ export default async function PackGearPage() {
         useActualBaseWeight={me.useActualBaseWeight}
         usesPhilmontTent={me.usesPhilmontTent}
         categoryOrder={categoryOrder}
+        isAdmin={isAdmin}
         aboveHeader={<div key="subnav" className="print:hidden"><SubNav items={PACK_SUB} /></div>}
       />
     </Page>

@@ -14,6 +14,7 @@ import {
   saveMyActualBaseWeight,
   saveMyBaseWeightMode,
   saveUsesPhilmontTent,
+  clearAdvisorNote,
 } from "./actions";
 
 // Shelter is tracked as an actual packing item, so exclude it from the Trail Load constant
@@ -55,6 +56,7 @@ export function PackingListEditor({
   useActualBaseWeight: initialUseActual,
   usesPhilmontTent: initialUsesPhilmontTent,
   categoryOrder: propCategoryOrder,
+  isAdmin,
   aboveHeader,
   children,
 }: {
@@ -64,6 +66,7 @@ export function PackingListEditor({
   useActualBaseWeight?: boolean;
   usesPhilmontTent?: boolean;
   categoryOrder?: string[];
+  isAdmin?: boolean;
   /** Renders above the sticky green box (e.g. SubNav). Scrolls away on scroll. */
   aboveHeader?: ReactNode;
   children?: ReactNode;
@@ -75,6 +78,7 @@ export function PackingListEditor({
   const [usesPhilmontTent, setUsesPhilmontTent] = useState(initialUsesPhilmontTent ?? true);
   const [hideNotPacking, setHideNotPacking] = useState(false);
   const [hidePacked, setHidePacked] = useState(false);
+  const [showFlaggedOnly, setShowFlaggedOnly] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("pack");
@@ -208,6 +212,7 @@ export function PackingListEditor({
       isPacked: false,
       isNotPacking: false,
       notes: null,
+      advisorNote: null,
       sortOrder: 9999,
     };
     addLocal(optimistic);
@@ -217,6 +222,11 @@ export function PackingListEditor({
     } catch {
       removeLocal(tempId);
     }
+  }
+
+  function onClearAdvisorNote(itemId: string) {
+    patchLocal(itemId, { advisorNote: null });
+    startTransition(async () => { await clearAdvisorNote(itemId); });
   }
 
   async function onDelete(itemId: string) {
@@ -276,10 +286,13 @@ export function PackingListEditor({
     : 0;
   const isCritical = status === "critical";
 
+  const flaggedCount = items.filter((it) => !!it.advisorNote).length;
+
   // Apply filters
   const visible = items.filter((it) => {
     if (it.isNotPacking && hideNotPacking) return false;
     if (it.isPacked && hidePacked) return false;
+    if (showFlaggedOnly && !it.advisorNote) return false;
     return true;
   });
 
@@ -301,7 +314,7 @@ export function PackingListEditor({
           className="w-full flex items-center justify-between bg-hcblue px-4 py-2.5 text-left text-white hover:bg-info-text transition-colors"
         >
           <span className="font-mono text-[10px] uppercase tracking-[0.08em]">
-            How to use the My Gear page
+            How to use the My Packing List page
           </span>
           <svg
             width="12" height="12" viewBox="0 0 14 14" fill="none"
@@ -771,8 +784,21 @@ export function PackingListEditor({
         >
           Hide items marked <b>Not Taking</b> ({totals.notPackingCount})
         </button>
+        <button
+          type="button"
+          onClick={() => setShowFlaggedOnly((v) => !v)}
+          aria-pressed={showFlaggedOnly}
+          className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            showFlaggedOnly
+              ? "border-warn-text bg-warn-bg text-warn-text"
+              : "border-border bg-surface text-ink-muted hover:text-ink"
+          }`}
+          style={{ borderWidth: "0.5px" }}
+        >
+          ⚑ Flagged only ({flaggedCount})
+        </button>
       </div>
-      {(hidePacked || hideNotPacking) && (
+      {(hidePacked || hideNotPacking || showFlaggedOnly) && (
         <div className="hidden print:flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.06em]">Filtered:</span>
           {hidePacked && (
@@ -783,6 +809,11 @@ export function PackingListEditor({
           {hideNotPacking && (
             <span className="font-mono text-[10px] bg-info-bg text-info-text rounded-full px-2.5 py-0.5">
               Not Taking items hidden
+            </span>
+          )}
+          {showFlaggedOnly && (
+            <span className="font-mono text-[10px] bg-warn-bg text-warn-text rounded-full px-2.5 py-0.5">
+              Flagged items only
             </span>
           )}
         </div>
@@ -797,7 +828,7 @@ export function PackingListEditor({
           const catSubtotalOz = allCatItems
             .filter((it) => !it.isNotPacking && !it.isWorn)
             .reduce((sum, it) => sum + it.qty * it.weightOz, 0);
-          if (catItems.length === 0 && hideNotPacking) return null;
+          if (catItems.length === 0 && (hideNotPacking || showFlaggedOnly)) return null;
 
           return (
             <section key={cat}>
@@ -821,6 +852,8 @@ export function PackingListEditor({
                     onToggle={onToggle}
                     onFieldChange={onFieldChange}
                     onDelete={() => onDelete(it.id)}
+                    isAdmin={isAdmin}
+                    onClearAdvisorNote={() => onClearAdvisorNote(it.id)}
                   />
                 ))}
                 {isEditMode && (
@@ -843,7 +876,7 @@ export function PackingListEditor({
         .filter((cat) => TRAVEL_ONLY_CATEGORIES.has(cat))
         .map((cat) => {
           const catItems = visible.filter((it) => it.category === cat);
-          if (catItems.length === 0 && hideNotPacking) return null;
+          if (catItems.length === 0 && (hideNotPacking || showFlaggedOnly)) return null;
 
           return (
             <section key={cat} className="pt-4 border-t border-border-strong">
@@ -873,6 +906,8 @@ export function PackingListEditor({
                     onToggle={onToggle}
                     onFieldChange={onFieldChange}
                     onDelete={() => onDelete(it.id)}
+                    isAdmin={isAdmin}
+                    onClearAdvisorNote={() => onClearAdvisorNote(it.id)}
                   />
                 ))}
                 {isEditMode && (
@@ -928,11 +963,13 @@ type ItemRowProps = {
   ) => void;
   onFieldChange: (id: string, field: "name" | "qty" | "weightOz", v: string | number) => void;
   onDelete: () => void;
+  isAdmin?: boolean;
+  onClearAdvisorNote?: () => void;
 };
 
-function ItemRow({ item, mode, onToggle, onFieldChange, onDelete }: ItemRowProps) {
+function ItemRow({ item, mode, onToggle, onFieldChange, onDelete, isAdmin, onClearAdvisorNote }: ItemRowProps) {
   if (mode === "pack") {
-    return <PackRow item={item} onToggle={onToggle} />;
+    return <PackRow item={item} onToggle={onToggle} isAdmin={isAdmin} onClearAdvisorNote={onClearAdvisorNote} />;
   }
   return <EditRow item={item} onToggle={onToggle} onFieldChange={onFieldChange} onDelete={onDelete} />;
 }
@@ -940,9 +977,13 @@ function ItemRow({ item, mode, onToggle, onFieldChange, onDelete }: ItemRowProps
 function PackRow({
   item,
   onToggle,
+  isAdmin,
+  onClearAdvisorNote,
 }: {
   item: PackingItem;
   onToggle: ItemRowProps["onToggle"];
+  isAdmin?: boolean;
+  onClearAdvisorNote?: () => void;
 }) {
   const isNote = item.isCore && item.isRequired === null;
   const dimmed = item.isNotPacking;
@@ -966,43 +1007,61 @@ function PackRow({
   }
 
   return (
-    <li className={`px-3 py-2.5 flex items-center gap-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
-      <label className="shrink-0 -m-2 flex h-9 w-9 items-center justify-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={item.isPacked}
-          disabled={item.isNotPacking}
-          onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
-          className="accent-ink w-5 h-5 disabled:opacity-30 disabled:cursor-not-allowed"
-          aria-label="Packed"
-          title="Packed"
-        />
-      </label>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-1.5 flex-wrap">
-          <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
-          <span className={`font-medium leading-snug ${item.isPacked ? "line-through opacity-60" : ""}`}>
-            {item.name}
-          </span>
-        </div>
-        {item.description && (
-          <div className="text-ink-muted font-normal text-[11px] leading-snug mt-0.5">
-            {item.description}
+    <li className={`px-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
+      <div className="flex items-center gap-3 py-2.5">
+        <label className="shrink-0 -m-2 flex h-9 w-9 items-center justify-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={item.isPacked}
+            disabled={item.isNotPacking}
+            onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
+            className="accent-ink w-5 h-5 disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Packed"
+            title="Packed"
+          />
+        </label>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <RequiredBadge isRequired={item.isRequired} isCore={item.isCore} />
+            <span className={`font-medium leading-snug ${item.isPacked ? "line-through opacity-60" : ""}`}>
+              {item.name}
+            </span>
           </div>
-        )}
+          {item.description && (
+            <div className="text-ink-muted font-normal text-[11px] leading-snug mt-0.5">
+              {item.description}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {item.isWorn && (
+            <span className="rounded bg-ok-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-ok-text" title="Wear">Wear</span>
+          )}
+          {item.isConsumable && (
+            <span className="rounded bg-info-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-info-text" title="Food/water">Food</span>
+          )}
+        </div>
+        <div className="shrink-0 font-mono text-[11px] text-ink-muted text-right whitespace-nowrap">
+          {item.qty > 1 && <span>{item.qty} &times; </span>}
+          {item.weightOz} oz
+        </div>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
-        {item.isWorn && (
-          <span className="rounded bg-ok-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-ok-text" title="Wear">Wear</span>
-        )}
-        {item.isConsumable && (
-          <span className="rounded bg-info-bg px-1.5 py-0.5 font-mono text-[9px] font-semibold text-info-text" title="Food/water">Food</span>
-        )}
-      </div>
-      <div className="shrink-0 font-mono text-[11px] text-ink-muted text-right whitespace-nowrap">
-        {item.qty > 1 && <span>{item.qty} &times; </span>}
-        {item.weightOz} oz
-      </div>
+      {item.advisorNote && (
+        <div className="flex items-start gap-2 mb-2 rounded bg-warn-bg px-2.5 py-1.5 text-warn-text">
+          <span className="text-[12px] shrink-0" aria-hidden="true">⚑</span>
+          <span className="flex-1 font-mono text-[11px] leading-snug">{item.advisorNote}</span>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onClearAdvisorNote}
+              className="shrink-0 font-mono text-[11px] underline hover:no-underline"
+              title="Clear advisor note"
+            >
+              clear
+            </button>
+          )}
+        </div>
+      )}
     </li>
   );
 }

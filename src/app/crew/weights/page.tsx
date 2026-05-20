@@ -354,8 +354,8 @@ export default async function CrewWeightsPage() {
             </thead>
             <tbody>
               {([
-                ["Body Weight",   "Entered on Estimator or My Gear page"],
-                ["Pack Progress", "Uses Base Pack Weight from the scale when that mode is enabled; otherwise uses live My Gear calculated Base Pack Weight"],
+                ["Body Weight",   "Entered on Estimator or My Packing List page"],
+                ["Pack Progress", "Uses Base Pack Weight from the scale when that mode is enabled; otherwise uses live My Packing List calculated Base Pack Weight"],
                 ["Trail Load",    "Food, water, crew gear, and Philmont tent when the crew member is using one"],
                 ["Delta line",    "Shows the same cut or margin guidance used by the pack calculator"],
                 ["Name color",    "Green text = on target · Yellow = above 20% goal · Red = over 25% · Warning = over 30% hard max"],

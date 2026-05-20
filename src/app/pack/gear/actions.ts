@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { getMyCrewMember } from "@/lib/crew";
 
 async function requireMyCrewMember() {
@@ -130,4 +131,16 @@ export async function saveMyActualBaseWeight(lbs: number | null): Promise<void> 
   revalidatePath("/pack/gear");
   revalidatePath("/pack/calculator");
   revalidatePath("/crew/weights");
+}
+
+export async function clearAdvisorNote(itemId: string): Promise<void> {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("packing_items")
+    .update({ advisor_note: null })
+    .eq("id", itemId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/pack/gear");
+  revalidatePath("/crew/gear-check");
 }

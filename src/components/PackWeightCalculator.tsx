@@ -235,7 +235,7 @@ export function PackWeightCalculator({
                 4. When you have real gear
               </h3>
               <p className="text-ink-muted text-[11px] leading-snug">
-                Switch to My Gear and weigh each item. That page tracks your actual list and is more accurate than this estimator.
+                Switch to My Packing List and weigh each item. That page tracks your actual list and is more accurate than this estimator.
               </p>
             </section>
 

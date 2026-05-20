@@ -22,6 +22,7 @@ type Row = {
   is_packed: boolean;
   is_not_packing: boolean;
   notes: string | null;
+  advisor_note: string | null;
   sort_order: number;
 };
 
@@ -41,6 +42,7 @@ function rowToItem(r: Row): PackingItem {
     isPacked: r.is_packed,
     isNotPacking: r.is_not_packing,
     notes: r.notes,
+    advisorNote: r.advisor_note,
     sortOrder: r.sort_order,
   };
 }

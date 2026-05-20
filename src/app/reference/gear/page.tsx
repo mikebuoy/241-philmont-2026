@@ -28,7 +28,7 @@ export default function ReferenceGearPage() {
 
       <Box variant="info">
         <strong>This is the shared/crew gear reference.</strong> Personal
-        items live on <em>My Pack › Gear List</em>. Weights confirmed against
+        items live on <em>My Pack › My Packing List</em>. Weights confirmed against
         the Philmont 2024 Guidebook to Adventure unless noted otherwise.
       </Box>
 
