@@ -218,10 +218,10 @@ export function GearCheckGrid({
                 key={g.crewId}
                 type="button"
                 onClick={() => setActiveCrew(g.crewId)}
-                className={`px-3 py-1.5 rounded-md font-mono text-[11px] font-medium transition-colors ${
+                className={`px-4 py-2 rounded-md font-mono text-[12px] font-medium transition-colors ${
                   activeCrew === g.crewId
-                    ? "bg-hcblue text-white"
-                    : "bg-surface border border-border text-ink-muted hover:bg-surface-2"
+                    ? "bg-ink text-bg font-semibold"
+                    : "bg-surface-2 border border-border text-ink hover:bg-surface-3"
                 }`}
                 style={activeCrew !== g.crewId ? { borderWidth: "0.5px" } : undefined}
               >
@@ -236,7 +236,7 @@ export function GearCheckGrid({
                 {/* Sliding background pill */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                  className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
                   style={{
                     left: mode === "flag" ? "2px" : "50%",
                     right: mode === "flag" ? "50%" : "2px",
@@ -245,20 +245,22 @@ export function GearCheckGrid({
                 <button
                   type="button"
                   onClick={() => setMode("flag")}
+                  title="Flag mode — click cells to add advisor notes"
                   className={`relative z-10 px-3 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                    mode === "flag" ? "text-bg" : "text-ink-muted"
+                    mode === "flag" ? "text-white" : "text-ink-muted"
                   }`}
                 >
-                  ⚑ Flag items
+                  ⚑ Flag
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("pack")}
+                  title="Check mode — click cells to mark items packed"
                   className={`relative z-10 px-3 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                    mode === "pack" ? "text-bg" : "text-ink-muted"
+                    mode === "pack" ? "text-white" : "text-ink-muted"
                   }`}
                 >
-                  ✓ Pack check
+                  ✓ Check
                 </button>
               </div>
             )}

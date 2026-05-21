@@ -9,6 +9,7 @@ import { getAllCrewMembers } from "@/lib/crew";
 import { getAllPackingItems, computeTotals } from "@/lib/packing";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
+import { PrintButton } from "@/components/primitives/PrintButton";
 
 export const metadata: Metadata = { title: "Crew Pack Weights" };
 export const dynamic = "force-dynamic";
@@ -233,6 +234,7 @@ export default async function CrewWeightsPage() {
       eyebrow="My Crew"
       title="Pack Weight Readiness"
       meta={`${entered} of ${members.length} body weights entered · ${onTarget} on target`}
+      titleRight={<PrintButton />}
     >
       <SubNav items={CREW_SUB} />
 

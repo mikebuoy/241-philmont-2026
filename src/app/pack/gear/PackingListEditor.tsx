@@ -603,7 +603,7 @@ export function PackingListEditor({
                   >
                     <span
                       aria-hidden
-                      className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                      className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
                       style={{
                         left: useActualBase ? "2px" : "50%",
                         right: useActualBase ? "50%" : "2px",
@@ -613,7 +613,7 @@ export function PackingListEditor({
                       type="button"
                       onClick={() => { setUseActualBase(true); startTransition(() => saveMyBaseWeightMode(true)); }}
                       className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                        useActualBase ? "text-bg" : "text-ink-muted"
+                        useActualBase ? "text-white" : "text-ink-muted"
                       }`}
                     >
                       Scale weight
@@ -622,7 +622,7 @@ export function PackingListEditor({
                       type="button"
                       onClick={() => { setUseActualBase(false); startTransition(() => saveMyBaseWeightMode(false)); }}
                       className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                        !useActualBase ? "text-bg" : "text-ink-muted"
+                        !useActualBase ? "text-white" : "text-ink-muted"
                       }`}
                     >
                       From list
@@ -671,7 +671,7 @@ export function PackingListEditor({
                       >
                         <span
                           aria-hidden
-                          className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                          className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
                           style={{
                             left: usesPhilmontTent ? "2px" : "50%",
                             right: usesPhilmontTent ? "50%" : "2px",
@@ -681,7 +681,7 @@ export function PackingListEditor({
                           type="button"
                           onClick={() => onUsesPhilmontTentChange(true)}
                           className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                            usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                            usesPhilmontTent ? "text-white" : "text-ink-muted"
                           }`}
                         >
                           Philmont tent
@@ -690,7 +690,7 @@ export function PackingListEditor({
                           type="button"
                           onClick={() => onUsesPhilmontTentChange(false)}
                           className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                            !usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                            !usesPhilmontTent ? "text-white" : "text-ink-muted"
                           }`}
                         >
                           My tent

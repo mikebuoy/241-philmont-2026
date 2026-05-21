@@ -10,6 +10,7 @@ import { getPackingItems, seedCoreItemsForCrewMember } from "@/lib/packing";
 import { getGearCategories, getCoreGearDescriptions } from "@/lib/gear";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { PackingListEditor } from "./PackingListEditor";
+import { PrintButton } from "@/components/primitives/PrintButton";
 
 export const metadata: Metadata = { title: "My Packing List" };
 export const dynamic = "force-dynamic";
@@ -65,6 +66,7 @@ export default async function PackGearPage() {
       title="My Packing List"
       meta={`${me.name} · ${items.filter((i) => !i.isNotPacking).length} items packing`}
       action={adminAction}
+      titleRight={<PrintButton />}
     >
       <PackingListEditor
         items={items}

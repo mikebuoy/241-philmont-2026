@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActive } from "./navItems";
 import { NavAuthButton } from "./NavAuthButton";
@@ -10,7 +11,8 @@ export default function TopNav() {
   return (
     <header className="hidden sm:block bg-surface border-b border-border">
       <div className="max-w-[900px] mx-auto px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-2">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/tooth-icon.png" width={22} height={22} alt="" className="shrink-0" />
           <span className="font-condensed text-[15px] font-semibold tracking-[0.02em] uppercase">
             Tooth of Time
           </span>

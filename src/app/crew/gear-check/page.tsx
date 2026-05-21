@@ -11,6 +11,7 @@ import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import type { CrewRole } from "@/data/roster";
 import { GearCheckGrid, type CellData, type CrewGrid, type GridRow } from "./GearCheckGrid";
+import { PrintButton } from "@/components/primitives/PrintButton";
 
 export const metadata: Metadata = { title: "Gear Check" };
 export const dynamic = "force-dynamic";
@@ -147,6 +148,7 @@ export default async function GearCheckPage() {
       eyebrow="My Crew"
       title="Gear Check"
       meta={`${members.length} members · ${totalFlagged} item${totalFlagged !== 1 ? "s" : ""} flagged`}
+      titleRight={<PrintButton />}
     >
       <div className="print:hidden">
         <SubNav items={CREW_SUB} />

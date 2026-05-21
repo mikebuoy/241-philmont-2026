@@ -298,7 +298,7 @@ export function PackWeightCalculator({
           >
             <span
               aria-hidden
-              className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+              className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
               style={{
                 left: usesPhilmontTent ? "2px" : "50%",
                 right: usesPhilmontTent ? "50%" : "2px",
@@ -308,7 +308,7 @@ export function PackWeightCalculator({
               type="button"
               onClick={() => handleUsesPhilmontTentChange(true)}
               className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                usesPhilmontTent ? "text-white" : "text-ink-muted"
               }`}
             >
               Philmont tent
@@ -317,7 +317,7 @@ export function PackWeightCalculator({
               type="button"
               onClick={() => handleUsesPhilmontTentChange(false)}
               className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                !usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                !usesPhilmontTent ? "text-white" : "text-ink-muted"
               }`}
             >
               My tent

@@ -10,3 +10,4 @@ alter table public.packing_items
 -- No RLS changes needed:
 -- Existing "admin all" policy covers writes to the new column.
 -- Existing authenticated-read policy covers reads.
+1

@@ -8,10 +8,12 @@ type PageProps = {
   action?: ReactNode;
   /** Optional right-aligned content in the eyebrow row (e.g. status badges). */
   headerRight?: ReactNode;
+  /** Optional right-aligned content on the same line as the h1 title. */
+  titleRight?: ReactNode;
   children: ReactNode;
 };
 
-export function Page({ eyebrow, title, meta, action, headerRight, children }: PageProps) {
+export function Page({ eyebrow, title, meta, action, headerRight, titleRight, children }: PageProps) {
   return (
     <div className="max-w-[900px] mx-auto px-6 pt-8 pb-16">
       <header className="border-b-2 border-ink pb-4 mb-6">
@@ -29,9 +31,12 @@ export function Page({ eyebrow, title, meta, action, headerRight, children }: Pa
           </div>
         )}
         <div className="min-w-0">
-          <h1 className="text-[26px] font-semibold tracking-[-0.02em] leading-tight">
-            {title}
-          </h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-[26px] font-semibold tracking-[-0.02em] leading-tight">
+              {title}
+            </h1>
+            {titleRight && <div className="shrink-0">{titleRight}</div>}
+          </div>
           {meta && <div className="mt-1">{meta}</div>}
         </div>
       </header>

@@ -8,6 +8,7 @@ import { CREWS, ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers, type CertificationStatus } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
+import { PrintButton } from "@/components/primitives/PrintButton";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 
 const BASE_ADD_ON_LBS =
@@ -70,6 +71,7 @@ export default async function RosterPage() {
       title="Crew Roster"
       meta={`Two sister crews · 22 members · ${claimedCount} signed in`}
       action={<EditPageButton href="/admin/roster" label="Manage Crew" />}
+      titleRight={<PrintButton />}
     >
       <SubNav items={CREW_SUB} />
 
