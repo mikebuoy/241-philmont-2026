@@ -768,7 +768,7 @@ export function PackingListEditor({
               <button
                 type="button"
                 onClick={() => setAdjustOpen(false)}
-                className="w-full py-2.5 rounded-md bg-ink text-bg font-mono text-[11px] font-semibold uppercase tracking-[0.06em] hover:opacity-90 transition-opacity"
+                className="w-full py-2.5 rounded-md bg-hcblue text-white font-mono text-[11px] font-semibold uppercase tracking-[0.06em] hover:opacity-90 transition-opacity"
               >
                 Save
               </button>
