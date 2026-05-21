@@ -78,6 +78,7 @@ export function HeroChallenge() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [canDismiss, setCanDismiss] = useState(false);
+  const [hasSeenBottom, setHasSeenBottom] = useState(false);
   const [animPhase, setAnimPhase] = useState<AnimPhase>("idle");
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -96,6 +97,7 @@ export function HeroChallenge() {
   useEffect(() => {
     if (!showOverlay) return;
     setCanDismiss(false);
+    setHasSeenBottom(false);
     setAnimPhase("logo-hold");           // logo pops instantly
     const timers = [
       setTimeout(() => setAnimPhase("logo-out"),    1500), // hold 1.5s, then fade
@@ -108,6 +110,17 @@ export function HeroChallenge() {
     ];
     return () => timers.forEach(clearTimeout);
   }, [showOverlay]);
+
+  // Unlock button only after user scrolls to the bottom image
+  useEffect(() => {
+    if (animPhase !== "done" || !sentinelRef.current || !scrollRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setHasSeenBottom(true); },
+      { root: scrollRef.current, threshold: 0.1 },
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [animPhase]);
 
   function dismiss() {
     localStorage.setItem(LS_KEY, "1");
@@ -218,7 +231,12 @@ export function HeroChallenge() {
               <div className="max-w-[620px] mx-auto">
                 <button
                   onClick={dismiss}
-                  className="w-full bg-white text-hcblue rounded-xl py-4 font-bold text-[16px] transition-all hover:opacity-90 active:scale-[0.98]"
+                  disabled={!hasSeenBottom}
+                  className={`w-full rounded-xl py-4 font-bold text-[16px] transition-all ${
+                    hasSeenBottom
+                      ? "bg-white text-hcblue hover:opacity-90 active:scale-[0.98]"
+                      : "bg-white/30 text-white/50 cursor-not-allowed"
+                  }`}
                 >
                   Let&apos;s Go!
                 </button>
