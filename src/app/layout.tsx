@@ -8,6 +8,7 @@ import "./globals.css";
 import TopNav from "@/components/nav/TopNav";
 import BottomNav from "@/components/nav/BottomNav";
 import { Footer } from "@/components/Footer";
+import { ServiceWorker } from "@/components/ServiceWorker";
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -62,6 +63,7 @@ export default function RootLayout({
       className={`${plexSans.variable} ${plexSansCondensed.variable} ${plexMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
+        <ServiceWorker />
         <div className="print:hidden"><TopNav /></div>
         <main className="flex-1">{children}</main>
         <div className="print:hidden"><Footer /><BottomNav /></div>
