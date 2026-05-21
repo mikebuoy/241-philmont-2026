@@ -2,6 +2,7 @@ import "server-only";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CrewMember } from "@/lib/crew";
+import { getAllCrewMembers } from "@/lib/crew";
 import type { PackingItem } from "./packing-types";
 
 export type { PackingItem, Totals } from "./packing-types";
@@ -50,11 +51,20 @@ function rowToItem(r: Row): PackingItem {
 /** Fetch all packing items for all crew members in one query. */
 export async function getAllPackingItems(): Promise<PackingItem[]> {
   const supabase = await createServerClient();
-  const { data, error } = await supabase
-    .from("packing_items")
-    .select("*");
-  if (error) throw new Error(`Failed to load all packing items: ${error.message}`);
-  return (data as Row[]).map(rowToItem);
+  const PAGE = 1000;
+  const all: Row[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("packing_items")
+      .select("*")
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`Failed to load all packing items: ${error.message}`);
+    all.push(...(data as Row[]));
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all.map(rowToItem);
 }
 
 /** Fetch all items for a given crew member, ordered for stable rendering. */
@@ -171,4 +181,108 @@ export async function seedCoreItemsForCrewMember(
 function numberOrOne(qty: string): number {
   const n = parseInt(qty, 10);
   return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+/**
+ * Admin-only bulk sync. For every crew member:
+ * - Inserts any core items they're missing (same role-aware shelter defaults as seedCoreItemsForCrewMember)
+ * - Updates sort_order and is_required on existing items if they've drifted
+ * - Preserves weight_oz, is_worn, is_consumable, is_not_packing, is_packed, advisor_note
+ */
+export async function syncCoreItemsForAllMembers(): Promise<{
+  membersProcessed: number;
+  itemsAdded: number;
+  itemsUpdated: number;
+}> {
+  const admin = createAdminClient();
+
+  type GearRow = {
+    category: string; name: string; required: string; qty: string;
+    weight_oz: number; sort_order: number;
+    default_is_worn: boolean; default_is_consumable: boolean; default_is_not_packing: boolean;
+  };
+  type ExRow = {
+    id: string; crew_member_id: string; name: string;
+    sort_order: number; is_required: boolean | null;
+  };
+
+  const [members, gearRes, existingRes] = await Promise.all([
+    getAllCrewMembers(),
+    admin.from("core_gear_items").select("*").order("sort_order", { ascending: true }),
+    admin
+      .from("packing_items")
+      .select("id, crew_member_id, name, sort_order, is_required")
+      .eq("is_core", true),
+  ]);
+  if (gearRes.error) throw new Error(gearRes.error.message);
+  if (existingRes.error) throw new Error(existingRes.error.message);
+
+  const gearItems = gearRes.data as GearRow[];
+
+  const existingMap = new Map<string, ExRow>();
+  for (const row of existingRes.data as ExRow[]) {
+    existingMap.set(`${row.crew_member_id}|${row.name}`, row);
+  }
+
+  let itemsAdded = 0;
+  let itemsUpdated = 0;
+
+  for (const member of members) {
+    const isScout = member.role === "scout" || member.role === "crew_leader";
+    const toInsert: object[] = [];
+    const toUpdate: { id: string; sort_order: number; is_required: boolean | null }[] = [];
+
+    for (const g of gearItems) {
+      const key = `${member.id}|${g.name}`;
+      const existing = existingMap.get(key);
+      const isRequired = g.required === "Required" ? true : g.required === "Optional" ? false : null;
+
+      if (!existing) {
+        let weightOz = Number(g.weight_oz) || 0;
+        let isNotPacking = g.default_is_not_packing ?? false;
+        if (g.category === "Shelter") {
+          if (g.name === "Philmont Thunder Ridge tent (your half)") {
+            weightOz = isScout ? 43 : 0;
+            isNotPacking = !isScout;
+          } else if (g.name === "Personal 1P tent (enter weight)") {
+            weightOz = 0;
+            isNotPacking = isScout;
+          }
+        }
+        toInsert.push({
+          crew_member_id: member.id,
+          category: g.category,
+          name: g.name,
+          qty: numberOrOne(g.qty),
+          weight_oz: weightOz,
+          is_core: true,
+          is_required: isRequired,
+          is_worn: g.default_is_worn ?? false,
+          is_consumable: g.default_is_consumable ?? false,
+          is_not_packing: isNotPacking,
+          sort_order: g.sort_order,
+        });
+        itemsAdded++;
+      } else if (existing.sort_order !== g.sort_order || existing.is_required !== isRequired) {
+        toUpdate.push({ id: existing.id, sort_order: g.sort_order, is_required: isRequired });
+        itemsUpdated++;
+      }
+    }
+
+    if (toInsert.length > 0) {
+      const { error } = await admin.from("packing_items").insert(toInsert);
+      if (error) throw new Error(`Insert failed for ${member.name}: ${error.message}`);
+    }
+
+    await Promise.all(
+      toUpdate.map((u) =>
+        admin
+          .from("packing_items")
+          .update({ sort_order: u.sort_order, is_required: u.is_required })
+          .eq("id", u.id),
+      ),
+    );
+  }
+
+  return { membersProcessed: members.length, itemsAdded, itemsUpdated };
 }

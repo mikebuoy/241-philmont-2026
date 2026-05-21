@@ -263,6 +263,7 @@ export function GearEditor({
 
   return (
     <DndContext
+      id="gear-editor-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}

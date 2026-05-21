@@ -271,6 +271,20 @@ export async function reorderItems(orderedIds: string[]): Promise<void> {
   revalidatePath("/admin/gear");
 }
 
+/** Push current core gear list to all crew members: insert missing items, sync sort_order and is_required. */
+export async function syncAllMembersAction(): Promise<{
+  membersProcessed: number;
+  itemsAdded: number;
+  itemsUpdated: number;
+}> {
+  await requireAdmin();
+  const { syncCoreItemsForAllMembers } = await import("@/lib/packing");
+  const result = await syncCoreItemsForAllMembers();
+  revalidatePath("/pack/gear");
+  revalidatePath("/crew/gear-check");
+  return result;
+}
+
 /** Move an item to a different category (cross-category drag). Cascades to all crew packing lists. */
 export async function moveItemToCategory(
   id: string,

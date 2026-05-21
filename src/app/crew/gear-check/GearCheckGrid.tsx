@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CrewRole } from "@/data/roster";
-import { setAdvisorNote } from "./actions";
+import { setAdvisorNote, setPackedState } from "./actions";
 
 export type CellData = {
   itemId: string;
@@ -75,6 +75,7 @@ export function GearCheckGrid({
     return result;
   });
 
+  const [mode, setMode] = useState<"flag" | "pack">("flag");
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [noteInput, setNoteInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -89,6 +90,20 @@ export function GearCheckGrid({
       headerScrollRef.current.scrollLeft = bodyScrollRef.current.scrollLeft;
     }
   }
+
+  // Read initial tab from URL hash on mount
+  useEffect(() => {
+    const match = window.location.hash.match(/^#crew-(\d+)$/);
+    if (match) {
+      const id = parseInt(match[1], 10);
+      if (grids.some((g) => g.crewId === id)) setActiveCrew(id);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep URL hash in sync with active tab
+  useEffect(() => {
+    history.replaceState(null, "", `#crew-${String(activeCrew).padStart(2, "0")}`);
+  }, [activeCrew]);
 
   // Reset scroll positions when switching crews
   useEffect(() => {
@@ -145,6 +160,35 @@ export function GearCheckGrid({
     if (result?.error) setSaveError(result.error);
   }
 
+  async function togglePacked(
+    crewId: number,
+    member: { id: string; name: string },
+    row: GridRow,
+  ) {
+    const rk = rowKey(row);
+    const cell = localCells[crewId]?.[rk]?.[member.id];
+    if (!cell || cell.isNotPacking) return;
+    const newIsPacked = !cell.isPacked;
+    setLocalCells((prev) => ({
+      ...prev,
+      [crewId]: {
+        ...prev[crewId],
+        [rk]: { ...prev[crewId][rk], [member.id]: { ...cell, isPacked: newIsPacked } },
+      },
+    }));
+    const result = await setPackedState(cell.itemId, newIsPacked);
+    if (result?.error) {
+      setLocalCells((prev) => ({
+        ...prev,
+        [crewId]: {
+          ...prev[crewId],
+          [rk]: { ...prev[crewId][rk], [member.id]: cell },
+        },
+      }));
+      setSaveError(result.error);
+    }
+  }
+
   if (!activeGrid) return null;
 
   const bodyRows = buildBodyRows(activeGrid);
@@ -184,16 +228,50 @@ export function GearCheckGrid({
                 Crew {g.crewId} · {g.members.length} members
               </button>
             ))}
+            {isAdmin && (
+              <div
+                className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
+                style={{ borderWidth: "0.5px" }}
+              >
+                {/* Sliding background pill */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                  style={{
+                    left: mode === "flag" ? "2px" : "50%",
+                    right: mode === "flag" ? "50%" : "2px",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMode("flag")}
+                  className={`relative z-10 px-3 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                    mode === "flag" ? "text-bg" : "text-ink-muted"
+                  }`}
+                >
+                  ⚑ Flag items
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("pack")}
+                  className={`relative z-10 px-3 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                    mode === "pack" ? "text-bg" : "text-ink-muted"
+                  }`}
+                >
+                  ✓ Pack check
+                </button>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap justify-end gap-x-3 gap-y-1">
             {[
-              { bg: "bg-ok-bg", text: "text-ok-text", label: "✓ Packed" },
-              { bg: "bg-surface-2", text: "text-ink-faint", label: "□ Not packed" },
-              { bg: "bg-warn-bg", text: "text-warn-text", label: "⚑ Flag" },
-              { bg: "bg-surface", text: "text-ink-faint", label: "— N/A" },
-            ].map(({ bg, text, label }) => (
-              <span key={label} className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[9px] ${bg} ${text}`}>
-                {label}
+              { bg: "bg-ok-bg", text: "text-ok-text", symbol: "✓", label: "Packed" },
+              { bg: "", text: "text-ink-muted", symbol: "□", label: "Not packed", bgStyle: { backgroundColor: "#fde8e8" } },
+              { bg: "bg-warn-bg", text: "text-warn-text", symbol: "⚑", label: "Flag" },
+              { bg: "bg-surface-2", text: "text-ink-muted", symbol: "⊘", label: "Not Taking", symbolClass: "text-[12px]" },
+            ].map(({ bg, text, symbol, label, symbolClass, bgStyle }) => (
+              <span key={label} style={{ ...bgStyle, borderWidth: "0.5px" }} className={`inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 font-mono text-[9px] ${bg} ${text}`}>
+                <span className={symbolClass}>{symbol}</span>{label}
               </span>
             ))}
           </div>
@@ -338,7 +416,11 @@ export function GearCheckGrid({
                           key={m.id}
                           cell={cell}
                           isAdmin={isAdmin}
-                          onEdit={() => openEdit(activeGrid.crewId, m, row)}
+                          onEdit={
+                            mode === "pack"
+                              ? () => togglePacked(activeGrid.crewId, m, row)
+                              : () => openEdit(activeGrid.crewId, m, row)
+                          }
                         />
                       );
                     })}
@@ -428,9 +510,9 @@ function GridCell({
   }
 
   if (cell.isNotPacking) {
-    const inner = <span className="font-mono text-[12px] text-ink-faint leading-none">—</span>;
+    const inner = <span className="font-mono text-[12px] text-ink-faint leading-none">⊘</span>;
     return (
-      <td className={`${baseClass} bg-surface`}>
+      <td className={`${baseClass} bg-surface-2`}>
         {isAdmin ? (
           <button
             type="button"
@@ -496,7 +578,7 @@ function GridCell({
 
   const inner = <span className="font-mono text-[12px] text-ink-faint leading-none">□</span>;
   return (
-    <td className={`${baseClass} bg-surface-2`}>
+    <td className={baseClass} style={{ backgroundColor: "#fde8e8" }}>
       {isAdmin ? (
         <button
           type="button"

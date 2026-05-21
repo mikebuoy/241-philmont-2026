@@ -159,15 +159,15 @@ export default async function AdminRosterPage() {
                             )}
                           </td>
                           <td className="px-3 py-2.5 text-right">
-                            {m.userId && (
-                              <div className="inline-flex items-center gap-2">
-                                <ResetGearButton
-                                  name={m.name}
-                                  action={async () => {
-                                    "use server";
-                                    await resetCrewMemberGearList(m.id);
-                                  }}
-                                />
+                            <div className="inline-flex items-center gap-2">
+                              <ResetGearButton
+                                name={m.name}
+                                action={async () => {
+                                  "use server";
+                                  await resetCrewMemberGearList(m.id);
+                                }}
+                              />
+                              {m.userId && (
                                 <UnbindButton
                                   name={m.name}
                                   action={async () => {
@@ -175,8 +175,8 @@ export default async function AdminRosterPage() {
                                     await unbindCrewMember(m.id);
                                   }}
                                 />
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
