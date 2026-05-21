@@ -362,7 +362,7 @@ export function GearCheckGrid({
               {/* Est Max weight row */}
               <tr>
                 <td className="sticky left-0 bg-bg z-10 px-2 py-1 border-b border-border font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted print:static">
-                  Est Max
+                  Est Max Pack Weight
                 </td>
                 {activeGrid.members.map((m) => {
                   const colors = m.weightStatus ? STATUS_COLORS[m.weightStatus] : null;
@@ -510,7 +510,7 @@ function GridCell({
   }
 
   if (cell.isNotPacking) {
-    const inner = <span className="font-mono text-[12px] text-ink-faint leading-none">⊘</span>;
+    const inner = <span className="font-mono text-[18px] text-ink-faint leading-none">⊘</span>;
     return (
       <td className={`${baseClass} bg-surface-2`}>
         {isAdmin ? (
