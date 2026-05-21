@@ -383,174 +383,185 @@ export function PackingListEditor({
         )}
       </div>
 
-      {/* ───── Sticky calc bar — always compact, drawer pushes content ───── */}
+      {/* ───── Progress bar section — scrolls away ───── */}
+      <div className="-mx-6 px-6 pt-3 pb-4 !mb-0 bg-surface print:border print:rounded-lg print:mx-0 print:mb-4">
+        <div className="max-w-[900px] mx-auto">
+
+          {/* Progress bar */}
+          {targets ? (
+            <div>
+              {/* Percent labels above the bar */}
+              <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-0">
+                <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
+                <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
+                <span className="absolute right-0">30%</span>
+              </div>
+              <div className="relative pt-2.5">
+                {/* Down arrow marker above bar */}
+                <div
+                  className="absolute top-0 z-20"
+                  style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}
+                >
+                  <div
+                    className="w-0 h-0"
+                    style={{
+                      borderLeft: "7px solid transparent",
+                      borderRight: "7px solid transparent",
+                      borderTop: `9px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
+                      filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
+                    }}
+                  />
+                </div>
+                {/* The bar — 30px, zones + translucent blue base overlay + weight numbers + base label */}
+                <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+                  <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
+                  <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
+                  <div style={{ width: `${overEdgePct - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
+                  {/* Translucent blue base fill */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0"
+                    style={{
+                      width: `${basePct}%`,
+                      backgroundColor: "rgba(30, 106, 145, 0.35)",
+                      borderRight: "2px solid #1e6a91",
+                    }}
+                  />
+                  {/* Striped pattern fill — Trail Load portion */}
+                  {markerPct > basePct && (
+                    <div
+                      className="absolute top-0 bottom-0"
+                      style={{
+                        left: `${basePct}%`,
+                        width: `${markerPct - basePct}%`,
+                        backgroundColor: "rgba(30, 106, 145, 0.1)",
+                        backgroundImage:
+                          "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+                      }}
+                    />
+                  )}
+                  {/* Vertical marker line */}
+                  <div
+                    className="absolute top-0 bottom-0 z-10 pointer-events-none"
+                    style={{
+                      left: `${markerPct}%`,
+                      width: "2px",
+                      transform: "translateX(-50%)",
+                      backgroundColor: isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)",
+                    }}
+                  />
+                  {/* Base label */}
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-[12px] sm:text-[13px] font-bold whitespace-nowrap pointer-events-none" style={{ color: "#0d3d5a" }}>
+                    Base: {fmt(activeBaseLbs, 1)}
+                  </div>
+                  {/* Weight numbers at threshold positions */}
+                  <div className="absolute inset-0 pointer-events-none font-mono text-ink">
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${okPct}%` }}>
+                      {fmt(targets.target20, 0)}
+                    </div>
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${warnEdgePct}%` }}>
+                      {fmt(targets.max25, 0)}
+                    </div>
+                    <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
+                      {fmt(targets.hardMax30, 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend — Base / Trail Load swatches, matching pack/calculator */}
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-ink-muted">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
+                    style={{ backgroundColor: "rgba(30, 106, 145, 0.35)", borderWidth: "0.5px" }}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong className="text-ink">Base Pack Weight</strong> &mdash; {fmt(activeBaseLbs, 1)} lbs
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
+                    style={{
+                      backgroundColor: "rgba(30, 106, 145, 0.1)",
+                      backgroundImage: "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
+                      borderWidth: "0.5px",
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong className="text-ink">Trail Load</strong> &mdash; {fmt(trailLoadLbs, 1)} lbs
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2">
+              Enter your body weight in <strong>Settings</strong> to see targets.
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* ───── Sticky compact bar — always visible when scrolled ───── */}
       <div className="sticky top-0 z-30 -mx-6 !mt-0 print:static print:mx-0 print:z-auto" style={{ overflowAnchor: "none" }}>
 
-        {/* ── Status bar (always visible) ── */}
-        <div className="bg-surface border-b border-border shadow-sm print:shadow-none print:border print:rounded-lg">
-          <div className="max-w-[900px] mx-auto px-6 py-3">
+        {/* ── Compact row: Est Max + buttons ── */}
+        <div className="bg-surface border-b border-border shadow-sm print:shadow-none">
+          <div className="max-w-[900px] mx-auto px-6 py-2.5 flex items-center justify-between gap-3">
 
-            {/* Top row: Est Max */}
-            <div className="flex items-baseline gap-2 min-w-0 mb-1">
+            {/* Est Max number + delta */}
+            <div className="flex items-baseline gap-2 min-w-0 flex-1">
               <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] shrink-0">Est Max</span>
-              <span className="font-mono text-[20px] font-semibold leading-none text-ink">
+              <span className="font-mono text-[20px] font-semibold leading-none text-ink shrink-0">
                 {fmt(totalDay1Lbs)} <span className="text-[14px] text-ink-muted font-normal">lbs</span>
               </span>
+              {targets && deltaLines.length > 0 && (
+                <span className="font-mono text-[11px] text-ink-muted truncate min-w-0 hidden sm:inline">
+                  {deltaLines[0]}
+                </span>
+              )}
             </div>
 
-            {/* Delta line */}
-            {targets && deltaLines.length > 0 && (
-              <div className="font-mono text-[11px] text-ink mb-0.5 leading-snug">
-                {deltaLines[0]}
-              </div>
-            )}
-
-            {/* Progress bar */}
-            {targets ? (
-              <div className="mb-1.0">
-                {/* Percent labels above the bar — centered above the weight numbers inside */}
-                <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-0">
-                  <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
-                  <span className="absolute" style={{ left: `${warnEdgePct}%`, transform: "translateX(-50%)" }}>25%</span>
-                  <span className="absolute right-0">30%</span>
-                </div>
-                <div className="relative pt-2.5">
-                  {/* Down arrow marker above bar */}
-                  <div
-                    className="absolute top-0 z-20"
-                    style={{ left: `${markerPct}%`, transform: "translateX(-50%)" }}
-                  >
-                    <div
-                      className="w-0 h-0"
-                      style={{
-                        borderLeft: "7px solid transparent",
-                        borderRight: "7px solid transparent",
-                        borderTop: `9px solid ${isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)"}`,
-                        filter: isCritical ? "none" : "drop-shadow(0 0 1px white)",
-                      }}
-                    />
-                  </div>
-                  {/* The bar — 30px, zones + translucent blue base overlay + weight numbers + base label */}
-                  <div className="relative flex h-[30px] rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
-                    <div style={{ width: `${okPct}%`, backgroundColor: STATUS_COLORS.ok.bg }} />
-                    <div style={{ width: `${warnEdgePct - okPct}%`, backgroundColor: STATUS_COLORS.warn.bg }} />
-                    <div style={{ width: `${overEdgePct - warnEdgePct}%`, backgroundColor: STATUS_COLORS.over.bg }} />
-                    {/* Translucent blue base fill — overlays zones from 0 to base position */}
-                    <div
-                      className="absolute left-0 top-0 bottom-0"
-                      style={{
-                        width: `${basePct}%`,
-                        backgroundColor: "rgba(30, 106, 145, 0.35)",
-                        borderRight: "2px solid #1e6a91",
-                      }}
-                    />
-                    {/* Striped pattern fill — Trail Load portion, from base to Est Max */}
-                    {markerPct > basePct && (
-                      <div
-                        className="absolute top-0 bottom-0"
-                        style={{
-                          left: `${basePct}%`,
-                          width: `${markerPct - basePct}%`,
-                          backgroundColor: "rgba(30, 106, 145, 0.1)",
-                          backgroundImage:
-                            "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
-                        }}
-                      />
-                    )}
-                    {/* Vertical marker line under arrow — runs through the bar at Est Max */}
-                    <div
-                      className="absolute top-0 bottom-0 z-10 pointer-events-none"
-                      style={{
-                        left: `${markerPct}%`,
-                        width: "2px",
-                        transform: "translateX(-50%)",
-                        backgroundColor: isCritical ? STATUS_COLORS.critical.bg : "var(--color-ink)",
-                      }}
-                    />
-                    {/* Base label — inside the bar at left, in blue (no actual/calc differentiation here) */}
-                    <div className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-[12px] sm:text-[13px] font-bold whitespace-nowrap pointer-events-none" style={{ color: "#0d3d5a" }}>
-                      Base: {fmt(activeBaseLbs, 1)}
-                    </div>
-                    {/* Weight numbers at threshold positions */}
-                    <div className="absolute inset-0 pointer-events-none font-mono text-ink">
-                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${okPct}%` }}>
-                        {fmt(targets.target20, 0)}
-                      </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-[18px] font-bold leading-none" style={{ left: `${warnEdgePct}%` }}>
-                        {fmt(targets.max25, 0)}
-                      </div>
-                      <div className="absolute top-1/2 right-2 -translate-y-1/2 text-[18px] font-bold leading-none">
-                        {fmt(targets.hardMax30, 0)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2 mb-1">
-                Enter your body weight in <strong>Weight Settings</strong> to see targets.
-              </div>
-            )}
-
-            {/* Legend — explains the in-bar labels & color fills */}
-            {/*}
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-ink-muted">
-              <div className="flex items-center gap-2">
-                <span
-                  className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
-                  style={{ backgroundColor: "rgba(30, 106, 145, 0.35)", borderWidth: "0.5px" }}
-                  aria-hidden="true"
-                />
-                <span>
-                  <strong className="text-ink">Base Pack Weight</strong> &mdash; {useActualBase ? "scale weight" : "item list"} &middot; {fmt(activeBaseLbs, 1)} lbs
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className="inline-block w-7 h-3 rounded-sm shrink-0 border border-border"
-                  style={{
-                    backgroundColor: "rgba(30, 106, 145, 0.1)",
-                    backgroundImage:
-                      "repeating-linear-gradient(45deg, rgba(30, 106, 145, 0.5) 0, rgba(30, 106, 145, 0.5) 2px, transparent 2px, transparent 7px)",
-                    borderWidth: "0.5px",
-                  }}
-                  aria-hidden="true"
-                />
-                <span>
-                  <strong className="text-ink">Trail Load</strong> &mdash; {fmt(trailLoadLbs, 1)} lbs
-                </span>
-              </div>
-            </div>*/}
-            {/* Bottom row: buttons (left) + legend (right) */}
-            <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
-              <div className="font-mono text-[10px] text-ink-faint">
-                Base Pack Weight + Trail Load = Est Max
-              </div>
-              <div className="print:hidden flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setAdjustOpen((o) => !o)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
-                  style={{ borderWidth: "0.5px" }}
-                  aria-expanded={adjustOpen}
-                >
-                  Settings
-                  <svg width="9" height="9" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
-                    <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                  className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
-                  style={{ borderWidth: "0.5px" }}
-                >
-                  {isEditMode ? "Done" : "Edit Gear"}
-                </button>
-              </div>
+            {/* Buttons */}
+            <div className="print:hidden flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                style={{ borderWidth: "0.5px" }}
+              >
+                {isEditMode ? "Done" : "Edit Gear"}
+              </button>
             </div>
+
           </div>
         </div>
+
+        {/* ── Settings accordion header ── */}
+        <button
+          type="button"
+          onClick={() => setAdjustOpen((o) => !o)}
+          aria-expanded={adjustOpen}
+          className={`print:hidden w-full flex items-center justify-between px-6 py-2 border-l-[3px] border-l-hcblue text-[11px] font-mono font-medium transition-colors ${
+            adjustOpen
+              ? "bg-info-bg text-info-text border-b border-info-border"
+              : "bg-surface-2 text-ink border-b border-border"
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            Settings
+          </span>
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style={{ transform: adjustOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>
+            <path d="M2 5l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
 
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
@@ -712,8 +723,6 @@ export function PackingListEditor({
 
               {/* Reference values */}
               <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
-                {/* <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.06em] mb-2">Reference</div>*/}
-
                 {/* Trail Load breakdown */}
                 <div className="font-mono text-[11px] space-y-0.5 mb-2">
                   <div className="text-ink-muted font-semibold uppercase tracking-[0.06em]">
@@ -741,8 +750,6 @@ export function PackingListEditor({
                   </div>
                 </div>
 
-                {/* Base + targets */}
-
                 {!useActualBase && (
                   <div className="font-mono text-[10px] text-ink-faint mt-2">
                     Worn {fmt(ozToLbs(totals.wornOz))} lbs · Consumable {fmt(ozToLbs(totals.consumableOz))} lbs
@@ -760,7 +767,6 @@ export function PackingListEditor({
             </div>
           </div>
         )}
-
 
         {/* Column headers — edit mode only */}
         {isEditMode && (
