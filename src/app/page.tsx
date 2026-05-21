@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Stat } from "@/components/primitives/Stat";
@@ -47,35 +48,52 @@ export default async function Home() {
             tone="loss"
           />
         </div>
-        <div className="bg-ink text-bg rounded-lg p-4 sm:p-5 mt-3 flex items-start gap-4">
-          <svg
-            className="opacity-50 shrink-0 mt-0.5"
-            width="36"
-            height="36"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-            <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />
-          </svg>
-          <div className="min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-60 mb-1.5">
-              The challenge · The accomplishment
-            </p>
-            <p className="text-[15px] sm:text-[17px] font-semibold leading-tight">
-              You&apos;ll climb 1.2&times; Mount Everest in 11 days
-            </p>
-            <p className="text-[11px] sm:text-[12px] opacity-75 mt-1.5 leading-relaxed">
-              35,000 ft of cumulative ascent across 11 trail days, then 35,650
-              ft of descent on the way back. Everest summit ={" "}
-              <span className="font-mono">29,032 ft</span>. Your legs will
-              climb it, descend it, and then some.
-            </p>
+        <div className="-mx-6 bg-ink text-bg px-6 py-10 sm:py-14 mt-3 rounded-2xl">
+          <div className="max-w-[620px] mx-auto">
+
+            {/* Icon + title */}
+            <div className="flex flex-col items-center text-center mb-8">
+              <Image
+                src="/tooth-icon.png"
+                width={56}
+                height={56}
+                alt=""
+                className="mb-5 opacity-80"
+              />
+              <h2 className="font-condensed text-[28px] sm:text-[36px] font-bold uppercase tracking-[0.02em] leading-tight">
+                The Challenge.<br />The Accomplishment.
+              </h2>
+            </div>
+
+            {/* Body */}
+            <div className="space-y-4 text-[14px] sm:text-[15px] leading-relaxed">
+              <p className="text-[18px] sm:text-[21px] font-semibold leading-snug">
+                You are going to climb more than Mount Everest.
+              </p>
+              <p className="opacity-75">
+                Over 11 trail days, your crew will climb about 35,000 feet. Mount Everest is 29,032 feet tall. That means your legs will climb the height of Everest, keep going another 6,000 feet, then descend 35,650 feet back down the trail.
+              </p>
+              <p className="text-[16px] font-semibold">This is not just a backpacking trip.</p>
+              <p className="text-[16px] font-semibold">This is a rite of passage.</p>
+              <p className="opacity-75">
+                You will leave home as Scouts. You will come back stronger, tougher, and more confident young men.
+              </p>
+              <p className="opacity-75">
+                The trail will test your legs, your lungs, your attitude, and your ability to work as a crew. There will be days when you are tired. Days when the pack feels heavy. Days when the climb feels bigger than you expected.
+              </p>
+              <p className="text-[16px] font-bold">That is the point.</p>
+              <p className="opacity-75">
+                Every hard mile is shaping you. Every climb is building grit. Every decision to keep moving is teaching you who you are becoming.
+              </p>
+              <p className="font-mono text-[12px] opacity-50 tracking-wide uppercase">
+                Train now. Show up ready. Carry your weight. Help your crew.
+              </p>
+              <div className="pt-5 border-t border-white/15 space-y-2">
+                <p className="text-[16px] font-semibold opacity-85">The mountain will ask a lot from you.</p>
+                <p className="text-[22px] sm:text-[26px] font-bold">Be ready to answer.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </Section>
