@@ -567,7 +567,7 @@ export function PackingListEditor({
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
           <div className="print:hidden bg-white border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
-            <div className="max-w-[600px] mx-auto px-6 pt-4 space-y-4" style={{ paddingBottom: "75px" }}>
+            <div className="max-w-[600px] mx-auto px-6 pt-4 pb-[200px] sm:pb-[75px] space-y-4">
 
               {/* Body weight */}
               <div>
