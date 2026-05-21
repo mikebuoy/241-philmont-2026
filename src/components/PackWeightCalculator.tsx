@@ -291,29 +291,44 @@ export function PackWeightCalculator({
           </div>
         </label>
 
-        <label className="flex items-start gap-3 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            role="switch"
-            checked={usesPhilmontTent}
-            onChange={(e) => handleUsesPhilmontTentChange(e.target.checked)}
-            className="peer sr-only"
-          />
-          <span
-            className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface-2 p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
-            aria-hidden="true"
+        <div className="space-y-1.5">
+          <div
+            className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
+            style={{ borderWidth: "0.5px" }}
           >
-            <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
-          </span>
-          <span className="text-[12px] text-ink leading-snug">
-            I&apos;m using a Philmont tent
-            <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
-              {usesPhilmontTent
-                ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_LBS, 1)} lbs.`
-                : "Using your own tent. Count it in Base Pack Weight."}
-            </span>
-          </span>
-        </label>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+              style={{
+                left: usesPhilmontTent ? "2px" : "50%",
+                right: usesPhilmontTent ? "50%" : "2px",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleUsesPhilmontTentChange(true)}
+              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                usesPhilmontTent ? "text-bg" : "text-ink-muted"
+              }`}
+            >
+              Philmont tent
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUsesPhilmontTentChange(false)}
+              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                !usesPhilmontTent ? "text-bg" : "text-ink-muted"
+              }`}
+            >
+              My tent
+            </button>
+          </div>
+          <p className="font-mono text-ink-muted text-[11px]">
+            {usesPhilmontTent
+              ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_LBS, 1)} lbs.`
+              : "Using your own tent. Count it in Base Pack Weight."}
+          </p>
+        </div>
 
         {/* Base Pack Weight definition */}
         <p className="text-[12px] text-ink-muted leading-relaxed">

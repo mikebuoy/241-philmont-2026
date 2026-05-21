@@ -596,33 +596,44 @@ export function PackingListEditor({
                   </div>
                 </div>
 
-                <label className="flex items-start gap-3 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    role="switch"
-                    checked={useActualBase}
-                    onChange={(e) => {
-                      const v = e.target.checked;
-                      setUseActualBase(v);
-                      startTransition(() => saveMyBaseWeightMode(v));
-                    }}
-                    className="peer sr-only"
-                  />
-                  <span
-                    className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface-2 p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
-                    aria-hidden="true"
+                <div className="space-y-1.5">
+                  <div
+                    className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
+                    style={{ borderWidth: "0.5px" }}
                   >
-                    <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
-                  </span>
-                  <span className="text-[12px] text-ink leading-snug">
-                    <strong>Use my scale weight</strong>
-                    <span className="block text-ink-muted text-[11px] mt-0.5">
-                      {useActualBase
-                        ? "Using the pack weight I entered."
-                        : "Using item weights from my gear list."}
-                    </span>
-                  </span>
-                </label>
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                      style={{
+                        left: useActualBase ? "2px" : "50%",
+                        right: useActualBase ? "50%" : "2px",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setUseActualBase(true); startTransition(() => saveMyBaseWeightMode(true)); }}
+                      className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                        useActualBase ? "text-bg" : "text-ink-muted"
+                      }`}
+                    >
+                      Scale weight
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setUseActualBase(false); startTransition(() => saveMyBaseWeightMode(false)); }}
+                      className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                        !useActualBase ? "text-bg" : "text-ink-muted"
+                      }`}
+                    >
+                      From list
+                    </button>
+                  </div>
+                  <p className="font-mono text-ink-muted text-[11px]">
+                    {useActualBase
+                      ? "Using the pack weight I entered."
+                      : "Using item weights from my gear list."}
+                  </p>
+                </div>
 
                 <div className={useActualBase ? "" : "opacity-40"}>
                   <div className="flex items-baseline justify-between mb-1.5">
@@ -653,29 +664,44 @@ export function PackingListEditor({
                 {useActualBase ? (
                   <div className="border-t border-border pt-3 space-y-2" style={{ borderWidth: "0.0px" }}>
                     <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">Shelter</div>
-                    <label className="flex items-start gap-3 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        role="switch"
-                        checked={usesPhilmontTent}
-                        onChange={(e) => onUsesPhilmontTentChange(e.target.checked)}
-                        className="peer sr-only"
-                      />
-                      <span
-                        className="mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-surface p-0.5 ring-1 ring-border transition-colors peer-checked:bg-info-text peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-info-text"
-                        aria-hidden="true"
+                    <div className="space-y-1.5">
+                      <div
+                        className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
+                        style={{ borderWidth: "0.5px" }}
                       >
-                        <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4" />
-                      </span>
-                      <span className="text-[12px] text-ink leading-snug">
-                        <strong>I&apos;m using a Philmont tent</strong>
-                        <span className="block font-mono text-ink-muted text-[11px] mt-0.5">
-                          {usesPhilmontTent
-                            ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_OZ / 16, 1)} lbs.`
-                            : "Tent weight included in Base Pack Weight."}
-                        </span>
-                      </span>
-                    </label>
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-ink transition-all duration-200"
+                          style={{
+                            left: usesPhilmontTent ? "2px" : "50%",
+                            right: usesPhilmontTent ? "50%" : "2px",
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => onUsesPhilmontTentChange(true)}
+                          className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                            usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                          }`}
+                        >
+                          Philmont tent
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onUsesPhilmontTentChange(false)}
+                          className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                            !usesPhilmontTent ? "text-bg" : "text-ink-muted"
+                          }`}
+                        >
+                          My tent
+                        </button>
+                      </div>
+                      <p className="font-mono text-ink-muted text-[11px]">
+                        {usesPhilmontTent
+                          ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_OZ / 16, 1)} lbs.`
+                          : "Tent weight included in Base Pack Weight."}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="rounded-md bg-surface-2 px-3 py-2 text-[11px] text-ink-muted leading-snug">
