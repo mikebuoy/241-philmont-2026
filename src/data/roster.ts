@@ -1,4 +1,4 @@
-export type CrewRole = "crew_leader" | "lead_advisor" | "advisor" | "scout";
+export type CrewRole = "crew_leader" | "chaplain_aide" | "guia" | "scout" | "lead_advisor" | "advisor";
 
 export type CrewMember = {
   /** Display name as it appears in the spreadsheet */
@@ -63,7 +63,9 @@ export const ALL_MEMBERS: CrewMember[] = CREWS.flatMap((c) => c.members);
 
 export const ROLE_LABEL: Record<CrewRole, string> = {
   crew_leader: "Crew Leader",
+  chaplain_aide: "Chaplain's Aide",
+  guia: "Guia",
+  scout: "Scout",
   lead_advisor: "Lead Advisor",
   advisor: "Advisor",
-  scout: "Scout",
 };

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient, isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { seedCoreItemsForCrewMember } from "@/lib/packing";
-import type { CertificationStatus, CrewMember } from "@/lib/crew";
+import type { CertificationStatus, CrewMember, CrewRole } from "@/lib/crew";
 
 const CERTIFICATION_COLUMNS = {
   wfa: "wfa_certification_status",
@@ -46,6 +46,48 @@ export async function updateCrewMemberCertification(
   revalidatePath("/crew/roster");
 }
 
+const REVALIDATE_PATHS = [
+  "/admin/roster",
+  "/crew/roster",
+  "/crew/weights",
+  "/crew/gear-check",
+] as const;
+
+export async function updateCrewMemberRole(crewMemberId: string, role: CrewRole) {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+  const VALID_ROLES: CrewRole[] = ["crew_leader","chaplain_aide","guia","scout","lead_advisor","advisor"];
+  if (!VALID_ROLES.includes(role)) throw new Error("Invalid role");
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("crew_members")
+    .update({ role })
+    .eq("id", crewMemberId);
+  if (error) throw new Error(`Role update failed: ${error.message}`);
+  for (const path of REVALIDATE_PATHS) revalidatePath(path);
+}
+
+export async function setCrewMemberDisabled(crewMemberId: string, disabled: boolean) {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("crew_members")
+    .update({ is_disabled: disabled })
+    .eq("id", crewMemberId);
+  if (error) throw new Error(`Status update failed: ${error.message}`);
+  for (const path of REVALIDATE_PATHS) revalidatePath(path);
+}
+
+export async function deleteCrewMember(crewMemberId: string) {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("crew_members")
+    .delete()
+    .eq("id", crewMemberId);
+  if (error) throw new Error(`Delete failed: ${error.message}`);
+  for (const path of REVALIDATE_PATHS) revalidatePath(path);
+}
+
 export async function resetCrewMemberGearList(crewMemberId: string) {
   if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
   const admin = createAdminClient();
@@ -80,6 +122,7 @@ export async function resetCrewMemberGearList(crewMemberId: string) {
     wfaCertificationStatus: null,
     cprCertificationStatus: null,
     claimedAt: row.claimed_at,
+    isDisabled: false,
   };
   await seedCoreItemsForCrewMember(member);
 

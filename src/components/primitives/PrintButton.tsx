@@ -5,7 +5,7 @@ export function PrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="hidden sm:flex flex-col items-center gap-0.5 text-ink-muted hover:text-ink transition-colors print:hidden"
+      className="flex flex-col items-center gap-0.5 text-ink-muted hover:text-ink transition-colors print:hidden"
     >
       <svg
         width="18" height="18" viewBox="0 0 24 24" fill="none"

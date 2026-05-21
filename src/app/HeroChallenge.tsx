@@ -38,6 +38,9 @@ function HeroBody({ sentinelRef }: { sentinelRef?: React.RefObject<HTMLDivElemen
       <div className="pt-5 border-t border-white/15">
         <p className="text-[22px] sm:text-[26px] font-bold">Let&apos;s go create amazing memories.</p>
       </div>
+      <div className="flex justify-center pt-8">
+        <Image src="/PSR_Bull_Logo.png" width={180} height={90} alt="Philmont" className="opacity-80" />
+      </div>
       {sentinelRef && <div ref={sentinelRef} />}
     </div>
   );

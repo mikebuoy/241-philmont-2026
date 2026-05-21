@@ -4,7 +4,7 @@ import { Section } from "@/components/primitives/Section";
 import { Panel } from "@/components/primitives/Panel";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
-import { CREWS, ROLE_LABEL, type CrewRole } from "@/data/roster";
+import { ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers, type CertificationStatus } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
@@ -38,38 +38,35 @@ export const dynamic = "force-dynamic";
 
 const ROLE_TONE: Record<CrewRole, "issued" | "crew" | "warn" | "neutral"> = {
   crew_leader: "issued",
+  chaplain_aide: "issued",
+  guia: "issued",
+  scout: "crew",
   lead_advisor: "warn",
   advisor: "neutral",
-  scout: "crew",
 };
 
 export default async function RosterPage() {
-  // Fetch claim status from Supabase (best-effort — if it fails, render
-  // the static roster without claim indicators)
-  let claimedNames = new Set<string>();
-  const weightByName = new Map<string, WeightInfo>();
+  let members: Awaited<ReturnType<typeof getAllCrewMembers>> = [];
   try {
-    const members = await getAllCrewMembers();
-    claimedNames = new Set(members.filter((m) => m.userId).map((m) => m.name));
-    for (const m of members) {
-      weightByName.set(m.name, {
-        bodyWeightLbs: m.bodyWeightLbs,
-        actualBaseWeightLbs: m.actualBaseWeightLbs,
-        usesPhilmontTent: m.usesPhilmontTent,
-        wfaCertificationStatus: m.wfaCertificationStatus,
-        cprCertificationStatus: m.cprCertificationStatus,
-      });
-    }
+    members = await getAllCrewMembers();
   } catch {
-    // Public visitors who can't read the table see no indicators — fine
+    // Public visitors who can't read the table see empty roster — fine
   }
-  const claimedCount = claimedNames.size;
+
+  const claimedCount = members.filter((m) => m.userId).length;
+
+  const crew1 = members.filter((m) => m.crewId === 1);
+  const crew2 = members.filter((m) => m.crewId === 2);
+  const crewGroups = [
+    { id: 1, name: "Crew 1", members: crew1 },
+    { id: 2, name: "Crew 2", members: crew2 },
+  ];
 
   return (
     <Page
       eyebrow="My Crew"
       title="Crew Roster"
-      meta={`Two sister crews · 22 members · ${claimedCount} signed in`}
+      meta={`Two sister crews · ${members.length} members · ${claimedCount} signed in`}
       action={<EditPageButton href="/admin/roster" label="Manage Crew" />}
       titleRight={<PrintButton />}
     >
@@ -77,70 +74,70 @@ export default async function RosterPage() {
 
       <Section num="01" title="Sister crews">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {CREWS.map((crew) => {
-            const cl = crew.members.find((m) => m.role === "crew_leader");
-            const la = crew.members.find((m) => m.role === "lead_advisor");
-            const scouts = crew.members.filter((m) => m.role === "scout");
-            const advisors = crew.members.filter((m) => m.role === "advisor");
+          {crewGroups.map((crew) => {
+            const youth = crew.members.filter((m) =>
+              ["crew_leader", "chaplain_aide", "guia", "scout"].includes(m.role)
+            );
+            const adults = crew.members.filter((m) =>
+              ["lead_advisor", "advisor"].includes(m.role)
+            );
             return (
               <Panel
                 key={crew.id}
                 title={`${crew.name} · ${crew.members.length} members`}
               >
                 <div className="space-y-3">
-                  <div>
-                    <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                      Scouts ({(cl ? 1 : 0) + scouts.length})
+                  {youth.length > 0 && (
+                    <div>
+                      <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
+                        Scouts ({youth.length})
+                      </div>
+                      <RosterHeader />
+                      <ul className="space-y-0.5">
+                        {youth.map((m) => (
+                          <RosterRow
+                            key={m.id}
+                            name={m.name}
+                            role={m.role}
+                            claimed={!!m.userId}
+                            weight={{
+                              bodyWeightLbs: m.bodyWeightLbs,
+                              actualBaseWeightLbs: m.actualBaseWeightLbs,
+                              usesPhilmontTent: m.usesPhilmontTent,
+                              wfaCertificationStatus: m.wfaCertificationStatus,
+                              cprCertificationStatus: m.cprCertificationStatus,
+                            }}
+                          />
+                        ))}
+                      </ul>
                     </div>
-                    <RosterHeader />
-                    <ul className="space-y-0.5">
-                      {cl && (
-                        <RosterRow
-                          key={cl.name}
-                          name={cl.name}
-                          role={cl.role}
-                          claimed={claimedNames.has(cl.name)}
-                          weight={weightByName.get(cl.name)}
-                        />
-                      )}
-                      {scouts.map((m) => (
-                        <RosterRow
-                          key={m.name}
-                          name={m.name}
-                          role={m.role}
-                          claimed={claimedNames.has(m.name)}
-                          weight={weightByName.get(m.name)}
-                        />
-                      ))}
-                    </ul>
-                  </div>
+                  )}
 
-                  <div>
-                    <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
-                      Advisors ({(la ? 1 : 0) + advisors.length})
+                  {adults.length > 0 && (
+                    <div>
+                      <div className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.08em] mb-1.5">
+                        Advisors ({adults.length})
+                      </div>
+                      <RosterHeader />
+                      <ul className="space-y-0.5">
+                        {adults.map((m) => (
+                          <RosterRow
+                            key={m.id}
+                            name={m.name}
+                            role={m.role}
+                            claimed={!!m.userId}
+                            weight={{
+                              bodyWeightLbs: m.bodyWeightLbs,
+                              actualBaseWeightLbs: m.actualBaseWeightLbs,
+                              usesPhilmontTent: m.usesPhilmontTent,
+                              wfaCertificationStatus: m.wfaCertificationStatus,
+                              cprCertificationStatus: m.cprCertificationStatus,
+                            }}
+                          />
+                        ))}
+                      </ul>
                     </div>
-                    <RosterHeader />
-                    <ul className="space-y-0.5">
-                      {la && (
-                        <RosterRow
-                          key={la.name}
-                          name={la.name}
-                          role={la.role}
-                          claimed={claimedNames.has(la.name)}
-                          weight={weightByName.get(la.name)}
-                        />
-                      )}
-                      {advisors.map((m) => (
-                        <RosterRow
-                          key={m.name}
-                          name={m.name}
-                          role={m.role}
-                          claimed={claimedNames.has(m.name)}
-                          weight={weightByName.get(m.name)}
-                        />
-                      ))}
-                    </ul>
-                  </div>
+                  )}
                 </div>
               </Panel>
             );
@@ -274,8 +271,8 @@ function RosterRow({
           aria-hidden={claimed ? undefined : true}
         />
       </span>
-      <StatusBadge tone={ROLE_TONE[role]} className="w-[88px] shrink-0 justify-start px-1 text-[9px]">
-        {ROLE_LABEL[role]}
+      <StatusBadge tone={ROLE_TONE[role] ?? "neutral"} className="w-[88px] shrink-0 justify-start px-1 text-[9px]">
+        {ROLE_LABEL[role] ?? role}
       </StatusBadge>
       <span className="flex flex-1 items-center gap-1.5 border-b border-border/40 py-1">
         <span className="shrink-0 whitespace-nowrap font-medium text-left">{name}</span>

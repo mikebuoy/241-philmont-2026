@@ -4,7 +4,7 @@ import { Page } from "@/components/primitives/Page";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
 import { createClient } from "@/lib/supabase/server";
-import { getAllCrewMembers, type CrewMember } from "@/lib/crew";
+import { getAllCrewMembers, ROLE_ORDER, type CrewMember } from "@/lib/crew";
 import { getAllPackingItems, computeTotals } from "@/lib/packing";
 import { getGearCategories } from "@/lib/gear";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
@@ -22,12 +22,6 @@ const BASE_TRAIL_LOAD_LBS =
   PACK_WEIGHT_CONSTANTS.crewGearAvgLbs;
 const PHILMONT_TENT_OZ = PACK_WEIGHT_CONSTANTS.philmontTentOz;
 
-const ROLE_ORDER: Record<CrewRole, number> = {
-  crew_leader: 0,
-  scout: 1,
-  lead_advisor: 2,
-  advisor: 3,
-};
 
 export default async function GearCheckPage() {
   const supabase = await createClient();

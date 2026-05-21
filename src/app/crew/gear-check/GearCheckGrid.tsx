@@ -31,8 +31,10 @@ export type CrewGrid = {
 };
 
 const ROLE_ABBR: Record<CrewRole, string> = {
-  scout: "S",
   crew_leader: "CL",
+  chaplain_aide: "CA",
+  guia: "G",
+  scout: "S",
   lead_advisor: "LA",
   advisor: "A",
 };

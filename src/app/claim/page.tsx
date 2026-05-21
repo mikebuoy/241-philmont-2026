@@ -11,9 +11,11 @@ export const dynamic = "force-dynamic";
 
 const ROLE_TONE: Record<CrewRole, "issued" | "crew" | "warn" | "neutral"> = {
   crew_leader: "issued",
+  chaplain_aide: "issued",
+  guia: "issued",
+  scout: "crew",
   lead_advisor: "warn",
   advisor: "neutral",
-  scout: "crew",
 };
 
 export default async function ClaimPage() {
