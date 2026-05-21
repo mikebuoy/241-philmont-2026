@@ -823,7 +823,7 @@ export function PackingListEditor({
           }`}
           style={{ borderWidth: "0.5px" }}
         >
-          Hide items marked <b>Not Taking</b> ({totals.notPackingCount})
+          Hide Not Taking items ({totals.notPackingCount})
         </button>
         <button
           type="button"
