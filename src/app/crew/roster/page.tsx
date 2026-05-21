@@ -5,6 +5,8 @@ import { Panel } from "@/components/primitives/Panel";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
 import { ROLE_LABEL, type CrewRole } from "@/data/roster";
+
+const ROSTER_ROLE_LABEL: Record<CrewRole, string> = { ...ROLE_LABEL, chaplain_aide: "Chap. Aid" };
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembers, type CertificationStatus } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
@@ -272,7 +274,7 @@ function RosterRow({
         />
       </span>
       <StatusBadge tone={ROLE_TONE[role] ?? "neutral"} className="w-[88px] shrink-0 justify-start px-1 text-[9px]">
-        {ROLE_LABEL[role] ?? role}
+        {ROSTER_ROLE_LABEL[role] ?? role}
       </StatusBadge>
       <span className="flex flex-1 items-center gap-1.5 border-b border-border/40 py-1">
         <span className="shrink-0 whitespace-nowrap font-medium text-left">{name}</span>

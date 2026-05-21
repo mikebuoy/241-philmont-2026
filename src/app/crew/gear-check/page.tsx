@@ -52,6 +52,8 @@ export default async function GearCheckPage() {
   }
 
   function getMemberWeight(member: CrewMember): {
+    baseWeightLbs: number | null;
+    baseWeightStatus: "ok" | "warn" | "over" | "critical" | null;
     estMaxLbs: number | null;
     weightStatus: "ok" | "warn" | "over" | "critical" | null;
   } {
@@ -65,13 +67,21 @@ export default async function GearCheckPage() {
     const shelterLbs =
       member.useActualBaseWeight && member.usesPhilmontTent ? PHILMONT_TENT_OZ / 16 : 0;
     const estMax = baseLbs + BASE_TRAIL_LOAD_LBS + shelterLbs;
-    if (!targets || !bw || baseLbs <= 0) return { estMaxLbs: null, weightStatus: null };
+    if (!targets || !bw || baseLbs <= 0) return { baseWeightLbs: null, baseWeightStatus: null, estMaxLbs: null, weightStatus: null };
+
+    let baseWeightStatus: "ok" | "warn" | "over" | "critical";
+    if (baseLbs <= targets.targetBase) baseWeightStatus = "ok";
+    else if (baseLbs <= targets.maxBase) baseWeightStatus = "warn";
+    else if (baseLbs <= targets.hardMaxBase) baseWeightStatus = "over";
+    else baseWeightStatus = "critical";
+
     let weightStatus: "ok" | "warn" | "over" | "critical";
     if (estMax <= targets.target20) weightStatus = "ok";
     else if (estMax <= targets.max25) weightStatus = "warn";
     else if (estMax <= targets.hardMax30) weightStatus = "over";
     else weightStatus = "critical";
-    return { estMaxLbs: estMax, weightStatus };
+
+    return { baseWeightLbs: baseLbs, baseWeightStatus, estMaxLbs: estMax, weightStatus };
   }
 
   // Collect distinct rows — exclude Note items (isRequired === null)
@@ -104,8 +114,8 @@ export default async function GearCheckPage() {
           ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.name.localeCompare(b.name),
       )
       .map((m) => {
-        const { estMaxLbs, weightStatus } = getMemberWeight(m);
-        return { id: m.id, name: m.name, role: m.role, estMaxLbs, weightStatus };
+        const { baseWeightLbs, baseWeightStatus, estMaxLbs, weightStatus } = getMemberWeight(m);
+        return { id: m.id, name: m.name, role: m.role, usesPhilmontTent: m.usesPhilmontTent, baseWeightLbs, baseWeightStatus, estMaxLbs, weightStatus };
       });
 
     const cells: Record<string, Record<string, CellData | null>> = {};

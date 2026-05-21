@@ -46,3 +46,29 @@ export async function setAdvisorNote(
     return { error: e instanceof Error ? e.message : "Unknown error" };
   }
 }
+
+export async function setCrewMemberBaseWeightSettings(
+  crewMemberId: string,
+  lbs: number | null,
+  usesPhilmontTent: boolean,
+): Promise<{ error?: string }> {
+  try {
+    await requireAdmin();
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("crew_members")
+      .update({
+        actual_base_weight_lbs: lbs,
+        use_actual_base_weight: lbs !== null,
+        uses_philmont_tent: usesPhilmontTent,
+      })
+      .eq("id", crewMemberId);
+    if (error) return { error: error.message };
+    revalidatePath("/crew/gear-check");
+    revalidatePath("/crew/weights");
+    revalidatePath("/pack/gear");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unknown error" };
+  }
+}
