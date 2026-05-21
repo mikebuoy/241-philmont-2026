@@ -530,7 +530,8 @@ export function PackingListEditor({
               <button
                 type="button"
                 onClick={() => setMode(isEditMode ? "pack" : "edit")}
-                className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors"
+                disabled={adjustOpen}
+                className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-2"
                 style={{ borderWidth: "0.5px" }}
               >
                 {isEditMode ? "Done" : "Edit Gear"}
@@ -566,7 +567,7 @@ export function PackingListEditor({
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
           <div className="print:hidden bg-white border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
-            <div className="max-w-[600px] mx-auto px-6 py-4 space-y-4">
+            <div className="max-w-[600px] mx-auto px-6 pt-4 space-y-4" style={{ paddingBottom: "75px" }}>
 
               {/* Body weight */}
               <div>
