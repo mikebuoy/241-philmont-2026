@@ -522,7 +522,7 @@ export function PackingListEditor({
               </div>
             </div>*/}
             {/* Bottom row: buttons (left) + legend (right) */}
-            <div className="mt-1 flex items-center justify-between gap-3">
+            <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
               <div className="font-mono text-[10px] text-ink-faint">
                 Base Pack Weight + Trail Load = Est Max
               </div>
