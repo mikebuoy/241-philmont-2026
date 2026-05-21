@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Stat } from "@/components/primitives/Stat";
 import { TREK_META } from "@/data/meta";
 import { createClient } from "@/lib/supabase/server";
 import { getMyCrewMember } from "@/lib/crew";
+import { HeroChallenge } from "./HeroChallenge";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -48,60 +48,7 @@ export default async function Home() {
             tone="loss"
           />
         </div>
-        <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 mt-3 rounded-2xl mx-[10px]">
-          <div className="max-w-[620px] mx-auto">
-
-            {/* Icon + title */}
-            <div className="flex flex-col items-center text-center mb-8">
-              <Image
-                src="/tooth-icon.png"
-                width={56}
-                height={56}
-                alt=""
-                className="mb-5 opacity-80"
-              />
-              <h2 className="font-condensed text-[28px] sm:text-[36px] font-bold uppercase tracking-[0.02em] leading-tight">
-                The Challenge.<br />The Accomplishment.
-              </h2>
-            </div>
-
-            {/* Body */}
-            <div className="space-y-4 text-[14px] sm:text-[15px] leading-relaxed">
-              <p className="text-[18px] sm:text-[21px] font-semibold leading-snug">
-                You are going to climb more than Mount Everest.
-              </p>
-              <p className="opacity-75">
-                Over 11 trail days, your crew will climb about <strong className="font-bold">35,000 feet</strong>. Everest is <strong className="font-bold">29,032 feet</strong> tall.
-              </p>
-              <p className="opacity-75">
-                That means your legs will climb Everest, keep going, then descend <strong className="font-bold">35,650 feet</strong> back down the trail.
-              </p>
-              <p className="opacity-75">
-                This will be an incredible adventure. Big views, wild country, campfires, program activities, crew challenges, hard climbs, and stories you will remember for the rest of your life.
-              </p>
-              <p className="text-[16px] font-semibold">But it is also more than an adventure.</p>
-              <p className="text-[16px] font-semibold">It is a rite of passage.</p>
-              <p className="opacity-75">
-                You will leave as Scouts and come back stronger, tougher, more confident young men.
-              </p>
-              <p className="opacity-75">
-                Some days will be hard. That is part of what makes it worth doing.
-              </p>
-              <p className="text-[16px] font-semibold">You are fully capable of this.</p>
-              <p className="opacity-75">
-                And you will not do it alone. Your crew will do it together. You will encourage each other, carry your own weight, help when someone needs it, and keep moving as a team.
-              </p>
-              <p className="text-[16px] font-semibold">That is the commitment.</p>
-              <p className="font-mono text-[12px] opacity-50 tracking-wide uppercase">
-                Train now. Show up ready. Trust your crew. Do your part.
-              </p>
-              <div className="pt-5 border-t border-white/15">
-                <p className="text-[22px] sm:text-[26px] font-bold">Let&apos;s go create amazing memories.</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
+        <HeroChallenge />
       </Section>
 
       {/* Welcome + nav chicklets */}
