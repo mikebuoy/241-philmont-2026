@@ -65,6 +65,10 @@ export function HeroChallenge() {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
+    if (window.location.hash === '#welcome') {
+      localStorage.removeItem(LS_KEY);
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
     setMounted(true);
     if (!localStorage.getItem(LS_KEY)) setShowOverlay(true);
   }, []);
@@ -77,7 +81,7 @@ export function HeroChallenge() {
   // SSR / pre-hydration: render inline box so layout doesn't shift
   if (!mounted) {
     return (
-      <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 mt-3 rounded-2xl mx-[10px]">
+      <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 rounded-2xl mx-[10px]">
         <div className="max-w-[620px] mx-auto">
           <HeroHeader />
           <HeroBody />
@@ -89,14 +93,14 @@ export function HeroChallenge() {
   // First visit: full-screen overlay
   if (showOverlay) {
     return (
-      <div className="fixed inset-0 z-50 bg-hcblue text-white flex flex-col">
+      <div className="fixed inset-0 z-[60] bg-hcblue text-white flex flex-col">
         <div className="flex-1 overflow-y-auto px-6 py-12">
           <div className="max-w-[620px] mx-auto">
             <HeroHeader />
             <HeroBody />
           </div>
         </div>
-        <div className="shrink-0 px-6 pb-10 pt-4 bg-hcblue">
+        <div className="shrink-0 px-6 pb-24 sm:pb-10 pt-4 bg-hcblue">
           <div className="max-w-[620px] mx-auto">
             <button
               onClick={dismiss}
@@ -115,13 +119,13 @@ export function HeroChallenge() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="-mx-6 sm:mx-0 mx-[10px] mt-3 rounded-2xl bg-hcblue text-white overflow-hidden w-[calc(100%+48px)] sm:w-full text-left"
+        className="block -mx-6 sm:mx-0 mx-[10px] rounded-2xl bg-hcblue text-white overflow-hidden text-left"
       >
         <div className="px-6 py-5">
           <div className="flex items-center gap-3 mb-3">
-            <Image src="/tooth-icon.png" width={28} height={28} alt="" className="opacity-80 shrink-0" />
+            <Image src="/tooth-icon.png" width={56} height={56} alt="" className="opacity-80 shrink-0" />
             <span className="font-condensed text-[18px] font-bold uppercase tracking-[0.02em] leading-tight">
-              The Challenge. The Accomplishment.
+              The Challenge.<br />The Accomplishment.
             </span>
           </div>
           <div className="relative">
@@ -130,7 +134,7 @@ export function HeroChallenge() {
             </p>
             <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-hcblue to-transparent" />
           </div>
-          <p className="font-mono text-[10px] opacity-50 tracking-wide uppercase mt-3">
+          <p className="font-mono text-[10px] opacity-80 tracking-wide uppercase">
             Read the full story ↓
           </p>
         </div>
@@ -139,7 +143,7 @@ export function HeroChallenge() {
   }
 
   return (
-    <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 mt-3 rounded-2xl mx-[10px]">
+    <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 rounded-2xl mx-[10px]">
       <div className="max-w-[620px] mx-auto">
         <HeroHeader />
         <HeroBody />

@@ -27,11 +27,28 @@ export default async function Home() {
       title="Philmont 2026"
       meta={`${TREK_META.troop} · ${TREK_META.flyDate} – ${TREK_META.trailEndDate} · ${TREK_META.distanceMiles} miles`}
     >
+      {user ? (
+        <h2 className="text-[20px] font-semibold tracking-[-0.01em]">
+          {greeting}
+        </h2>
+      ) : (
+        <p className="text-[14px] text-ink-muted">
+          <Link href="/admin/signin?next=/" className="font-semibold text-ink underline underline-offset-2">
+            Sign in
+          </Link>{" "}
+          to see your personalized trek details.
+        </p>
+      )}
+
+      <div className="!mt-[5px]">
+        <HeroChallenge />
+      </div>
+
       <Section num="00" title="Trip at a glance">
         <div className="grid grid-cols-3 gap-2">
           <Stat value={TREK_META.distanceMiles} label="MILES" />
           <Stat value={TREK_META.trailDays} label="TRAIL DAYS" />
-          <Stat value="22" label="TOTAL CREW" />
+          <Stat value="21" label="TOTAL CREW" />
           <Stat
             value={TREK_META.highestPoint.elevation.toLocaleString()}
             label={`HIGH POINT · ${TREK_META.highestPoint.name.toUpperCase()}`}
@@ -48,21 +65,9 @@ export default async function Home() {
             tone="loss"
           />
         </div>
-        <HeroChallenge />
       </Section>
 
-      {/* Welcome + nav chicklets */}
-      <section>
-        <div className="mb-5">
-          <h2 className="text-[20px] font-semibold tracking-[-0.01em]">
-            {greeting}
-          </h2>
-          <p className="text-[13px] text-ink-muted mt-0.5">
-            Trek {TREK_META.trekNumber} &middot; Tooth of Time &middot;{" "}
-            {TREK_META.flyDate} &ndash; {TREK_META.trailEndDate}
-          </p>
-        </div>
-
+      <Section num="01" title="My Trek Details">
         <div className="grid grid-cols-2 gap-3">
           <NavCard
             href="/trip/itinerary"
@@ -122,7 +127,7 @@ export default async function Home() {
             }
           />
         </div>
-      </section>
+      </Section>
     </Page>
   );
 }
