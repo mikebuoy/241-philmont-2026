@@ -547,7 +547,7 @@ export function PackingListEditor({
           aria-expanded={adjustOpen}
           className={`print:hidden w-full flex items-center justify-between px-6 py-2 border-l-[3px] border-l-hcblue text-[11px] font-mono font-medium transition-colors ${
             adjustOpen
-              ? "bg-info-bg text-info-text border-b border-info-border"
+              ? "bg-hcblue text-white border-b border-hcblue"
               : "bg-surface-2 text-ink border-b border-border"
           }`}
         >
@@ -565,7 +565,7 @@ export function PackingListEditor({
 
         {/* ── Adjust drawer (pushes content) ── */}
         {adjustOpen && (
-          <div className="print:hidden bg-surface-2 border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
+          <div className="print:hidden bg-white border-b border-border shadow-sm" style={{ borderWidth: "0.5px" }}>
             <div className="max-w-[600px] mx-auto px-6 py-4 space-y-4">
 
               {/* Body weight */}
@@ -597,7 +597,7 @@ export function PackingListEditor({
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
+              <div className="rounded-lg border border-info-border bg-info-bg p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
                 <div>
                   <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
                     Base Pack Weight
@@ -722,7 +722,7 @@ export function PackingListEditor({
               </div>
 
               {/* Reference values */}
-              <div className="rounded-lg border border-border bg-surface p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
+              <div className="rounded-lg border border-info-border bg-info-bg p-3 space-y-3" style={{ borderWidth: "0.5px" }}>
                 {/* Trail Load breakdown */}
                 <div className="font-mono text-[11px] space-y-0.5 mb-2">
                   <div className="text-ink-muted font-semibold uppercase tracking-[0.06em]">
