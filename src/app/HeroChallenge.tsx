@@ -1,10 +1,10 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const LS_KEY = "hero-challenge-seen";
 
-function HeroBody() {
+function HeroBody({ sentinelRef }: { sentinelRef?: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div className="space-y-4 text-[14px] sm:text-[15px] leading-relaxed">
       <p className="text-[18px] sm:text-[21px] font-semibold leading-snug">
@@ -38,6 +38,7 @@ function HeroBody() {
       <div className="pt-5 border-t border-white/15">
         <p className="text-[22px] sm:text-[26px] font-bold">Let&apos;s go create amazing memories.</p>
       </div>
+      {sentinelRef && <div ref={sentinelRef} />}
     </div>
   );
 }
@@ -63,6 +64,10 @@ export function HeroChallenge() {
   const [mounted, setMounted] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [canDismiss, setCanDismiss] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.location.hash === '#welcome') {
@@ -72,6 +77,21 @@ export function HeroChallenge() {
     setMounted(true);
     if (!localStorage.getItem(LS_KEY)) setShowOverlay(true);
   }, []);
+
+  useEffect(() => {
+    if (!showOverlay) return;
+    setCanDismiss(false);
+    const sentinel = sentinelRef.current;
+    const scroll = scrollRef.current;
+    if (!sentinel || !scroll) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setCanDismiss(true); },
+      { root: scroll, threshold: 0.5 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [showOverlay]);
 
   function dismiss() {
     localStorage.setItem(LS_KEY, "1");
@@ -94,20 +114,24 @@ export function HeroChallenge() {
   if (showOverlay) {
     return (
       <div className="fixed inset-0 z-[60] bg-hcblue text-white flex flex-col">
-        <div className="flex-1 overflow-y-auto px-6 py-12">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-12">
           <div className="max-w-[620px] mx-auto">
             <HeroHeader />
-            <HeroBody />
+            <HeroBody sentinelRef={sentinelRef} />
           </div>
         </div>
-        <div className="shrink-0 px-6 pb-24 sm:pb-10 pt-4 bg-hcblue">
-          <div className="max-w-[620px] mx-auto">
-            <button
-              onClick={dismiss}
-              className="w-full bg-white text-hcblue rounded-xl py-4 font-bold text-[16px] hover:opacity-90 active:scale-[0.98] transition-all"
-            >
-              Let&apos;s Go!
-            </button>
+        <div className="shrink-0 relative">
+          <div className="absolute -top-16 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-hcblue pointer-events-none" />
+          <div className="px-6 pb-24 sm:pb-10 pt-4">
+            <div className="max-w-[620px] mx-auto">
+              <button
+                onClick={dismiss}
+                disabled={!canDismiss}
+                className="w-full bg-white text-hcblue rounded-xl py-4 font-bold text-[16px] transition-all disabled:opacity-30 disabled:cursor-not-allowed enabled:hover:opacity-90 enabled:active:scale-[0.98]"
+              >
+                Let&apos;s Go!
+              </button>
+            </div>
           </div>
         </div>
       </div>
