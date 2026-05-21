@@ -48,7 +48,7 @@ export default async function Home() {
             tone="loss"
           />
         </div>
-        <div className="-mx-6 bg-ink text-bg px-6 py-10 sm:py-14 mt-3 rounded-2xl">
+        <div className="-mx-6 sm:mx-0 bg-hcblue text-white px-6 py-10 sm:py-14 mt-3 rounded-2xl mx-[10px]">
           <div className="max-w-[620px] mx-auto">
 
             {/* Icon + title */}
@@ -71,26 +71,32 @@ export default async function Home() {
                 You are going to climb more than Mount Everest.
               </p>
               <p className="opacity-75">
-                Over 11 trail days, your crew will climb about 35,000 feet. Mount Everest is 29,032 feet tall. That means your legs will climb the height of Everest, keep going another 6,000 feet, then descend 35,650 feet back down the trail.
-              </p>
-              <p className="text-[16px] font-semibold">This is not just a backpacking trip.</p>
-              <p className="text-[16px] font-semibold">This is a rite of passage.</p>
-              <p className="opacity-75">
-                You will leave home as Scouts. You will come back stronger, tougher, and more confident young men.
+                Over 11 trail days, your crew will climb about <strong className="font-bold">35,000 feet</strong>. Everest is <strong className="font-bold">29,032 feet</strong> tall.
               </p>
               <p className="opacity-75">
-                The trail will test your legs, your lungs, your attitude, and your ability to work as a crew. There will be days when you are tired. Days when the pack feels heavy. Days when the climb feels bigger than you expected.
+                That means your legs will climb Everest, keep going, then descend <strong className="font-bold">35,650 feet</strong> back down the trail.
               </p>
-              <p className="text-[16px] font-bold">That is the point.</p>
               <p className="opacity-75">
-                Every hard mile is shaping you. Every climb is building grit. Every decision to keep moving is teaching you who you are becoming.
+                This will be an incredible adventure. Big views, wild country, campfires, program activities, crew challenges, hard climbs, and stories you will remember for the rest of your life.
               </p>
+              <p className="text-[16px] font-semibold">But it is also more than an adventure.</p>
+              <p className="text-[16px] font-semibold">It is a rite of passage.</p>
+              <p className="opacity-75">
+                You will leave as Scouts and come back stronger, tougher, more confident young men.
+              </p>
+              <p className="opacity-75">
+                Some days will be hard. That is part of what makes it worth doing.
+              </p>
+              <p className="text-[16px] font-semibold">You are fully capable of this.</p>
+              <p className="opacity-75">
+                And you will not do it alone. Your crew will do it together. You will encourage each other, carry your own weight, help when someone needs it, and keep moving as a team.
+              </p>
+              <p className="text-[16px] font-semibold">That is the commitment.</p>
               <p className="font-mono text-[12px] opacity-50 tracking-wide uppercase">
-                Train now. Show up ready. Carry your weight. Help your crew.
+                Train now. Show up ready. Trust your crew. Do your part.
               </p>
-              <div className="pt-5 border-t border-white/15 space-y-2">
-                <p className="text-[16px] font-semibold opacity-85">The mountain will ask a lot from you.</p>
-                <p className="text-[22px] sm:text-[26px] font-bold">Be ready to answer.</p>
+              <div className="pt-5 border-t border-white/15">
+                <p className="text-[22px] sm:text-[26px] font-bold">Let&apos;s go create amazing memories.</p>
               </div>
             </div>
 
