@@ -245,6 +245,19 @@ export function GearCheckGrid({
       <div className="sticky top-0 z-40 -mx-6 bg-bg shadow-sm print:hidden">
         {/* Row 1: tabs + legend */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1.5 sm:gap-4 px-6 pt-2 pb-0">
+          {/* Legend — above tabs on mobile, right side on sm+ */}
+          <div className="flex flex-wrap justify-end gap-x-2 gap-y-0.5 sm:gap-x-3 sm:gap-y-1 sm:order-last">
+            {[
+              { bg: "bg-ok-bg", text: "text-ok-text", symbol: "✓", label: "Packed" },
+              { bg: "", text: "text-ink-muted", symbol: "□", label: "Not packed", bgStyle: { backgroundColor: "#fde8e8" } },
+              { bg: "bg-warn-bg", text: "text-warn-text", symbol: "⚑", label: "Flag" },
+              { bg: "bg-surface-2", text: "text-ink-muted", symbol: "⊘", label: "Not Taking", symbolClass: "text-[12px]" },
+            ].map(({ bg, text, symbol, label, symbolClass, bgStyle }) => (
+              <span key={label} style={{ ...bgStyle, borderWidth: "0.5px" }} className={`inline-flex items-center gap-0.5 rounded border border-border px-1 py-0 sm:px-1.5 sm:py-0.5 font-mono text-[9px] ${bg} ${text}`}>
+                <span className={symbolClass}>{symbol}</span>{label}
+              </span>
+            ))}
+          </div>
           <div className="flex gap-1.5 shrink-0 items-end -mb-px">
             {grids.map((g) => (
               <button
@@ -259,18 +272,6 @@ export function GearCheckGrid({
               >
                 Crew {g.crewId} ({g.members.length})
               </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-x-2 gap-y-0.5 sm:gap-x-3 sm:gap-y-1 sm:justify-end">
-            {[
-              { bg: "bg-ok-bg", text: "text-ok-text", symbol: "✓", label: "Packed" },
-              { bg: "", text: "text-ink-muted", symbol: "□", label: "Not packed", bgStyle: { backgroundColor: "#fde8e8" } },
-              { bg: "bg-warn-bg", text: "text-warn-text", symbol: "⚑", label: "Flag" },
-              { bg: "bg-surface-2", text: "text-ink-muted", symbol: "⊘", label: "Not Taking", symbolClass: "text-[12px]" },
-            ].map(({ bg, text, symbol, label, symbolClass, bgStyle }) => (
-              <span key={label} style={{ ...bgStyle, borderWidth: "0.5px" }} className={`inline-flex items-center gap-0.5 rounded border border-border px-1 py-0 sm:px-1.5 sm:py-0.5 font-mono text-[9px] ${bg} ${text}`}>
-                <span className={symbolClass}>{symbol}</span>{label}
-              </span>
             ))}
           </div>
         </div>

@@ -9,6 +9,7 @@ import TopNav from "@/components/nav/TopNav";
 import BottomNav from "@/components/nav/BottomNav";
 import { Footer } from "@/components/Footer";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -64,6 +65,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ServiceWorker />
+        <PWAInstallBanner />
         <div className="print:hidden"><TopNav /></div>
         <main className="flex-1">{children}</main>
         <div className="print:hidden"><Footer /><BottomNav /></div>
