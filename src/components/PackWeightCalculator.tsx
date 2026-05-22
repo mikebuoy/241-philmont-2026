@@ -104,6 +104,7 @@ export function PackWeightCalculator({
   const validActual = actualNum > 0;
   const shelterTrailLoadLbs = usesPhilmontTent ? PHILMONT_TENT_LBS : 0;
   const trailLoadLbs = BASE_ADD_ON_LBS + shelterTrailLoadLbs;
+  const targetBase = targets ? targets.target20 - trailLoadLbs : null;
 
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   let totalDay1: number | null = null;
@@ -237,20 +238,32 @@ export function PackWeightCalculator({
 
         {targets ? (
           <div>
-            {/* Est Max Weight + delta — above the bar */}
-            {totalDay1 != null && status && (
-              <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[13px] leading-none"
-                    style={{ color: STATUS_COLORS[status].border }}
-                    aria-hidden="true"
-                  >⚑</span>
-                  <span className="font-mono text-[15px] font-bold text-ink">{fmt(totalDay1)} lbs</span>
-                </span>
-                {deltaLine && (
-                  <span className="font-mono text-[11px] text-ink-muted">{deltaLine}</span>
+            {/* Est Max Weight + delta — status-colored box */}
+            {totalDay1 != null && status ? (
+              <div
+                className="mb-6 rounded-lg px-4 py-3 text-center"
+                style={{
+                  backgroundColor: STATUS_COLORS[status].bg,
+                  color: STATUS_COLORS[status].text,
+                  borderLeft: `4px solid ${STATUS_COLORS[status].border}`,
+                }}
+              >
+                <div className="font-mono text-[44px] font-bold leading-none mb-1">
+                  {fmt(totalDay1)} lbs
+                </div>
+                {targetBase != null && (
+                  <p className="font-mono text-[11px] opacity-70 mb-3">
+                    (target base: {fmt(targetBase)} lbs)
+                  </p>
                 )}
+                {deltaLine && (
+                  <p className="font-mono text-[11px] font-bold opacity-80">{deltaLine}</p>
+                )}
+              </div>
+            ) : (
+              <div className="mb-3 rounded-lg px-4 py-3 text-center bg-surface-2 border border-border" style={{ borderWidth: "0.5px" }}>
+                <span className="font-mono text-[22px] font-bold text-ink-faint leading-none">&mdash;</span>
+                <p className="font-mono text-[11px] text-ink-faint mt-1">enter settings below</p>
               </div>
             )}
 
@@ -415,6 +428,7 @@ export function PackWeightCalculator({
 
         {/* Tent toggle + explanation */}
         <div className="space-y-1.5">
+          <p className="text-[12px] font-medium text-ink mt-2">Your Shelter</p>
           <div
             className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
             style={{ borderWidth: "0.5px" }}
@@ -458,10 +472,12 @@ export function PackWeightCalculator({
       <div className="bg-surface border border-info-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
         <div className="px-4 py-2.5 bg-info-bg border-b border-info-border" style={{ borderWidth: "0.5px" }}>
           <p className="font-mono text-[10px] text-info-text uppercase tracking-[0.08em] font-semibold">
-            Trail Load
+            Estimated Trail Load
           </p>
           <p className="font-mono text-[9px] text-info-text mt-0.5">
-            Food, water, crew gear, and maybe a Philmont tent.
+            {usesPhilmontTent
+              ? "Food, water, crew gear, and your half of a Philmont tent."
+              : "Food, water, crew gear. Your tent is part of your base weight."}
           </p>
         </div>
         <ul className="text-[12px] text-ink divide-y divide-border" style={{ borderWidth: "0.5px" }}>
