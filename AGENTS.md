@@ -3,3 +3,7 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+# Branding
+
+For any branding, design, color, typography, or copy decisions, read `docs/brand.md` first and follow it. Do not invent colors, fonts, or tone that contradict it.
