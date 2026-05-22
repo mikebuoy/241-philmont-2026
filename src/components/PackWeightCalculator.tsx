@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
-import { StatusBadge } from "./primitives/StatusBadge";
+
 
 const BASE_ADD_ON_LBS =
   PACK_WEIGHT_CONSTANTS.foodPerPersonLbs +
@@ -57,7 +57,6 @@ export function PackWeightCalculator({
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
 
-  // Debounce server saves so rapid slider drags don't queue dozens of POSTs
   const bwSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actualSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -69,14 +68,13 @@ export function PackWeightCalculator({
     }
   }, []);
 
-  // Clear any pending save timers on unmount so we don't write after navigating away
   useEffect(() => () => {
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
     if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
   }, []);
 
   function handleBwChange(val: number) {
-    setBw(val);                                       // immediate UI update
+    setBw(val);
     if (!onBodyWeightChange || val <= 0) return;
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
     bwSaveTimer.current = setTimeout(() => {
@@ -85,13 +83,14 @@ export function PackWeightCalculator({
   }
 
   function handleActualChange(val: number) {
-    setActual(val);                                   // immediate UI update
+    setActual(val);
     if (!onActualBaseWeightChange || val <= 0) return;
     if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
     actualSaveTimer.current = setTimeout(() => {
       startTransition(() => { onActualBaseWeightChange(val); });
     }, SAVE_DEBOUNCE_MS);
   }
+
   function handleUsesPhilmontTentChange(nextUsesPhilmontTent: boolean) {
     setUsesPhilmontTent(nextUsesPhilmontTent);
     if (!onUsesPhilmontTentChange) return;
@@ -99,28 +98,19 @@ export function PackWeightCalculator({
       onUsesPhilmontTentChange(nextUsesPhilmontTent);
     });
   }
+
   const targets = computeTargets(bw);
   const actualNum = actual;
   const validActual = actualNum > 0;
   const shelterTrailLoadLbs = usesPhilmontTent ? PHILMONT_TENT_LBS : 0;
   const trailLoadLbs = BASE_ADD_ON_LBS + shelterTrailLoadLbs;
-  const liveTargets = targets
-    ? {
-        ...targets,
-        targetBase: targets.target20 - trailLoadLbs,
-        maxBase: targets.max25 - trailLoadLbs,
-        hardMaxBase: targets.hardMax30 - trailLoadLbs,
-      }
-    : null;
 
   let status: "ok" | "warn" | "over" | "critical" | null = null;
   let totalDay1: number | null = null;
-  let pctOfBody: number | null = null;
-  const deltaLines: string[] = [];
+  let deltaLine: string | null = null;
 
   if (validActual && targets) {
     totalDay1 = actualNum + trailLoadLbs;
-    pctOfBody = (totalDay1 / bw) * 100;
     const deltaTarget = totalDay1 - targets.target20;
 
     if (totalDay1 <= targets.target20) status = "ok";
@@ -129,21 +119,17 @@ export function PackWeightCalculator({
     else status = "critical";
 
     if (totalDay1 > targets.hardMax30) {
-      deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.hardMax30)} to hit 30% hard max`);
-      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
+      deltaLine = `Cut ${formatLbsOz(totalDay1 - targets.hardMax30)} to hit 30% hard max`;
     } else if (totalDay1 > targets.max25) {
-      deltaLines.push(`Cut ${formatLbsOz(totalDay1 - targets.max25)} to hit 25% crew standard`);
-      deltaLines.push(`${formatLbsOz(targets.hardMax30 - totalDay1)} under 30% hard max`);
+      deltaLine = `Cut ${formatLbsOz(totalDay1 - targets.max25)} to hit 25% crew standard`;
     } else if (deltaTarget > 0) {
-      deltaLines.push(`Cut ${formatLbsOz(deltaTarget)} to hit 20% target`);
-      deltaLines.push(`${formatLbsOz(targets.max25 - totalDay1)} under 25% crew standard`);
+      deltaLine = `Cut ${formatLbsOz(deltaTarget)} to hit 20% target`;
     } else if (deltaTarget < -0.05) {
-      deltaLines.push(`${formatLbsOz(-deltaTarget)} under 20% target`);
+      deltaLine = `${formatLbsOz(-deltaTarget)} under 20% target`;
     } else {
-      deltaLines.push("At 20% target");
+      deltaLine = "At 20% target";
     }
   }
-
 
   // Progress bar zone widths (proportional to body weight percentages)
   // ok: 0-20% = 20/30 = 66.67%, warn: 20-25% = 16.67%, over: 25-30% = 16.67%
@@ -243,163 +229,31 @@ export function PackWeightCalculator({
         )}
       </div>
 
-      {/* ───── CALCULATOR card — body weight + Target Base Pack Weight + Est Max bar ───── */}
+      {/* ───── ESTIMATED PACK WEIGHT card ───── */}
       <div className="bg-surface border border-border rounded-lg p-3.5 space-y-3" style={{ borderWidth: "0.5px" }}>
         <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
-          Calculator
+          Estimated Pack Weight
         </p>
 
-        {/* Body weight slider */}
-        <label className="block">
-          <span className="text-[12px] font-medium text-ink">Your body weight (lbs)</span>
-          <div className="mt-2 flex items-center gap-3">
-            <input
-              type="range"
-              min={100} max={220} step={5}
-              value={bw}
-              onChange={(e) => handleBwChange(Number(e.target.value))}
-              className="flex-1 accent-ink"
-            />
-            <input
-              type="number"
-              min={100} max={220} step={5}
-              value={bw}
-              onChange={(e) => handleBwChange(Number(e.target.value) || 0)}
-              className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
-            />
-          </div>
-        </label>
-
-        {/* Base Pack Weight slider */}
-        <label className="block">
-          <span className="text-[12px] font-medium text-ink">Your Base Pack Weight (lbs)</span>
-          <div className="mt-2 flex items-center gap-3">
-            <input
-              type="range"
-              min={5} max={50} step={0.5}
-              value={actual}
-              onChange={(e) => handleActualChange(Number(e.target.value))}
-              className="flex-1 accent-ink"
-            />
-            <input
-              type="number"
-              min={0} max={100} step={0.5}
-              value={actual}
-              onChange={(e) => handleActualChange(Number(e.target.value) || 0)}
-              className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
-            />
-          </div>
-        </label>
-
-        <div className="space-y-1.5">
-          <div
-            className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
-            style={{ borderWidth: "0.5px" }}
-          >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
-              style={{
-                left: usesPhilmontTent ? "2px" : "50%",
-                right: usesPhilmontTent ? "50%" : "2px",
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => handleUsesPhilmontTentChange(true)}
-              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                usesPhilmontTent ? "text-white" : "text-ink-muted"
-              }`}
-            >
-              Philmont tent
-            </button>
-            <button
-              type="button"
-              onClick={() => handleUsesPhilmontTentChange(false)}
-              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
-                !usesPhilmontTent ? "text-white" : "text-ink-muted"
-              }`}
-            >
-              My tent
-            </button>
-          </div>
-          <p className="font-mono text-ink-muted text-[11px]">
-            {usesPhilmontTent
-              ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_LBS, 1)} lbs.`
-              : "Using your own tent. Count it in Base Pack Weight."}
-          </p>
-        </div>
-
-        {/* Base Pack Weight definition */}
-        <p className="text-[12px] text-ink-muted leading-relaxed">
-          Base Pack Weight is your pack before food, water, crew gear, and worn clothes. <strong className="text-ink">Weigh it at home</strong> before you leave.
-        </p>
-
-        {/* Two key numbers — stack on mobile, side-by-side on sm+ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Target Base Pack Weight — info-blue */}
-          <div
-            className="bg-info-bg text-info-text rounded-lg p-3.5 text-center"
-            style={{ borderLeft: "4px solid var(--color-info-border)" }}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
-              Target Base Pack Weight
-            </p>
-            <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
-              {liveTargets ? `≤ ${fmt(liveTargets.targetBase)} lbs` : "—"}
-            </div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75">
-              20% of body weight
-            </p>
-          </div>
-
-          {/* Estimated Max Pack Weight — status-colored */}
-          {status && totalDay1 != null && pctOfBody != null ? (
-            <div
-              className="rounded-lg p-3.5 text-center"
-              style={{
-                backgroundColor: STATUS_COLORS[status].bg,
-                color: STATUS_COLORS[status].text,
-                borderLeft: `4px solid ${STATUS_COLORS[status].border}`,
-              }}
-            >
-              <p className="font-mono text-[10px] uppercase tracking-[0.1em] opacity-80 mb-1.5">
-                Estimated Max Pack Weight
-              </p>
-              <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1">
-                {fmt(totalDay1)} lbs
-              </div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.08em] opacity-75 mb-2">
-                {fmt(pctOfBody, 1)}% of body weight
-              </p>
-              <div className="flex justify-center">
-                {status === "ok" && <StatusBadge tone="ok">ON TARGET</StatusBadge>}
-                {status === "warn" && <StatusBadge tone="warn">ABOVE TARGET</StatusBadge>}
-                {status === "over" && <StatusBadge tone="over">OVER 25%</StatusBadge>}
-                {status === "critical" && <StatusBadge tone="critical">OVER HARD MAX</StatusBadge>}
-              </div>
-            </div>
-          ) : (
-            <div
-              className="bg-surface-2 border border-border rounded-lg p-3.5 text-center"
-              style={{ borderWidth: "0.5px" }}
-            >
-              <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-muted mb-1.5">
-                Estimated Max Pack Weight
-              </p>
-              <div className="font-mono text-[28px] sm:text-[32px] font-bold leading-none mb-1 text-ink-faint">
-                &mdash;
-              </div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
-                enter body weight
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Progress bar */}
         {targets ? (
           <div>
+            {/* Est Max Weight + delta — above the bar */}
+            {totalDay1 != null && status && (
+              <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="font-mono text-[13px] leading-none"
+                    style={{ color: STATUS_COLORS[status].border }}
+                    aria-hidden="true"
+                  >⚑</span>
+                  <span className="font-mono text-[15px] font-bold text-ink">{fmt(totalDay1)} lbs</span>
+                </span>
+                {deltaLine && (
+                  <span className="font-mono text-[11px] text-ink-muted">{deltaLine}</span>
+                )}
+              </div>
+            )}
+
             {/* % labels above the bar */}
             <div className="relative h-3 font-mono text-[10px] font-semibold text-ink-muted leading-none mb-1">
               <span className="absolute" style={{ left: `${okPct}%`, transform: "translateX(-50%)" }}>20%</span>
@@ -470,7 +324,7 @@ export function PackWeightCalculator({
               </div>
             </div>
 
-            {/* Legend — Base and Trail Load swatch captions */}
+            {/* Legend */}
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-ink-muted">
               <div className="flex items-center gap-2">
                 <span
@@ -501,30 +355,103 @@ export function PackWeightCalculator({
           </div>
         ) : (
           <div className="text-[11px] text-ink-muted bg-surface-2 rounded px-3 py-2">
-            Enter your body weight above to see targets.
+            Enter your body weight in Settings below to see estimates.
           </div>
         )}
+      </div>
 
-        {/* Delta weight info */}
-        {deltaLines.length > 0 && (
-          <div className="space-y-0.5 text-center">
-            {deltaLines.map((line) => (
-              <div key={line} className="font-mono text-[13px] font-semibold text-ink">
-                {line}
-              </div>
-            ))}
-            {status === "over" && (
-              <p className="text-[12px] mt-1 font-semibold" style={{ color: STATUS_COLORS.over.text }}>
-                Above 25% crew standard. Cut weight before departure.
-              </p>
-            )}
-            {status === "critical" && (
-              <p className="text-[12px] mt-1 font-semibold" style={{ color: STATUS_COLORS.critical.bg }}>
-                Above the 30% hard ceiling. Must cut weight. No exceptions.
-              </p>
-            )}
+      {/* ───── SETTINGS card ───── */}
+      <div className="bg-surface border border-border rounded-lg p-3.5 space-y-3" style={{ borderWidth: "0.5px" }}>
+        <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+          Settings
+        </p>
+
+        {/* Body weight slider */}
+        <label className="block">
+          <span className="text-[12px] font-medium text-ink">Your body weight (lbs)</span>
+          <div className="mt-2 flex items-center gap-3">
+            <input
+              type="range"
+              min={100} max={220} step={5}
+              value={bw}
+              onChange={(e) => handleBwChange(Number(e.target.value))}
+              className="flex-1 accent-ink"
+            />
+            <input
+              type="number"
+              min={100} max={220} step={5}
+              value={bw}
+              onChange={(e) => handleBwChange(Number(e.target.value) || 0)}
+              className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
+            />
           </div>
-        )}
+        </label>
+
+        {/* Base Pack Weight slider + definition */}
+        <div className="space-y-1.5">
+          <label className="block">
+            <span className="text-[12px] font-medium text-ink">Your Base Pack Weight (lbs)</span>
+            <div className="mt-2 flex items-center gap-3">
+              <input
+                type="range"
+                min={5} max={50} step={0.5}
+                value={actual}
+                onChange={(e) => handleActualChange(Number(e.target.value))}
+                className="flex-1 accent-ink"
+              />
+              <input
+                type="number"
+                min={0} max={100} step={0.5}
+                value={actual}
+                onChange={(e) => handleActualChange(Number(e.target.value) || 0)}
+                className="w-20 font-mono text-[13px] bg-surface-2 border border-border rounded px-2 py-1 text-right"
+              />
+            </div>
+          </label>
+          <p className="text-[11px] text-ink-muted leading-snug">
+            Your pack before food, water, crew gear, and worn clothes. <strong className="text-ink">Weigh it at home</strong> before you leave.
+          </p>
+        </div>
+
+        {/* Tent toggle + explanation */}
+        <div className="space-y-1.5">
+          <div
+            className="relative inline-flex items-center bg-surface border border-border rounded-full p-[2px]"
+            style={{ borderWidth: "0.5px" }}
+          >
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-[2px] bottom-[2px] rounded-full bg-hcblue transition-all duration-200"
+              style={{
+                left: usesPhilmontTent ? "2px" : "50%",
+                right: usesPhilmontTent ? "50%" : "2px",
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleUsesPhilmontTentChange(true)}
+              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                usesPhilmontTent ? "text-white" : "text-ink-muted"
+              }`}
+            >
+              Philmont tent
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUsesPhilmontTentChange(false)}
+              className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
+                !usesPhilmontTent ? "text-white" : "text-ink-muted"
+              }`}
+            >
+              My tent
+            </button>
+          </div>
+          <p className="font-mono text-ink-muted text-[11px]">
+            {usesPhilmontTent
+              ? `Philmont tent added to Trail Load: ${fmt(PHILMONT_TENT_LBS, 1)} lbs.`
+              : "Using your own tent. Count it in Base Pack Weight."}
+          </p>
+        </div>
       </div>
 
       {/* ───── Trail Load breakdown ───── */}
