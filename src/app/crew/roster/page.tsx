@@ -35,7 +35,11 @@ type WeightInfo = {
   cprCertificationStatus: CertificationStatus | null;
 };
 
-export const metadata: Metadata = { title: "Crew Roster" };
+export const metadata: Metadata = {
+  title: "Crew Roster",
+  openGraph: { images: [{ url: "/crew/roster/opengraph-image.png" }] },
+  twitter: { card: "summary_large_image" },
+};
 export const dynamic = "force-dynamic";
 
 const ROLE_TONE: Record<CrewRole, "issued" | "crew" | "warn" | "neutral"> = {

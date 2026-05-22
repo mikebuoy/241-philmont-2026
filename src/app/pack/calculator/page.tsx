@@ -14,7 +14,11 @@ import {
   saveUsesPhilmontTent,
 } from "./actions";
 
-export const metadata: Metadata = { title: "Pack Weight Calculator" };
+export const metadata: Metadata = {
+  title: "Pack Weight Calculator",
+  openGraph: { images: [{ url: "/pack/calculator/opengraph-image.png" }] },
+  twitter: { card: "summary_large_image" },
+};
 
 const SHADE_CELL: Record<string, string> = {
   ok: "bg-cell-ok text-cell-ok-text",

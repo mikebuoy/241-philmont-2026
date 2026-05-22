@@ -13,7 +13,11 @@ import type { CrewRole } from "@/data/roster";
 import { GearCheckGrid, type CellData, type CrewGrid, type GridRow } from "./GearCheckGrid";
 import { PrintButton } from "@/components/primitives/PrintButton";
 
-export const metadata: Metadata = { title: "Gear Check" };
+export const metadata: Metadata = {
+  title: "Gear Check",
+  openGraph: { images: [{ url: "/crew/gear-check/opengraph-image.png" }] },
+  twitter: { card: "summary_large_image" },
+};
 export const dynamic = "force-dynamic";
 
 const BASE_TRAIL_LOAD_LBS =

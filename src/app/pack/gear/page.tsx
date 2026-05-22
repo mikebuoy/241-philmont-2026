@@ -12,7 +12,11 @@ import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { PackingListEditor } from "./PackingListEditor";
 import { PrintButton } from "@/components/primitives/PrintButton";
 
-export const metadata: Metadata = { title: "My Packing List" };
+export const metadata: Metadata = {
+  title: "My Packing List",
+  openGraph: { images: [{ url: "/pack/gear/opengraph-image.png" }] },
+  twitter: { card: "summary_large_image" },
+};
 export const dynamic = "force-dynamic";
 
 export default async function PackGearPage() {

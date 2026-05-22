@@ -11,7 +11,11 @@ import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { PrintButton } from "@/components/primitives/PrintButton";
 
-export const metadata: Metadata = { title: "Crew Pack Weights" };
+export const metadata: Metadata = {
+  title: "Crew Pack Weights",
+  openGraph: { images: [{ url: "/crew/weights/opengraph-image.png" }] },
+  twitter: { card: "summary_large_image" },
+};
 export const dynamic = "force-dynamic";
 
 const BASE_ADD_ON_LBS =
