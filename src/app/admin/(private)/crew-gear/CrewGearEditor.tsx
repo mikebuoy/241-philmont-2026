@@ -43,8 +43,8 @@ export function CrewGearEditor({ items: initialItems }: { items: CrewCoreGearIte
 
   function handleAdd(supplier: Supplier) {
     startTransition(async () => {
-      await addCoreCrewGearItem({ name: "New item", supplier, qty: 1, weight_oz: 0, description: "" });
-      // Page will revalidate and show new item on next load
+      const newItem = await addCoreCrewGearItem({ name: "New item", supplier, qty: 1, weight_oz: 0, description: "" });
+      setItems((prev) => [...prev, newItem]);
     });
   }
 

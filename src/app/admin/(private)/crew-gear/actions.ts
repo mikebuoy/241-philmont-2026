@@ -14,7 +14,7 @@ export async function addCoreCrewGearItem(data: {
   qty: number;
   weight_oz: number;
   description: string;
-}): Promise<void> {
+}): Promise<{ id: string; name: string; supplier: "Philmont Issued" | "Troop Supplied"; qty: number; weightOz: number; description: string; defaultIsNotTaking: boolean; sortOrder: number }> {
   await requireAdmin();
   const admin = createAdminClient();
   const { data: last } = await admin
@@ -25,14 +25,16 @@ export async function addCoreCrewGearItem(data: {
     .limit(1)
     .maybeSingle();
   const sort_order = last ? (last as { sort_order: number }).sort_order + 1 : 0;
-  const { error } = await admin.from("crew_core_gear").insert({
+  const { data: inserted, error } = await admin.from("crew_core_gear").insert({
     ...data,
     name: data.name.trim() || "New item",
     sort_order,
-  });
+  }).select().single();
   if (error) throw new Error(`Add failed: ${error.message}`);
   revalidatePath("/admin/crew-gear");
   revalidatePath("/crew/gear");
+  const r = inserted as { id: string; name: string; supplier: string; qty: number; weight_oz: number; description: string; default_is_not_taking: boolean; sort_order: number };
+  return { id: r.id, name: r.name, supplier: r.supplier as "Philmont Issued" | "Troop Supplied", qty: r.qty, weightOz: Number(r.weight_oz), description: r.description ?? "", defaultIsNotTaking: r.default_is_not_taking ?? false, sortOrder: r.sort_order };
 }
 
 type UpdateField = "name" | "supplier" | "qty" | "weight_oz" | "description" | "default_is_not_taking";
