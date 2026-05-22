@@ -31,13 +31,14 @@ export const PACK_SUB = [
 
 export const CREW_SUB = [
   { href: "/crew/roster", label: "Roster" },
-  { href: "/crew/duty", label: "Duties" },
   { href: "/crew/weights", label: "Pack Weights" },
   { href: "/crew/gear-check", label: "Gear Check" },
+  { href: "/crew/gear", label: "Crew Gear" },
 ];
 
 export const REFERENCE_SUB = [
   { href: "/reference/gear", label: "Gear" },
+  { href: "/reference/duty", label: "Duties" },
   { href: "/reference/cooking", label: "Cooking" },
   { href: "/reference/bear-bag", label: "Bear Bag" },
   { href: "/reference/altitude", label: "Altitude & Safety" },

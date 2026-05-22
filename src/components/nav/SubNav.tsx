@@ -5,15 +5,16 @@ import { usePathname } from "next/navigation";
 
 type SubNavItem = { href: string; label: string };
 
-export function SubNav({ items }: { items: SubNavItem[] }) {
+export function SubNav({ items, showActive = true }: { items: SubNavItem[]; showActive?: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0 mb-6">
       <div className="flex gap-1 min-w-max">
         {items.map((it) => {
           const active =
-            pathname === it.href ||
-            (it.href !== "/" && pathname.startsWith(it.href));
+            showActive &&
+            (pathname === it.href ||
+              (it.href !== "/" && pathname.startsWith(it.href + "/")));
           return (
             <Link
               key={it.href}

@@ -28,19 +28,32 @@ export default function ReferenceGearPage() {
 
       <Box variant="info">
         <strong>This is the shared/crew gear reference.</strong> Personal
-        items live on <em>My Pack › My Packing List</em>. Weights confirmed against
+        items live on <em>My Pack › Gear List</em>. Weights confirmed against
         the Philmont 2024 Guidebook to Adventure unless noted otherwise.
       </Box>
 
-      <Section num="01" title="Philmont-issued crew gear">
+      <Section num="01" title="Philmont gear videos">
+        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+          <iframe
+            src="https://www.youtube.com/embed/ZORN2Co9A5k?si=fT06iipeU9q3l3mD"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </Section>
+
+      <Section num="02" title="Philmont-issued crew gear">
         <GearTable items={ISSUED_GEAR} tone="issued" />
       </Section>
 
-      <Section num="02" title="Crew-supplied shared gear">
+      <Section num="03" title="Crew-supplied shared gear">
         <GearTable items={CREW_SUPPLIED_GEAR} tone="crew" />
       </Section>
 
-      <Section num="03" title="Shelter by role">
+      <Section num="04" title="Shelter by role">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
@@ -73,7 +86,7 @@ export default function ReferenceGearPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Assignment guide by body weight">
+      <Section num="05" title="Assignment guide by body weight">
         <p className="text-[12px] text-ink-muted">
           Crew gear is distributed unevenly by design. Heavier carriers take
           heavier items on the highest-load days. Lighter carriers pick up more
@@ -119,7 +132,7 @@ export default function ReferenceGearPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Heaviest single items">
+      <Section num="06" title="Heaviest single items">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
