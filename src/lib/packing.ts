@@ -174,8 +174,20 @@ export async function seedCoreItemsForCrewMember(
     };
   });
 
-  const { error } = await admin.from("packing_items").insert(rows);
+  const { error } = await admin
+    .from("packing_items")
+    .upsert(rows, { onConflict: "crew_member_id,name,is_core", ignoreDuplicates: true });
   if (error) throw new Error(`Seed failed: ${error.message}`);
+}
+
+async function runInBatches<T>(
+  items: T[],
+  batchSize: number,
+  fn: (item: T) => PromiseLike<unknown>,
+): Promise<void> {
+  for (let i = 0; i < items.length; i += batchSize) {
+    await Promise.all(items.slice(i, i + batchSize).map(fn));
+  }
 }
 
 function numberOrOne(qty: string): number {
@@ -212,7 +224,8 @@ export async function syncCoreItemsForAllMembers(): Promise<{
     admin
       .from("packing_items")
       .select("id, crew_member_id, name, sort_order, is_required")
-      .eq("is_core", true),
+      .eq("is_core", true)
+      .range(0, 9999),
   ]);
   if (gearRes.error) throw new Error(gearRes.error.message);
   if (existingRes.error) throw new Error(existingRes.error.message);
@@ -262,7 +275,6 @@ export async function syncCoreItemsForAllMembers(): Promise<{
           is_not_packing: isNotPacking,
           sort_order: g.sort_order,
         });
-        itemsAdded++;
       } else if (existing.sort_order !== g.sort_order || existing.is_required !== isRequired) {
         toUpdate.push({ id: existing.id, sort_order: g.sort_order, is_required: isRequired });
         itemsUpdated++;
@@ -270,17 +282,19 @@ export async function syncCoreItemsForAllMembers(): Promise<{
     }
 
     if (toInsert.length > 0) {
-      const { error } = await admin.from("packing_items").insert(toInsert);
+      const { data: inserted, error } = await admin
+        .from("packing_items")
+        .upsert(toInsert, { onConflict: "crew_member_id,name,is_core", ignoreDuplicates: true })
+        .select("id");
       if (error) throw new Error(`Insert failed for ${member.name}: ${error.message}`);
+      itemsAdded += inserted?.length ?? 0;
     }
 
-    await Promise.all(
-      toUpdate.map((u) =>
-        admin
-          .from("packing_items")
-          .update({ sort_order: u.sort_order, is_required: u.is_required })
-          .eq("id", u.id),
-      ),
+    await runInBatches(toUpdate, 50, (u) =>
+      admin
+        .from("packing_items")
+        .update({ sort_order: u.sort_order, is_required: u.is_required })
+        .eq("id", u.id),
     );
   }
 
