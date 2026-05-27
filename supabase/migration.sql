@@ -127,7 +127,71 @@ create policy "Admins can delete gpx"
   using (bucket_id = 'gpx' and public.is_admin());
 
 -- ============================================================
--- Done. After running this, you can run the seed script
--- (scripts/seed.ts) from the project to populate itinerary_days
--- and upload the GPX file.
+-- Migration 2: Trail meals + enriched itinerary days
+-- Run in Supabase SQL Editor after the initial migration above.
+-- ============================================================
+
+-- 6. Trail meals table --------------------------------------------------------
+-- Normalized Philmont-issued numbered meal bags. One row per meal code.
+-- Multiple itinerary days can reference the same code (e.g. B7 on Jun 17 + Jun 27).
+create table if not exists public.trail_meals (
+  code        text primary key,   -- 'B7', 'L3', 'D10', etc.
+  type        text not null check (type in ('breakfast', 'lunch', 'dinner')),
+  items       text[] not null default array[]::text[],
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+alter table public.trail_meals enable row level security;
+
+drop policy if exists "trail_meals public read" on public.trail_meals;
+create policy "trail_meals public read"
+  on public.trail_meals
+  for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "trail_meals admin write" on public.trail_meals;
+create policy "trail_meals admin write"
+  on public.trail_meals
+  for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- 7. Enrich itinerary_days ----------------------------------------------------
+alter table public.itinerary_days
+  add column if not exists trail_day                int,
+
+  -- Light table (null for travel days)
+  add column if not exists twilight                 text,
+  add column if not exists sunrise                  text,
+  add column if not exists sunset                   text,
+  add column if not exists dark                     text,
+
+  -- Daily schedule (null for non-trail days)
+  add column if not exists wake                     text,
+  add column if not exists on_trail                 text,
+
+  -- Rich narrative content
+  add column if not exists what_to_expect           text,
+  add column if not exists planned_activities       text[] default array[]::text[],
+  add column if not exists opportunistic_activities text[] default array[]::text[],
+  add column if not exists crew_notes               text[] default array[]::text[],
+  add column if not exists crew_leader_watch        text[] default array[]::text[],
+  add column if not exists crew_leader_focus        text,
+
+  -- Meal FK references (null when no numbered trail meal issued for that slot)
+  add column if not exists meal_breakfast           text references public.trail_meals(code),
+  add column if not exists meal_lunch               text references public.trail_meals(code),
+  add column if not exists meal_dinner              text references public.trail_meals(code),
+
+  -- Meal override notes (used when slot has no numbered meal bag)
+  add column if not exists meal_breakfast_note      text,
+  add column if not exists meal_lunch_note          text,
+  add column if not exists meal_dinner_note         text;
+
+-- ============================================================
+-- Done. Run scripts/seed.ts to populate trail_meals and the
+-- new itinerary_days columns.
 -- ============================================================

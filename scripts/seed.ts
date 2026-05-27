@@ -12,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { config } from "dotenv";
-import { ITINERARY, GPX_COVERAGE } from "../src/data/itinerary";
+import { ITINERARY, TRAIL_MEALS, GPX_COVERAGE } from "../src/data/itinerary";
 
 // Load .env.local
 config({ path: ".env.local" });
@@ -28,6 +28,18 @@ const supabase = createClient(url, key, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
+async function seedTrailMeals() {
+  console.log(`\nSeeding ${TRAIL_MEALS.length} trail meals...`);
+  const { error } = await supabase
+    .from("trail_meals")
+    .upsert(TRAIL_MEALS, { onConflict: "code" });
+  if (error) {
+    console.error("  ✗ Upsert failed:", error.message);
+    process.exit(1);
+  }
+  console.log(`  ✓ ${TRAIL_MEALS.length} meals upserted.`);
+}
+
 async function seedItinerary() {
   console.log(`\nSeeding ${ITINERARY.length} itinerary days...`);
   const rows = ITINERARY.map((d) => {
@@ -35,6 +47,7 @@ async function seedItinerary() {
     return {
       iso: d.iso,
       philmont_day: d.philmontDay,
+      trail_day: d.trailDay ?? null,
       label: d.label,
       date_long: d.date,
       date_short: d.dateShort,
@@ -55,6 +68,35 @@ async function seedItinerary() {
       gpx_path: gpx ? `${d.iso}.gpx` : null,
       gpx_partial: gpx?.partial ?? false,
       gpx_note: gpx?.note ?? null,
+
+      // Light table
+      twilight: d.twilight ?? null,
+      sunrise: d.sunrise ?? null,
+      sunset: d.sunset ?? null,
+      dark: d.dark ?? null,
+
+      // Schedule
+      wake: d.wake ?? null,
+      on_trail: d.onTrail ?? null,
+
+      // Rich narrative
+      what_to_expect: d.whatToExpect || null,
+      planned_activities: d.plannedActivities ?? [],
+      opportunistic_activities: d.opportunisticActivities ?? [],
+      crew_notes: d.crewNotes ?? [],
+      crew_leader_watch: d.crewLeaderWatch ?? [],
+      crew_leader_focus: d.crewLeaderFocus || null,
+
+      // Meal FKs (trail_meals must be seeded first)
+      meal_breakfast: d.mealBreakfast ?? null,
+      meal_lunch: d.mealLunch ?? null,
+      meal_dinner: d.mealDinner ?? null,
+
+      // Meal override notes
+      meal_breakfast_note: d.mealBreakfastNote ?? null,
+      meal_lunch_note: d.mealLunchNote ?? null,
+      meal_dinner_note: d.mealDinnerNote ?? null,
+
       updated_by: "seed",
     };
   });
@@ -95,6 +137,8 @@ async function seedGpxFiles() {
 
 async function main() {
   console.log("=== Seeding Supabase from local data ===");
+  // trail_meals must be seeded before itinerary_days (FK dependency)
+  await seedTrailMeals();
   await seedItinerary();
   await seedGpxFiles();
   console.log("\n✓ Seed complete.");

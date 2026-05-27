@@ -9,6 +9,7 @@ import { Stat } from "@/components/primitives/Stat";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { isoToSlug } from "@/data/itinerary";
 import type { CampType } from "@/data/itinerary";
+import type { TrailMeal } from "@/lib/itinerary";
 import { getItinerary } from "@/lib/itinerary";
 import { loadGpxFromStorage } from "@/lib/gpx";
 import { ElevationProfile } from "@/components/ElevationProfile";
@@ -58,6 +59,32 @@ const TYPE_TONE: Record<
   layover: "warn",
 };
 
+function MealRow({
+  label,
+  meal,
+  note,
+}: {
+  label: string;
+  meal: TrailMeal | null;
+  note: string | null;
+}) {
+  if (!meal && !note) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted">
+        {label}{meal ? ` · ${meal.code}` : ""}
+      </span>
+      {meal ? (
+        <span className="text-[11px] text-ink-muted leading-snug">
+          {meal.items.join(", ")}
+        </span>
+      ) : (
+        <span className="text-[11px] text-ink-muted">{note}</span>
+      )}
+    </div>
+  );
+}
+
 export default async function DayDetailPage({
   params,
 }: {
@@ -77,6 +104,14 @@ export default async function DayDetailPage({
   const hasMetrics =
     d.miles != null || d.gain != null || d.loss != null || d.elevation != null;
 
+  const hasSchedule = !!(d.wake || d.onTrail || d.sunrise);
+
+  const hasMeals = !!(
+    d.breakfastMeal || d.mealBreakfastNote ||
+    d.lunchMeal || d.mealLunchNote ||
+    d.dinnerMeal || d.mealDinnerNote
+  );
+
   const eyebrow = [
     `${d.weekday} · ${d.dateShort}`,
     d.philmontDay != null ? `Philmont Day ${d.philmontDay}` : null,
@@ -88,14 +123,14 @@ export default async function DayDetailPage({
         {d.trailDay != null ? `Trail Day ${d.trailDay}: ` : ""}{d.camp}
       </span>
       <span className="flex items-center flex-wrap gap-1.5">
-      <StatusBadge tone={TYPE_TONE[d.type]}>{TYPE_LABEL[d.type]}</StatusBadge>
-      {d.flags.dryCamp && <StatusBadge tone="danger">DRY CAMP</StatusBadge>}
-      {d.flags.burroPickup && <StatusBadge tone="warn">BURRO PICKUP</StatusBadge>}
-      {d.flags.burroDropoff && <StatusBadge tone="warn">BURRO DROP-OFF</StatusBadge>}
-      {d.flags.summit && <StatusBadge tone="info">SUMMIT</StatusBadge>}
-      {d.flags.conservation && <StatusBadge tone="ok">CONSERVATION</StatusBadge>}
-      {d.flags.longestDay && <StatusBadge tone="neutral">LONGEST DAY</StatusBadge>}
-      {d.flags.hardestDescent && <StatusBadge tone="danger">HARDEST DESCENT</StatusBadge>}
+        <StatusBadge tone={TYPE_TONE[d.type]}>{TYPE_LABEL[d.type]}</StatusBadge>
+        {d.flags.dryCamp && <StatusBadge tone="danger">DRY CAMP</StatusBadge>}
+        {d.flags.burroPickup && <StatusBadge tone="warn">BURRO PICKUP</StatusBadge>}
+        {d.flags.burroDropoff && <StatusBadge tone="warn">BURRO DROP-OFF</StatusBadge>}
+        {d.flags.summit && <StatusBadge tone="info">SUMMIT</StatusBadge>}
+        {d.flags.conservation && <StatusBadge tone="ok">CONSERVATION</StatusBadge>}
+        {d.flags.longestDay && <StatusBadge tone="neutral">LONGEST DAY</StatusBadge>}
+        {d.flags.hardestDescent && <StatusBadge tone="danger">HARDEST DESCENT</StatusBadge>}
       </span>
     </span>
   );
@@ -142,10 +177,10 @@ export default async function DayDetailPage({
       </div>
 
       {(() => {
-        // Sequential numbering for whichever sections render
         const sections: { title: string; render: () => React.ReactNode }[] = [];
         const hasTrailContext = d.type !== "travel" && d.type !== "acclimation";
 
+        // 1. Trail metrics
         if (hasMetrics) {
           sections.push({
             title: "Trail metrics",
@@ -199,6 +234,53 @@ export default async function DayDetailPage({
             ),
           });
         }
+
+        // 2. Day schedule
+        if (hasSchedule) {
+          sections.push({
+            title: "Day schedule",
+            render: () => (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {d.wake && <Stat value={d.wake} label="WAKE" />}
+                  {d.onTrail && <Stat value={d.onTrail} label="ON TRAIL" />}
+                  {d.sunrise && <Stat value={d.sunrise} label="SUNRISE" />}
+                  {d.sunset && <Stat value={d.sunset} label="SUNSET" />}
+                </div>
+                {(d.twilight || d.dark) && (
+                  <div className="flex gap-6 mt-2">
+                    {d.twilight && (
+                      <span className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em]">
+                        Civil Twilight · {d.twilight}
+                      </span>
+                    )}
+                    {d.dark && (
+                      <span className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em]">
+                        Dark · {d.dark}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
+            ),
+          });
+        }
+
+        // 3. What to expect
+        if (d.whatToExpect) {
+          sections.push({
+            title: "What to expect",
+            render: () => (
+              <Panel>
+                <p className="text-[12px] text-ink leading-relaxed">
+                  {d.whatToExpect}
+                </p>
+              </Panel>
+            ),
+          });
+        }
+
+        // 4. Elevation profile
         if (hasTrailContext) {
           sections.push({
             title: "Elevation profile",
@@ -212,34 +294,92 @@ export default async function DayDetailPage({
           });
         }
 
-        sections.push({
-          title: "Activities & programs",
-          render: () =>
-            d.programs.length > 0 ? (
+        // 5. Activities & programs
+        const hasActivities =
+          d.plannedActivities.length > 0 ||
+          d.programs.length > 0 ||
+          d.opportunisticActivities.length > 0;
+        if (hasActivities) {
+          sections.push({
+            title: "Activities & programs",
+            render: () => (
               <Panel>
-                <ul className="space-y-2.5">
-                  {d.programs.map((p) => (
-                    <li
-                      key={p}
-                      className="flex items-start gap-2 text-[12px]"
-                    >
-                      <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
-                      <span className="text-ink">{p}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-[11px] text-ink-faint mt-3 leading-snug">
-                  Detailed program descriptions will be added as research is
-                  completed.
-                </p>
-              </Panel>
-            ) : (
-              <Panel>
-                <p className="text-[12px] text-ink-muted">None.</p>
+                {d.plannedActivities.length > 0 && (
+                  <ul className="space-y-2.5">
+                    {d.plannedActivities.map((p) => (
+                      <li key={p} className="flex items-start gap-2 text-[12px]">
+                        <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                        <span className="text-ink">{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {d.programs.length > 0 && (
+                  <>
+                    {d.plannedActivities.length > 0 && (
+                      <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-4 mb-2">
+                        Programs
+                      </p>
+                    )}
+                    <ul className={`space-y-2.5 ${d.plannedActivities.length > 0 ? "" : ""}`}>
+                      {d.programs.map((p) => (
+                        <li key={p} className="flex items-start gap-2 text-[12px]">
+                          <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                          <span className="text-ink">{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {d.opportunisticActivities.length > 0 && (
+                  <>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-4 mb-2">
+                      Opportunities
+                    </p>
+                    <ul className="space-y-2">
+                      {d.opportunisticActivities.map((p) => (
+                        <li key={p} className="flex items-start gap-2 text-[12px]">
+                          <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                          <span className="text-ink-muted">{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </Panel>
             ),
-        });
+          });
+        }
 
+        // 6. Meals
+        if (hasMeals) {
+          sections.push({
+            title: "Meals",
+            render: () => (
+              <Panel>
+                <div className="space-y-3">
+                  <MealRow
+                    label="Breakfast"
+                    meal={d.breakfastMeal}
+                    note={d.mealBreakfastNote}
+                  />
+                  <MealRow
+                    label="Lunch"
+                    meal={d.lunchMeal}
+                    note={d.mealLunchNote}
+                  />
+                  <MealRow
+                    label="Dinner"
+                    meal={d.dinnerMeal}
+                    note={d.mealDinnerNote}
+                  />
+                </div>
+              </Panel>
+            ),
+          });
+        }
+
+        // 7. Notes (dry camp protocol + operational notes + food pickup)
         if (d.notes || d.foodPickup || d.flags.dryCamp) {
           sections.push({
             title: "Notes",
@@ -270,6 +410,62 @@ export default async function DayDetailPage({
           });
         }
 
+        // 8. Crew notes
+        if (d.crewNotes.length > 0) {
+          sections.push({
+            title: "Crew notes",
+            render: () => (
+              <Panel>
+                <ul className="space-y-2.5">
+                  {d.crewNotes.map((note) => (
+                    <li key={note} className="flex items-start gap-2 text-[12px]">
+                      <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                      <span className="text-ink">{note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Panel>
+            ),
+          });
+        }
+
+        // 9. Crew leader notes
+        if (d.crewLeaderWatch.length > 0 || d.crewLeaderFocus) {
+          sections.push({
+            title: "Crew leader notes",
+            render: () => (
+              <Panel>
+                {d.crewLeaderWatch.length > 0 && (
+                  <>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mb-2">
+                      Watch for
+                    </p>
+                    <ul className="space-y-2">
+                      {d.crewLeaderWatch.map((item) => (
+                        <li key={item} className="flex items-start gap-2 text-[12px]">
+                          <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                          <span className="text-ink">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {d.crewLeaderFocus && (
+                  <>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-4 mb-1">
+                      Crew leader focus
+                    </p>
+                    <p className="text-[12px] text-ink leading-relaxed font-medium">
+                      {d.crewLeaderFocus}
+                    </p>
+                  </>
+                )}
+              </Panel>
+            ),
+          });
+        }
+
+        // 10. Map
         if (hasTrailContext) {
           sections.push({
             title: "Map",
@@ -361,7 +557,6 @@ export default async function DayDetailPage({
           <div />
         )}
       </nav>
-
     </Page>
   );
 }

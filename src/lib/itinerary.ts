@@ -15,6 +15,11 @@ function buildClient() {
   );
 }
 
+export type TrailMeal = {
+  code: string;
+  items: string[];
+};
+
 type Row = {
   iso: string;
   philmont_day: number | null;
@@ -39,9 +44,38 @@ type Row = {
   gpx_path: string | null;
   gpx_partial: boolean | null;
   gpx_note: string | null;
+
+  // Light table
+  twilight: string | null;
+  sunrise: string | null;
+  sunset: string | null;
+  dark: string | null;
+
+  // Schedule
+  wake: string | null;
+  on_trail: string | null;
+
+  // Rich narrative
+  what_to_expect: string | null;
+  planned_activities: string[] | null;
+  opportunistic_activities: string[] | null;
+  crew_notes: string[] | null;
+  crew_leader_watch: string[] | null;
+  crew_leader_focus: string | null;
+
+  // Meal FK codes
+  meal_breakfast: string | null;
+  meal_lunch: string | null;
+  meal_dinner: string | null;
+
+  // Meal override notes
+  meal_breakfast_note: string | null;
+  meal_lunch_note: string | null;
+  meal_dinner_note: string | null;
+
 };
 
-function rowToDay(r: Row): ItineraryDay {
+function rowToDay(r: Row, meals: Map<string, TrailMeal>): ItineraryDayFull {
   return {
     iso: r.iso,
     philmontDay: r.philmont_day,
@@ -63,6 +97,39 @@ function rowToDay(r: Row): ItineraryDay {
     notes: r.notes ?? "",
     flags: r.flags ?? {},
     programs: r.programs ?? [],
+
+    twilight: r.twilight,
+    sunrise: r.sunrise,
+    sunset: r.sunset,
+    dark: r.dark,
+    wake: r.wake,
+    onTrail: r.on_trail,
+
+    whatToExpect: r.what_to_expect ?? "",
+    plannedActivities: r.planned_activities ?? [],
+    opportunisticActivities: r.opportunistic_activities ?? [],
+    crewNotes: r.crew_notes ?? [],
+    crewLeaderWatch: r.crew_leader_watch ?? [],
+    crewLeaderFocus: r.crew_leader_focus ?? "",
+
+    mealBreakfast: r.meal_breakfast,
+    mealLunch: r.meal_lunch,
+    mealDinner: r.meal_dinner,
+    mealBreakfastNote: r.meal_breakfast_note,
+    mealLunchNote: r.meal_lunch_note,
+    mealDinnerNote: r.meal_dinner_note,
+
+    gpx: r.gpx_path
+      ? {
+          path: r.gpx_path,
+          partial: r.gpx_partial ?? false,
+          note: r.gpx_note ?? "",
+        }
+      : null,
+
+    breakfastMeal: r.meal_breakfast ? (meals.get(r.meal_breakfast) ?? null) : null,
+    lunchMeal: r.meal_lunch ? (meals.get(r.meal_lunch) ?? null) : null,
+    dinnerMeal: r.meal_dinner ? (meals.get(r.meal_dinner) ?? null) : null,
   };
 }
 
@@ -70,50 +137,47 @@ export type GpxMeta = { path: string; partial: boolean; note: string };
 
 export type ItineraryDayFull = ItineraryDay & {
   gpx: GpxMeta | null;
+  /** Resolved breakfast meal (items list), null when FK is null or no match. */
+  breakfastMeal: TrailMeal | null;
+  lunchMeal: TrailMeal | null;
+  dinnerMeal: TrailMeal | null;
 };
+
+async function fetchMealsMap(supabase: ReturnType<typeof buildClient>): Promise<Map<string, TrailMeal>> {
+  const map = new Map<string, TrailMeal>();
+  const { data, error } = await supabase
+    .from("trail_meals")
+    .select("code, items");
+  if (error) return map; // table not yet created — degrade gracefully
+  for (const row of (data ?? []) as { code: string; items: string[] }[]) {
+    map.set(row.code, { code: row.code, items: row.items });
+  }
+  return map;
+}
 
 /**
  * Fetch all itinerary days from Supabase, sorted by iso date.
+ * Trail meals are fetched separately and merged by FK code.
  * Called from page components at build time (SSG).
  */
 export async function getItinerary(): Promise<ItineraryDayFull[]> {
   const supabase = buildClient();
-  const { data, error } = await supabase
-    .from("itinerary_days")
-    .select("*")
-    .order("iso", { ascending: true });
+  const [mealsMap, { data, error }] = await Promise.all([
+    fetchMealsMap(supabase),
+    supabase.from("itinerary_days").select("*").order("iso", { ascending: true }),
+  ]);
   if (error) throw new Error(`Failed to load itinerary: ${error.message}`);
-  return (data as Row[]).map((r) => ({
-    ...rowToDay(r),
-    gpx: r.gpx_path
-      ? {
-          path: r.gpx_path,
-          partial: r.gpx_partial ?? false,
-          note: r.gpx_note ?? "",
-        }
-      : null,
-  }));
+  return (data as Row[]).map((r) => rowToDay(r, mealsMap));
 }
 
-/** Fetch one day by iso slug. */
+/** Fetch one day by iso date (YYYY-MM-DD). */
 export async function getDayByIso(iso: string): Promise<ItineraryDayFull | null> {
   const supabase = buildClient();
-  const { data, error } = await supabase
-    .from("itinerary_days")
-    .select("*")
-    .eq("iso", iso)
-    .maybeSingle();
+  const [mealsMap, { data, error }] = await Promise.all([
+    fetchMealsMap(supabase),
+    supabase.from("itinerary_days").select("*").eq("iso", iso).maybeSingle(),
+  ]);
   if (error) throw new Error(`Failed to load day ${iso}: ${error.message}`);
   if (!data) return null;
-  const r = data as Row;
-  return {
-    ...rowToDay(r),
-    gpx: r.gpx_path
-      ? {
-          path: r.gpx_path,
-          partial: r.gpx_partial ?? false,
-          note: r.gpx_note ?? "",
-        }
-      : null,
-  };
+  return rowToDay(data as Row, mealsMap);
 }
