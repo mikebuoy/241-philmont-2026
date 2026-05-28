@@ -8,6 +8,7 @@ import { REFERENCE_SUB } from "@/components/nav/navItems";
 import {
   BREAK_TYPES,
   CATERPILLAR_DESC,
+  NAVIGATION_RULES,
   FOOT_CARE,
   HIKING_ETIQUETTE,
 } from "@/data/ontrail";
@@ -19,7 +20,7 @@ export default function OnTrailPage() {
     <Page
       eyebrow="Reference"
       title="On Trail"
-      meta="Pace · Breaks · Foot Care"
+      meta="Pace · Navigation · Foot Care"
     >
       <SubNav items={REFERENCE_SUB} />
 
@@ -84,7 +85,30 @@ export default function OnTrailPage() {
         </a>
       </Section>
 
-      <Section num="03" title="Foot care">
+      <Section num="03" title="Navigation">
+        <Panel>
+          <ul className="space-y-1.5">
+            {NAVIGATION_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+          <iframe
+            src="https://www.youtube.com/embed/VIh43ViXVY8"
+            title="How To Use A Map & Compass"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </Section>
+
+      <Section num="04" title="Foot care">
         <Panel title="Before the trek">
           <ul className="space-y-1.5">
             {FOOT_CARE.beforeTrek.map((tip) => (
@@ -112,7 +136,7 @@ export default function OnTrailPage() {
         </Box>
       </Section>
 
-      <Section num="04" title="Hiking etiquette">
+      <Section num="05" title="Hiking etiquette">
         <Panel>
           <ul className="space-y-1.5">
             {HIKING_ETIQUETTE.map((rule) => (
