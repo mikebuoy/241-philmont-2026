@@ -44,6 +44,15 @@ async function seedItinerary() {
   console.log(`\nSeeding ${ITINERARY.length} itinerary days...`);
   const rows = ITINERARY.map((d) => {
     const gpx = GPX_COVERAGE[d.iso];
+    // Only include gpx columns when we have a known GPX entry. Omitting them
+    // from the upsert payload leaves any admin-uploaded values untouched.
+    const gpxFields = gpx
+      ? {
+          gpx_path: `${d.iso}.gpx`,
+          gpx_partial: gpx.partial,
+          gpx_note: gpx.note ?? null,
+        }
+      : {};
     return {
       iso: d.iso,
       philmont_day: d.philmontDay,
@@ -64,9 +73,7 @@ async function seedItinerary() {
       food_pickup: d.foodPickup,
       flags: d.flags,
       programs: d.programs,
-      gpx_path: gpx ? `${d.iso}.gpx` : null,
-      gpx_partial: gpx?.partial ?? false,
-      gpx_note: gpx?.note ?? null,
+      ...gpxFields,
 
       // Light table
       twilight: d.twilight ?? null,

@@ -28,7 +28,7 @@ This is a living doc. Update it at the end of every session before closing. The 
 
 - **`/pack/food`** — Meal plan display
 
-- **`/trip/itinerary`** and **`/trip/itinerary/[day]`** — Full itinerary with elevation profiles, day schedule, what-to-expect narratives, meals, crew notes, and crew leader notes (pending migration + seed below)
+- **`/trip/itinerary`** and **`/trip/itinerary/[day]`** — Full itinerary with elevation profiles, day schedule, what-to-expect narratives, meals, crew notes, and crew leader notes
 
 - **`/trip/training`** — Training plan
 
@@ -53,14 +53,6 @@ This is a living doc. Update it at the end of every session before closing. The 
 
 Do not use raw `next dev` for local verification. It can repeatedly reload `/admin/itinerary/[day]` and make auth controls appear to flicker, with terminal panics mentioning `/admin/(private)/roster/page` and `Next.js package not found`. `npm run dev` now uses Webpack and was verified to stabilize the edit page.
 
-**Itinerary enrichment — awaiting DB migration + seed run (code complete, build passing):**
-
-New data (day schedule, light table, what-to-expect, meals, crew notes, crew leader notes) is coded and build-verified but won't display until:
-1. Run the new SQL block at the bottom of `supabase/migration.sql` in the Supabase SQL editor
-2. Run `npx tsx scripts/seed.ts` from project root
-
-The app degrades gracefully before migration — existing itinerary pages work fine, new sections just don't appear.
-
 **Crew medical form flag — awaiting DB migration:**
 
 Run `supabase/migration-crew-med-form.sql` in the Supabase SQL editor to add `crew_members.med_form_received`. Until that migration is applied, the roster pages that read or update the MED field can fail with a missing-column error.
@@ -69,7 +61,6 @@ Run `supabase/migration-crew-med-form.sql` in the Supabase SQL editor to add `cr
 
 ## Next Up
 
-- Run migration + seed to activate itinerary enrichment
 - Consider print layout for `/trip/itinerary` (full itinerary on one page)
 
 ---
