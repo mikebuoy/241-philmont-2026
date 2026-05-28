@@ -131,6 +131,7 @@ export default async function DayDetailPage({
         {d.flags.conservation && <StatusBadge tone="ok">CONSERVATION</StatusBadge>}
         {d.flags.longestDay && <StatusBadge tone="neutral">LONGEST DAY</StatusBadge>}
         {d.flags.hardestDescent && <StatusBadge tone="danger">HARDEST DESCENT</StatusBadge>}
+        {d.foodPickup && <StatusBadge tone="info">FOOD RESUPPLY</StatusBadge>}
       </span>
     </span>
   );
@@ -180,7 +181,30 @@ export default async function DayDetailPage({
         const sections: { title: string; render: () => React.ReactNode }[] = [];
         const hasTrailContext = d.type !== "travel" && d.type !== "acclimation";
 
-        // 1. Trail metrics
+        // 1. What to expect
+        if (d.whatToExpect || d.scheduleNote) {
+          sections.push({
+            title: "What to expect",
+            render: () => (
+              <>
+                {d.whatToExpect && (
+                  <Panel>
+                    <p className="text-[12px] text-ink leading-relaxed">
+                      {d.whatToExpect}
+                    </p>
+                  </Panel>
+                )}
+                {d.scheduleNote && (
+                  <Box variant="warn">
+                    {d.scheduleNote}
+                  </Box>
+                )}
+              </>
+            ),
+          });
+        }
+
+        // 2. Trail metrics
         if (hasMetrics) {
           sections.push({
             title: "Trail metrics",
@@ -212,7 +236,7 @@ export default async function DayDetailPage({
                   )}
                 </div>
                 {(d.cumMiles != null || d.cumGain != null) && (
-                  <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mt-2">
+                  <p className="font-mono text-[10px] text-ink uppercase tracking-[0.05em] mt-2">
                     Cumulative{" "}
                     {d.cumMiles != null && `· ${d.cumMiles} mi`}
                     {d.cumGain != null && d.cumLoss != null && (
@@ -250,37 +274,18 @@ export default async function DayDetailPage({
                 {(d.twilight || d.dark) && (
                   <div className="flex gap-6 mt-2">
                     {d.twilight && (
-                      <span className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em]">
-                        Civil Twilight · {d.twilight}
+                      <span className="font-mono text-[10px] text-ink uppercase tracking-[0.05em]">
+                        First Light: {d.twilight}
                       </span>
                     )}
                     {d.dark && (
-                      <span className="font-mono text-[10px] text-ink-faint uppercase tracking-[0.05em]">
-                        Dark · {d.dark}
+                      <span className="font-mono text-[10px] text-ink uppercase tracking-[0.05em]">
+                        Dark: {d.dark}
                       </span>
                     )}
                   </div>
                 )}
-                {d.scheduleNote && (
-                  <Box variant="warn" className="mt-3">
-                    {d.scheduleNote}
-                  </Box>
-                )}
               </>
-            ),
-          });
-        }
-
-        // 3. What to expect
-        if (d.whatToExpect) {
-          sections.push({
-            title: "What to expect",
-            render: () => (
-              <Panel>
-                <p className="text-[12px] text-ink leading-relaxed">
-                  {d.whatToExpect}
-                </p>
-              </Panel>
             ),
           });
         }
@@ -299,34 +304,37 @@ export default async function DayDetailPage({
           });
         }
 
-        // 5. Activities & programs
+        // 5. Day At A Glance
         const hasActivities =
           d.plannedActivities.length > 0 ||
           d.programs.length > 0 ||
           d.opportunisticActivities.length > 0;
         if (hasActivities) {
           sections.push({
-            title: "Activities & programs",
+            title: "Day At A Glance",
             render: () => (
               <Panel>
                 {d.plannedActivities.length > 0 && (
-                  <ul className="space-y-2.5">
-                    {d.plannedActivities.map((p) => (
-                      <li key={p} className="flex items-start gap-2 text-[12px]">
-                        <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
-                        <span className="text-ink">{p}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mb-2">
+                      Activities
+                    </p>
+                    <ul className="space-y-2.5">
+                      {d.plannedActivities.map((p) => (
+                        <li key={p} className="flex items-start gap-2 text-[12px]">
+                          <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                          <span className="text-ink">{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 )}
                 {d.programs.length > 0 && (
                   <>
-                    {d.plannedActivities.length > 0 && (
-                      <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-4 mb-2">
-                        Programs
-                      </p>
-                    )}
-                    <ul className={`space-y-2.5 ${d.plannedActivities.length > 0 ? "" : ""}`}>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mt-4 mb-2">
+                      Scheduled Programs
+                    </p>
+                    <ul className="space-y-2.5">
                       {d.programs.map((p) => (
                         <li key={p} className="flex items-start gap-2 text-[12px]">
                           <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
@@ -384,26 +392,17 @@ export default async function DayDetailPage({
           });
         }
 
-        // 7. Notes (dry camp protocol + food pickup)
-        if (d.foodPickup || d.flags.dryCamp) {
+        // 7. Notes (dry camp protocol)
+        if (d.flags.dryCamp) {
           sections.push({
             title: "Notes",
             render: () => (
-              <>
-                {d.flags.dryCamp && (
-                  <Box variant="danger">
-                    <strong>Dry camp protocol.</strong> Cook and eat dinner at
-                    the last water source during the lunch stop. Cold lunch
-                    bag eaten as camp dinner. No-cook breakfast the next
-                    morning. Carry 1–2L water into camp.
-                  </Box>
-                )}
-                {d.foodPickup && (
-                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">
-                    Food pickup · {d.foodPickup}
-                  </div>
-                )}
-              </>
+              <Box variant="danger">
+                <strong>Dry camp protocol.</strong> Cook and eat dinner at
+                the last water source during the lunch stop. Cold lunch
+                bag eaten as camp dinner. No-cook breakfast the next
+                morning. Carry 1–2L water into camp.
+              </Box>
             ),
           });
         }

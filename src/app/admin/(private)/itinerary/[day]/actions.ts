@@ -122,6 +122,7 @@ export async function saveDay(iso: string, formData: FormData) {
     wake: optionalText(formData, "wake"),
     on_trail: optionalText(formData, "on_trail"),
     what_to_expect: optionalText(formData, "what_to_expect"),
+    schedule_note: optionalText(formData, "schedule_note"),
     planned_activities: lines(formData, "planned_activities"),
     opportunistic_activities: lines(formData, "opportunistic_activities"),
     crew_notes: lines(formData, "crew_notes"),

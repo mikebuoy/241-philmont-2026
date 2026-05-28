@@ -268,9 +268,6 @@ export default async function EditDayPage({
             <TextField label="Wake" name="wake" defaultValue={d.wake} />
             <TextField label="On trail" name="on_trail" defaultValue={d.onTrail} />
           </div>
-          {d.scheduleNote && (
-            <ReadOnlyField label="Schedule note" value={d.scheduleNote} />
-          )}
         </FormSection>
 
         <FormSection title="Narrative">
@@ -279,6 +276,12 @@ export default async function EditDayPage({
             name="what_to_expect"
             defaultValue={d.whatToExpect}
             rows={5}
+          />
+          <TextAreaField
+            label="Note"
+            name="schedule_note"
+            defaultValue={d.scheduleNote ?? ""}
+            rows={3}
           />
         </FormSection>
 
