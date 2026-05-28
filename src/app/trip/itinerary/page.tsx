@@ -49,7 +49,7 @@ export default async function ItineraryIndexPage() {
 
   return (
     <Page
-      eyebrow="My Trip"
+      eyebrow="My Trek"
       title="Itinerary"
       meta="June 14 – 28, 2026 · 15 days · 81 trail miles"
     >
@@ -69,7 +69,7 @@ export default async function ItineraryIndexPage() {
         </ul>
       </Section>
 
-      <Section num="02" title="On the ranch · 12 days">
+      <Section num="02" title="Philmont Trek · 12 days">
         <ul className="space-y-1.5">
           {onTrek.map((d) => (
             <DayRow key={d.iso} day={d} />

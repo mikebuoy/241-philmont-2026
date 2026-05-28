@@ -67,24 +67,11 @@ export default async function Home() {
         </div>
       </Section>
 
-      <Section num="01" title="The Philmont Experience">
-        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
-          <iframe
-            src="https://www.youtube.com/embed/fqORbB2BiEQ?si=8RXV57avggqmzRre"
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-        </div>
-      </Section>
-
-      <Section num="02" title="My Trek Details">
+      <Section num="01" title="My Trek Details">
         <div className="grid grid-cols-2 gap-3">
           <NavCard
             href="/trip/itinerary"
-            title="My Trip"
+            title="My Trek"
             description="Daily itinerary and training plan"
             icon={
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

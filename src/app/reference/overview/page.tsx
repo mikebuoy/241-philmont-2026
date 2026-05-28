@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Box } from "@/components/primitives/Box";
@@ -83,14 +84,29 @@ export default function OverviewPage() {
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Light & sleep plan">
-        <div className="space-y-2">
+      <p className="text-[12px] text-ink-muted leading-relaxed">
+        Standard operating procedures for every day on trail — morning wake-up
+        through lights out. These sequences keep the crew moving efficiently,
+        eating well, and sleeping enough to do it again the next day. Water
+        treatment and Leave No Trace practices are at the bottom.
+      </p>
+
+      <Section num="01" title="Wake and sleep timing">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Early starts are the single biggest factor in a good day. Leaving
+          before or at sunrise means cooler hiking, getting to staffed camps
+          before other crews, and real downtime in the afternoon. Afternoon
+          lightning at elevation makes late starts genuinely dangerous. At the
+          other end, {'"'}hiker{`'`}s midnight{'"'} — going to bed when it gets
+          dark — is how we bank enough sleep to wake at 4:30 and move well.
+        </p>
+        <div className="grid grid-cols-3 gap-2">
           <div className="bg-surface border border-border rounded-md p-4" style={{ borderWidth: "0.5px" }}>
-            <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-1">Wake target</div>
+            <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-1">Wake</div>
             <p className="text-[13px] font-semibold">{LIGHT_SLEEP.wakeTarget}</p>
           </div>
           <div className="bg-surface border border-border rounded-md p-4" style={{ borderWidth: "0.5px" }}>
-            <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-1">Move target</div>
+            <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-1">Move</div>
             <p className="text-[13px] font-semibold">{LIGHT_SLEEP.moveTarget}</p>
           </div>
           <div className="bg-surface border border-border rounded-md p-4" style={{ borderWidth: "0.5px" }}>
@@ -123,10 +139,22 @@ export default function OverviewPage() {
 
       <Section num="05" title="Dinner & evening">
         <StepList steps={DINNER_STEPS} />
+        <p className="text-[12px] text-ink-muted">
+          Full cook method, stove safety, and equipment →{" "}
+          <Link href="/reference/cooking" className="underline hover:text-ink">
+            Cooking
+          </Link>
+        </p>
       </Section>
 
       <Section num="06" title="Nightly brief">
         <StepList steps={NIGHTLY_BRIEF_STEPS} />
+        <p className="text-[12px] text-ink-muted">
+          Full smellables list, hang system, and bear bag procedures →{" "}
+          <Link href="/reference/bear-bag" className="underline hover:text-ink">
+            Bear Bag
+          </Link>
+        </p>
       </Section>
 
       <Section num="07" title="Water purification">

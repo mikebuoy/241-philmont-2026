@@ -6,7 +6,7 @@ import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
 import { ROLE_LABEL, type CrewRole } from "@/data/roster";
 import { DUTY_ROLES, PATROL_METHOD_NOTE } from "@/data/duty";
-import { CREW_ROLES } from "@/data/trek";
+import { CREW_ROLES, CREW_DEVELOPMENT_PHASES } from "@/data/trek";
 import { RANGER_RELEASE_CHECKLIST } from "@/data/incamp";
 import { Box } from "@/components/primitives/Box";
 
@@ -83,7 +83,15 @@ export default async function RosterPage() {
     >
       <SubNav items={CREW_SUB} />
 
-      <Section num="01" title="Sister crews">
+      <Section num="01" title="The Patrol Method">
+        <Panel>
+          <p className="text-[12px] text-ink-muted leading-relaxed">
+            {PATROL_METHOD_NOTE}
+          </p>
+        </Panel>
+      </Section>
+
+      <Section num="02" title="Sister crews">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {crewGroups.map((crew) => {
             const youth = crew.members.filter((m) =>
@@ -158,15 +166,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="02" title="The Patrol Method">
-        <Panel>
-          <p className="text-[12px] text-ink-muted leading-relaxed">
-            {PATROL_METHOD_NOTE}
-          </p>
-        </Panel>
-      </Section>
-
-      <Section num="03" title="Crew roles">
+      <Section num="04" title="Crew roles">
         <div className="space-y-2">
           {CREW_ROLES.map((role) => (
             <div
@@ -188,7 +188,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Duty types">
+      <Section num="05" title="Duty types">
         <div className="space-y-2">
           {DUTY_ROLES.map((d) => (
             <div
@@ -208,7 +208,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Rotation principle">
+      <Section num="06" title="Rotation principle">
         <Box variant="ok">
           <strong>By Trail Day 3, every scout has run every role.</strong>{" "}
           Cook, clean up, fill water, navigate, hang the bear bag. The crew
@@ -216,7 +216,7 @@ export default async function RosterPage() {
         </Box>
       </Section>
 
-      <Section num="06" title="Ranger release standard">
+      <Section num="07" title="Ranger release standard">
         <p className="text-[12px] text-ink-muted mb-3">
           The Philmont Ranger stays with the crew through Trail Day 3. Before
           leaving, they verify the crew can operate independently. This is the
@@ -237,6 +237,35 @@ export default async function RosterPage() {
           The standard isn&apos;t a formality — it&apos;s the crew demonstrating they can
           keep themselves safe without a guide.
         </Box>
+      </Section>
+
+      <Section num="08" title="Crew development">
+        <Box variant="info">
+          <strong>Advisor lens.</strong> These phases describe what to expect
+          as the crew evolves over the trek. Approximate timing varies by crew.
+        </Box>
+        <div className="space-y-2">
+          {CREW_DEVELOPMENT_PHASES.map((phase) => (
+            <div
+              key={phase.name}
+              className="bg-surface border border-border rounded-md p-4"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <div className="flex items-baseline justify-between gap-3 mb-1.5">
+                <h3 className="text-[13px] font-semibold">{phase.name}</h3>
+                <span className="font-mono text-[10px] text-ink-muted">
+                  {phase.window}
+                </span>
+              </div>
+              <p className="text-[12px] text-ink-muted leading-relaxed mb-2">
+                <strong className="text-ink">Signs: </strong>{phase.signs}
+              </p>
+              <p className="text-[12px] text-ink-muted leading-relaxed">
+                <strong className="text-ink">Focus: </strong>{phase.focus}
+              </p>
+            </div>
+          ))}
+        </div>
       </Section>
     </Page>
   );

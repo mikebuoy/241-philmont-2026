@@ -1,14 +1,15 @@
 export const BIG_PICTURE = {
   headline: "This trek will be hard. It is also going to be one of the best adventures many of us have ever had.",
+  activities: "We will climb Baldy Mountain, hike over the Tooth of Time, pick up and manage a burro, build trail for conservation, rock climb at Dean Cow, experience campfire programs, and move through some of the most spectacular parts of Philmont.",
   crewCode: [
-    "Move as one crew.",
-    "Wake up early.",
-    "Do your job.",
-    "Keep your attitude under control.",
-    "Help the person next to you.",
-    "Listen to the Crew Leader.",
-    "Let advisors advise.",
-    "Finish together.",
+    "One crew, one pace, one goal.",
+    "The early start is the best move of the day.",
+    "Just one more mile.",
+    "Respond, don't react.",
+    "Check on the person next to you.",
+    "Trust the Crew Leader.",
+    "Let advisors be advisors.",
+    "We don't finish until everyone finishes.",
   ],
   trekStats: {
     miles: 81,
@@ -152,6 +153,29 @@ export const TRADING_POSTS: TradingPost[] = [
     budget: "$50–100+",
   },
 ];
+
+export const ARRIVAL_SCHEDULE = [
+  {
+    date: "Sun Jun 14",
+    label: "Departure day",
+    desc: "Fly to Albuquerque or drive to Cimarron. Transfer to Philmont. Check in at Villa Philmonte. Do not plan evening activities — rest and stay hydrated.",
+  },
+  {
+    date: "Mon Jun 15",
+    label: "Stay & Play · Medical recheck",
+    desc: "Medical recheck happens this morning — do not schedule anything else until it is complete. After recheck, medications can be repackaged for the trail. Afternoon is Stay & Play: high adventure activities, trading post access.",
+  },
+  {
+    date: "Tue Jun 16",
+    label: "Base Camp HQ day",
+    desc: "Ranger orientation. Gear check and final pack weights. Food issue. Crew and advisor briefings. Eat dinner at the Base Camp dining hall. Early bed — trail starts tomorrow.",
+  },
+  {
+    date: "Wed Jun 17",
+    label: "Trail start · Day 1",
+    desc: "Breakfast at the Base Camp dining hall. Ranger leads us to the trailhead. On trail by mid-morning.",
+  },
+] as const;
 
 export const TREK_LOGISTICS = {
   cellService: {

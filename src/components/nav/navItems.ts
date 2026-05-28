@@ -7,7 +7,7 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Overview", shortLabel: "Overview", match: ["/"] },
-  { href: "/trip", label: "My Trip", shortLabel: "Trip", match: ["/trip"] },
+  { href: "/trip", label: "My Trek", shortLabel: "Trek", match: ["/trip"] },
   { href: "/pack", label: "My Pack", shortLabel: "Pack", match: ["/pack"] },
   { href: "/crew", label: "My Crew", shortLabel: "Crew", match: ["/crew"] },
   { href: "/reference", label: "Reference", shortLabel: "Reference", match: ["/reference"] },
@@ -19,9 +19,10 @@ export function isActive(pathname: string, item: NavItem): boolean {
 }
 
 export const TRIP_SUB = [
-  { href: "/trip/overview",  label: "Overview" },
-  { href: "/trip/itinerary", label: "Itinerary" },
-  { href: "/trip/training",  label: "Training" },
+  { href: "/trip/overview",   label: "Overview" },
+  { href: "/trip/itinerary",  label: "Itinerary" },
+  { href: "/trip/logistics",  label: "Logistics" },
+  { href: "/trip/training",   label: "Training" },
 ];
 
 export const PACK_SUB = [
@@ -39,6 +40,7 @@ export const CREW_SUB = [
 
 export const REFERENCE_SUB = [
   { href: "/reference/overview",  label: "Overview" },
+  { href: "/reference/meals",     label: "Meals" },
   { href: "/reference/on-trail",  label: "On Trail" },
   { href: "/reference/cooking",   label: "Cooking" },
   { href: "/reference/bear-bag",  label: "Bear Bag" },

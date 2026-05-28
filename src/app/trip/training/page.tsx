@@ -22,7 +22,7 @@ const TYPE_TONE: Record<
 export default function TrainingPage() {
   return (
     <Page
-      eyebrow="My Trip"
+      eyebrow="My Trek"
       title="Training Plan"
       meta="May 16 shakedown → June 14 fly day"
     >
