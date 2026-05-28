@@ -75,7 +75,7 @@ export const HIKING_ETIQUETTE = [
 ] as const;
 
 export const CREW_SEPARATION = {
-  rule: "Philmont requires a minimum 10–12 minute gap between crews on trail at all times. This is not a suggestion — it is how Philmont manages trail congestion and keeps the backcountry experience what it is supposed to be.",
+  rule: "Philmont requires a minimum 10–12 minute gap between crews on trail at all times. This is not a suggestion — it is how Philmont keeps the trail uncrowded and the backcountry experience what it should be for every crew out there.",
   passing: [
     "A faster crew that wants to pass must ask the slower crew for permission — do not push through",
     "The slower crew is expected to yield: step off trail, let the faster crew through, then take a mandatory 20-minute rest before continuing",

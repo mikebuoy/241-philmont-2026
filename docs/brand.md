@@ -19,10 +19,47 @@ The name anchors to the iconic granite formation hikers summit on Day 12 — the
 
 ### Voice
 
-- Direct. Functional. No marketing fluff.
-- Treats the reader as capable. Doesn't condescend to scouts. Doesn't talk down to parents.
-- Comfortable with weight, numbers, consequences ("Ounces = Pounds. Pounds = Pain.").
-- Warm where it matters (training, safety, hydration). Cold where precision matters (gear, weights, water).
+**The reader is wildly capable. Write like you believe it.**
+
+Every scout on this trip signed up for something real. The app never hedges, never softens, never talks down. Give them the full picture and trust them to handle it.
+
+#### The frame: rite of passage
+
+This isn't a camping trip. It's the kind of thing they'll someday tell their own kids about — "Dad Lore." They come back young men. The hard parts are what make it stick.
+
+Write from that frame. Not grim. Not heavy. Just certain: *you're going to do something remarkable, and here's how.*
+
+#### Reading level
+
+5th–6th grade target. Short sentences. Active voice. One idea per sentence.
+
+- Say "steep" not "strenuous." Say "hard" not "challenging." Say "you" not "scouts should."
+- Lead with the fact: ✓ *"Every water source must be treated."* ✗ *"When hiking at elevation, it's important to remember..."*
+- Three-sentence cap on informational paragraphs. Three or more items → list, not prose.
+
+#### Tone
+
+Voice of a slightly older crew leader who has been to Philmont and believes in this crew completely — not a teacher, not a parent.
+
+- Difficulty is a feature, not a warning. *"Your pack will hurt on Day 1. Your legs won't on Day 5."*
+- Don't soften. Softening reads as doubt — like you don't think they can handle it.
+- Fun is part of the trip. Swagger is allowed. This is an adventure.
+- Bold what matters, not the modifier.
+
+#### What to write
+
+✓ Frame hard things as part of the story they'll carry forever  
+✓ Short, confident sentences — *"No exceptions."* earns its place  
+✓ Assume they'll figure it out  
+✓ Let the difficulty feel earned, not ominous  
+
+#### What not to write
+
+✗ "Epic," "amazing," "incredible," "adventure awaits," "unforgettable"  
+✗ Passive voice for rules — *"Scouts are required to..."* → *"You must..."*  
+✗ Long context before the actual point  
+✗ Condescension disguised as care — *"Remember, it's important to stay hydrated"*  
+✗ Safety theater — warnings that assume incompetence
 
 ---
 

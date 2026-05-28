@@ -27,10 +27,9 @@ export default function TrekLogisticsPage() {
 
       <Section num="01" title="Arrival & check-in">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          The four days before trail start are not downtime — they are part of
-          the trek. Medical recheck, gear check, food issue, and Ranger
-          orientation all happen here. Missing or rushing any of them creates
-          problems on trail.
+          Four days of prep before the trek starts. Medical recheck, gear check,
+          food issue, and Ranger orientation all happen here. Show up ready and
+          these days run fast.
         </p>
         <div className="space-y-2">
           {ARRIVAL_SCHEDULE.map((item) => (
@@ -55,9 +54,8 @@ export default function TrekLogisticsPage() {
 
       <Section num="02" title="Medical recheck">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Medical recheck is not optional and is not something to work around.
-          It is Philmont&apos;s process for confirming every person is physically
-          safe to enter the backcountry. Standards they are verifying:
+          Medical recheck clears every person for the backcountry. Philmont does
+          not bend on these standards. Come prepared.
         </p>
         <div className="grid grid-cols-3 gap-2">
           <div
@@ -119,6 +117,9 @@ export default function TrekLogisticsPage() {
       </Section>
 
       <Section num="03" title="The burro">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          The crew picks up a burro on Trail Day 7 and manages it through Trail Day 9. It carries a share of the crew&apos;s gear — and earns the same care as any crew member.
+        </p>
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div
             className="bg-surface border border-border rounded-md p-3"
@@ -152,6 +153,9 @@ export default function TrekLogisticsPage() {
       </Section>
 
       <Section num="04" title="Trading posts">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Four trading posts along the route. Stock up on snacks, patches, and anything you&apos;ve run short on.
+        </p>
         <div className="space-y-2">
           {TRADING_POSTS.map((tp) => (
             <div
@@ -245,6 +249,9 @@ export default function TrekLogisticsPage() {
       </Section>
 
       <Section num="07" title="Dry camp">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          One camp on this trek has no water on-site. Fill everything you&apos;re carrying before you arrive — there&apos;s no source until the next morning.
+        </p>
         <Box variant="danger">
           <strong>{DRY_CAMP.camp} · {DRY_CAMP.uiDayLabel}</strong>
           <br />{DRY_CAMP.date} — {DRY_CAMP.waterSource}

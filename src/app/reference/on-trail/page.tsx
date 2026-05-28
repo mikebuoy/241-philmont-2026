@@ -27,7 +27,7 @@ export default function OnTrailPage() {
 
       <Section num="01" title="Hiking etiquette">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          How we behave on trail reflects on the crew and on the troop. Most of this is common sense — stay together, communicate, respect the people around you. Crew separation is the one rule crews most often miss.
+          Good trail behavior is mostly instinct — stay together, communicate, respect the people around you. The rule crews most often miss is crew separation.
         </p>
         <Panel>
           <ul className="space-y-1.5">
@@ -163,7 +163,7 @@ export default function OnTrailPage() {
 
       <Section num="05" title="Foot care">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Foot problems are the most common reason scouts fall behind or can't finish. Most are preventable. The prep work happens before departure — broken-in boots and trimmed nails matter more than anything you can do on trail after a blister forms.
+          Foot care is mostly prep work. Get it right before departure and you won't think about your feet on trail. Broken-in boots and trimmed nails matter more than anything you can do after a blister forms.
         </p>
         <Panel title="Before the trek">
           <ul className="space-y-1.5">

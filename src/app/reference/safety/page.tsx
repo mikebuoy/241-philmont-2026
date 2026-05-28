@@ -20,6 +20,9 @@ export default function SafetyPage() {
       <SubNav items={REFERENCE_SUB} />
 
       <Section num="01" title="Elevation context">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          You&apos;ll step off the plane at 6,500 ft and summit at 12,441. Your body adjusts — here&apos;s the context.
+        </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Stat
             value={`${ALTITUDE.homeBaseElevation.toLocaleString()}`}
@@ -46,6 +49,9 @@ export default function SafetyPage() {
       </Section>
 
       <Section num="02" title="Acute Mountain Sickness (AMS)">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Altitude affects everyone — fit or not. Know the symptoms before Trail Day 1.
+        </p>
         <Box variant="warn">
           <strong>{ALTITUDE.amsNote}</strong>
         </Box>
@@ -62,6 +68,9 @@ export default function SafetyPage() {
       </Section>
 
       <Section num="03" title="Defenses">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Five habits that keep AMS manageable.
+        </p>
         <Panel>
           <ol className="space-y-2">
             {ALTITUDE.defenses.map((d, i) => (
@@ -115,6 +124,9 @@ export default function SafetyPage() {
       </Section>
 
       <Section num="06" title="Lightning & weather">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          New Mexico afternoon storms build fast. When you hear thunder, move.
+        </p>
         <Box variant="danger">
           <strong>{LIGHTNING.simpleRule}</strong>
         </Box>
@@ -151,6 +163,9 @@ export default function SafetyPage() {
       </Section>
 
       <Section num="07" title="Emergency procedures">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Know the protocol before you need it.
+        </p>
         <Box variant="warn">
           <strong>Rule of four:</strong> {EMERGENCY_PROCEDURES.ruleOfFour}
         </Box>
@@ -177,6 +192,9 @@ export default function SafetyPage() {
       </Section>
 
       <Section num="08" title="Wildfire safety">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Philmont has fire restrictions year-round. Follow them without exception.
+        </p>
         <Panel>
           <ul className="space-y-1.5">
             {WILDFIRE_RULES.map((rule) => (

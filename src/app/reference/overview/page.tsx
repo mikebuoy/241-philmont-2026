@@ -84,8 +84,7 @@ export default function OverviewPage() {
       <p className="text-[12px] text-ink-muted leading-relaxed">
         Standard operating procedures for every day on trail — morning wake-up
         through lights out. These sequences keep the crew moving efficiently,
-        eating well, and sleeping enough to do it again the next day. Water
-        treatment and Leave No Trace practices are at the bottom.
+        eating well, and sleeping enough to do it again the next day.
       </p>
 
       <Section num="01" title="Wake and sleep timing">
@@ -118,6 +117,9 @@ export default function OverviewPage() {
       </Section>
 
       <Section num="02" title="Morning sequence">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Five steps from 4:30 AM to hiking. In order, every day.
+        </p>
         <StepList steps={MORNING_STEPS} />
         <Box variant="warn">
           <strong>Every minute of sluggishness in the morning costs us on trail.</strong>{" "}
@@ -148,15 +150,24 @@ export default function OverviewPage() {
       </Section>
 
       <Section num="03" title="Arriving at staffed camps">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          What to do the moment you walk into a staffed camp — in order.
+        </p>
         <StepList steps={STAFFED_CAMP_STEPS} />
       </Section>
 
       <Section num="04" title="Campsite setup">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          How to set up a proper backcountry camp. This order matters.
+        </p>
         <StepList steps={CAMPSITE_STEPS} />
         <VideoEmbed id="BPnwAUhQjMA" title="How To Set Up A Campsite — Philmont" />
       </Section>
 
       <Section num="05" title="Dinner & evening">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Dinner is a system. Run it the same way every night.
+        </p>
         <StepList steps={DINNER_STEPS} />
         <p className="text-[12px] text-ink-muted">
           Full cook method, stove safety, and equipment →{" "}
@@ -167,6 +178,9 @@ export default function OverviewPage() {
       </Section>
 
       <Section num="06" title="Nightly brief">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          End every day with a clear plan for the next one.
+        </p>
         <StepList steps={NIGHTLY_BRIEF_STEPS} />
         <p className="text-[12px] text-ink-muted">
           Full smellables list, hang system, and bear bag procedures →{" "}

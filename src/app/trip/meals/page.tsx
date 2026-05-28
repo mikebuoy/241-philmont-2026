@@ -97,6 +97,9 @@ export default async function MealsPage() {
       </Section>
 
       <Section num="02" title="Trek meal schedule">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Meal codes at a glance — all 11 trail days.
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -141,6 +144,9 @@ export default async function MealsPage() {
       </Section>
 
       <Section num="03" title="Full meal details">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Everything in each day&apos;s bag, broken out by meal.
+        </p>
         <div className="space-y-3">
           {trekDays.map((d) => (
             <div
@@ -170,6 +176,9 @@ export default async function MealsPage() {
       </Section>
 
       <Section num="04" title="Allergen guide">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Major allergens in the 2026 trail menu. Read this if any crew member has a dietary restriction.
+        </p>
         <Panel title="Major allergens in the 2026 trail menu">
           <div className="space-y-3">
             {ALLERGEN_SUMMARY.map((a) => (

@@ -42,6 +42,9 @@ export default function TrekOverviewPage() {
       </Section>
 
       <Section num="02" title="The Philmont experience">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Watch before departure if you haven&apos;t already.
+        </p>
         <div
           className="relative w-full aspect-video rounded-md overflow-hidden border border-border"
           style={{ borderWidth: "0.5px" }}

@@ -35,6 +35,9 @@ export default function TrainingPage() {
       </Box>
 
       <Section num="01" title="Timeline">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          The window between now and June 14 is short. Hit these blocks and you&apos;ll show up ready.
+        </p>
         <ol className="relative">
           {TRAINING_TIMELINE.map((e, i) => {
             const meta = TYPE_TONE[e.type] ?? TYPE_TONE.training_block;
@@ -78,6 +81,9 @@ export default function TrainingPage() {
       </Section>
 
       <Section num="02" title="Notes for the crew">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Three things to sort out before the May 16 shakedown.
+        </p>
         <Box variant="info">
           <strong>Pack shakedown · May 16.</strong> Bring your full pack at trek
           weight. We weigh every pack. Anyone over the 25% ceiling has 29 days

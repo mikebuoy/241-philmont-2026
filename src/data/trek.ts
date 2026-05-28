@@ -1,5 +1,5 @@
 export const BIG_PICTURE = {
-  headline: "This trek will be hard. It is also going to be one of the best adventures many of us have ever had.",
+  headline: "This trek will be hard. It is going to be one of the best adventures of your life.",
   activities: "We will climb Baldy Mountain, hike over the Tooth of Time, pick up and manage a burro, build trail for conservation, rock climb at Dean Cow, experience campfire programs, and move through some of the most spectacular parts of Philmont.",
   crewCode: [
     "One crew, one pace, one goal.",
@@ -44,6 +44,12 @@ export const CREW_ROLES: CrewRole[] = [
     name: "Wilderness Pledge Guía",
     type: "fixed",
     desc: "Leads the crew in Leave No Trace practices and the Wilderness Pledge. Keeps the crew accountable for camp cleanliness, water use, trail behavior, and how we treat Philmont's land.",
+  },
+  {
+    id: "scout",
+    name: "Scout",
+    type: "fixed",
+    desc: "Full crew member and the heartbeat of the crew. Rotates through every duty — cook, clean, filter water, navigate, hang the bear bag. Every Scout runs every role, and by Trail Day 3 the crew can operate without a guide because of it.",
   },
   {
     id: "lead_advisor",

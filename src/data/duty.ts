@@ -1,5 +1,5 @@
 export const PATROL_METHOD_NOTE =
-  "Philmont uses the Patrol Method. The Crew Leader leads and is the primary point of contact for all decisions. Advisors advise — they do not make decisions the Crew Leader should make. Every Scout does their assigned job and learns every rotating duty by Trail Day 3.";
+  "Philmont runs on the Patrol Method. The Crew Leader leads — not the adults. Advisors are there for safety and coaching, not to run the show. Every Scout owns a rotating set of duties, and by Trail Day 3 the crew operates on its own.";
 
 export type DutyRole = {
   id: string;

@@ -44,6 +44,9 @@ export default function SkillsPage() {
       <SubNav items={REFERENCE_SUB} />
 
       <Section num="01" title="Stove safety">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Seven rules. All of them apply every time stoves are on.
+        </p>
         <Box variant="warn">
           <strong>Closed-toe shoes required whenever stoves are on.</strong> No exceptions.
         </Box>
@@ -60,6 +63,9 @@ export default function SkillsPage() {
       </Section>
 
       <Section num="02" title="The cook method · 7 steps">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Philmont&apos;s cook method is a 7-step system. Follow it in order, every meal.
+        </p>
         <Box variant="info">
           <strong>Hybrid cook system.</strong> Fire Maple stove + Bulin HE pot for fast boil. Philmont-issued 8-qt pot for rehydration and serving. 20–40% faster boil at altitude, meaningful fuel savings.
         </Box>
@@ -93,6 +99,9 @@ export default function SkillsPage() {
       </Section>
 
       <Section num="03" title="Cook equipment">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          What the crew is bringing and why.
+        </p>
         <div
           className="bg-surface border border-border rounded-md overflow-hidden overflow-x-auto"
           style={{ borderWidth: "0.5px" }}
@@ -186,6 +195,9 @@ export default function SkillsPage() {
       </Section>
 
       <Section num="05" title="Backcountry hygiene">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Four rules. Simple and non-negotiable.
+        </p>
         <Panel>
           <ul className="space-y-1.5">
             {HYGIENE_RULES.map((rule) => (
@@ -199,6 +211,9 @@ export default function SkillsPage() {
       </Section>
 
       <Section num="06" title="Bear bag & smellables">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Every smellable out of tents, every night. No exceptions.
+        </p>
         <Box variant="danger">
           <strong>Deodorant is not allowed in the Philmont backcountry.</strong>{" "}
           Philmont ranger staff will check. This is not a suggestion.
