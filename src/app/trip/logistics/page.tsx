@@ -12,6 +12,7 @@ import {
   TREK_LOGISTICS,
   ARRIVAL_SCHEDULE,
 } from "@/data/trek";
+import { RESUPPLY_SCHEDULE, DRY_CAMP } from "@/data/food";
 
 export const metadata: Metadata = { title: "Trek Logistics" };
 
@@ -201,6 +202,67 @@ export default function TrekLogisticsPage() {
           </ul>
         </Panel>
       </Section>
+      <Section num="06" title="Food resupply">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Food is issued in buddy-pair bags at three points during the trek. Weights below are for planning — actual bag weights may vary slightly.
+        </p>
+        <div className="space-y-2">
+          {RESUPPLY_SCHEDULE.map((stop) => (
+            <div
+              key={stop.stop}
+              className="bg-surface border border-border rounded-md p-4"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <div className="flex items-baseline justify-between gap-3 mb-1">
+                <h3 className="text-[13px] font-semibold">{stop.stop}</h3>
+                <span className="font-mono text-[10px] text-ink-muted whitespace-nowrap">
+                  {stop.uiDayLabel}
+                </span>
+              </div>
+              <p className="text-[12px] text-ink-muted mb-2">{stop.foodDays}</p>
+              <div className="flex gap-4 mb-2">
+                <div>
+                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">Per person</div>
+                  <div className="text-[16px] font-semibold font-mono">{stop.perPersonLbs} lbs</div>
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">Buddy pair</div>
+                  <div className="text-[16px] font-semibold font-mono">{stop.buddyPairTotalLbs} lbs</div>
+                </div>
+              </div>
+              {stop.also && stop.also.length > 0 && (
+                <ul className="space-y-0.5">
+                  {stop.also.map((item) => (
+                    <li key={item} className="text-[11px] text-ink-muted flex items-start gap-1.5">
+                      <span className="shrink-0">·</span><span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section num="07" title="Dry camp">
+        <Box variant="danger">
+          <strong>{DRY_CAMP.camp} · {DRY_CAMP.uiDayLabel}</strong>
+          <br />{DRY_CAMP.date} — {DRY_CAMP.waterSource}
+        </Box>
+        <Panel title="Protocol">
+          <ol className="space-y-1.5">
+            {DRY_CAMP.protocol.map((step, i) => (
+              <li key={i} className="flex items-start gap-3 text-[12px]">
+                <span className="font-mono text-[10px] text-ink-muted bg-surface-2 border border-border-strong rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      </Section>
+
     </Page>
   );
 }
