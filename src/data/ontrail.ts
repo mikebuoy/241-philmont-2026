@@ -73,3 +73,17 @@ export const HIKING_ETIQUETTE = [
   "Clear communication front to back when stopping, turning, or hazard ahead",
   "Yield to uphill hikers on narrow trail",
 ] as const;
+
+export const CREW_SEPARATION = {
+  rule: "Philmont requires a minimum 10–12 minute gap between crews on trail at all times. This is not a suggestion — it is how Philmont manages trail congestion and keeps the backcountry experience what it is supposed to be.",
+  passing: [
+    "A faster crew that wants to pass must ask the slower crew for permission — do not push through",
+    "The slower crew is expected to yield: step off trail, let the faster crew through, then take a mandatory 20-minute rest before continuing",
+    "If you are the faster crew, ask the Crew Leader of the other crew directly and politely",
+    "If you are the slower crew and asked to yield, comply — do not argue the point on trail",
+  ],
+  selfCheck: [
+    "If you can see another crew ahead of you, you are too close — slow down or take an unscheduled break",
+    "Do not tailgate. A compressed trail creates crowding at water sources, campsites, and program areas",
+  ],
+} as const;

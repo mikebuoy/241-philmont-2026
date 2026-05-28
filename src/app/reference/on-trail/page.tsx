@@ -11,6 +11,7 @@ import {
   NAVIGATION_RULES,
   FOOT_CARE,
   HIKING_ETIQUETTE,
+  CREW_SEPARATION,
 } from "@/data/ontrail";
 
 export const metadata: Metadata = { title: "On Trail" };
@@ -20,11 +21,83 @@ export default function OnTrailPage() {
     <Page
       eyebrow="Reference"
       title="On Trail"
-      meta="Pace · Navigation · Foot Care"
+      meta="Etiquette · Navigation · Pace"
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Pace & breaks">
+      <Section num="01" title="Hiking etiquette">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          How we behave on trail reflects on the crew and on the troop. Most of this is common sense — stay together, communicate, respect the people around you. Crew separation is the one rule crews most often miss.
+        </p>
+        <Panel>
+          <ul className="space-y-1.5">
+            {HIKING_ETIQUETTE.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Panel title="Crew separation">
+          <p className="text-[12px] text-ink-muted leading-relaxed mb-4">
+            {CREW_SEPARATION.rule}
+          </p>
+          <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-2">
+            Passing protocol
+          </div>
+          <ul className="space-y-1.5 mb-4">
+            {CREW_SEPARATION.passing.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-2">
+            Self-check
+          </div>
+          <ul className="space-y-1.5">
+            {CREW_SEPARATION.selfCheck.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </Section>
+
+      <Section num="02" title="Navigation">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Philmont trails are well-marked but junctions are easy to miss when you are tired and moving fast. The Navigator reads the map before each segment, not after a wrong turn. When in doubt, stop — a wrong junction costs an hour minimum.
+        </p>
+        <Panel>
+          <ul className="space-y-1.5">
+            {NAVIGATION_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+          <iframe
+            src="https://www.youtube.com/embed/VIh43ViXVY8"
+            title="How To Use A Map & Compass"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </Section>
+
+      <Section num="03" title="Pace & breaks">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Pace is set by the slowest person, not the fastest. A crew that fragments on trail is a crew that loses time at every water source, junction, and camp arrival. Structured breaks keep energy even and prevent the bonk that kills the afternoon.
+        </p>
         <div className="space-y-2">
           {BREAK_TYPES.map((b) => (
             <div
@@ -51,7 +124,10 @@ export default function OnTrailPage() {
         </div>
       </Section>
 
-      <Section num="02" title="Caterpillar technique">
+      <Section num="04" title="Caterpillar technique">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          On steep climbs with a full pack, stopping and restarting is more costly than slowing to a crawl. The caterpillar keeps every hiker moving continuously while letting the crew stay bunched and the back half catch up.
+        </p>
         <Panel>
           <p className="text-[12px] text-ink-muted leading-relaxed mb-3">
             <strong className="text-ink">When to use: </strong>
@@ -85,30 +161,10 @@ export default function OnTrailPage() {
         </a>
       </Section>
 
-      <Section num="03" title="Navigation">
-        <Panel>
-          <ul className="space-y-1.5">
-            {NAVIGATION_RULES.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
-          <iframe
-            src="https://www.youtube.com/embed/VIh43ViXVY8"
-            title="How To Use A Map & Compass"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-        </div>
-      </Section>
-
-      <Section num="04" title="Foot care">
+      <Section num="05" title="Foot care">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Foot problems are the most common reason scouts fall behind or can't finish. Most are preventable. The prep work happens before departure — broken-in boots and trimmed nails matter more than anything you can do on trail after a blister forms.
+        </p>
         <Panel title="Before the trek">
           <ul className="space-y-1.5">
             {FOOT_CARE.beforeTrek.map((tip) => (
@@ -134,19 +190,6 @@ export default function OnTrailPage() {
           blister that develops costs you the rest of the day and several trail
           days after. Stop early.
         </Box>
-      </Section>
-
-      <Section num="05" title="Hiking etiquette">
-        <Panel>
-          <ul className="space-y-1.5">
-            {HIKING_ETIQUETTE.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
       </Section>
     </Page>
   );

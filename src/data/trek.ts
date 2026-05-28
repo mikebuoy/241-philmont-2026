@@ -99,6 +99,14 @@ export const CREW_DEVELOPMENT_PHASES: DevelopmentPhase[] = [
   },
 ];
 
+export const FIFTY_MILER_REQUIREMENTS = [
+  "Travel at least 50 miles entirely under human power — hiking, canoeing, or cycling",
+  "Complete the journey over consecutive days with an appropriate adult leader present",
+  "Carry out a conservation or community service project during the trip",
+  "Keep a log or journal of the trip",
+  "Submit the completed application through your unit",
+] as const;
+
 export const ARROWHEAD_REQUIREMENTS = [
   "Complete the trek (all trail days)",
   "Complete the conservation project — Day 8, Sioux, 2:00 PM, new trail construction",

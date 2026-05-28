@@ -14,7 +14,6 @@ import {
   DINNER_STEPS,
   NIGHTLY_BRIEF_STEPS,
   WATER_PURIFICATION,
-  LNT_AREAS,
   HYGIENE_RULES,
   type SequenceStep,
 } from "@/data/incamp";
@@ -126,6 +125,28 @@ export default function OverviewPage() {
           <strong>Every minute of sluggishness in the morning costs us on trail.</strong>{" "}
           An early start means cooler hiking, getting to activities before other crews, and real downtime when we arrive. A late start means hiking in the heat, arriving behind other crews, and missing programs.
         </Box>
+        <Panel title="Before you leave home" className="bg-info-bg border-info-border">
+          <div className="space-y-3">
+            <div>
+              <p className="text-[12px] font-semibold mb-0.5">No cooking, no coffee in the morning.</p>
+              <p className="text-[12px] text-ink-muted leading-relaxed">
+                We are moving, not making breakfast. If you need caffeine to function, figure out a cold solution before you leave home. A caffeinated electrolyte packet mixed into your water bottle is a solid option — you get caffeine and hydration at the same time.
+              </p>
+            </div>
+            <div>
+              <p className="text-[12px] font-semibold mb-0.5">If you are a slow morning person, plan to wake up earlier.</p>
+              <p className="text-[12px] text-ink-muted leading-relaxed">
+                We are working as a team to get up and out together. Do not make the crew wait on you. If you need more time, set your alarm earlier.
+              </p>
+            </div>
+            <div>
+              <p className="text-[12px] font-semibold mb-0.5">Practice packing up your gear in the dark before you leave home.</p>
+              <p className="text-[12px] text-ink-muted leading-relaxed">
+                Do it with a headlamp, in the same order every time. Organization and repeatable routine are what make a 20-minute pack-up possible. If the first time you do this in the dark is at Philmont, you will be the one slowing the crew down.
+              </p>
+            </div>
+          </div>
+        </Panel>
       </Section>
 
       <Section num="03" title="Arriving at staffed camps">
@@ -171,8 +192,8 @@ export default function OverviewPage() {
         <VideoEmbed id="GZAiUVfpDuI" title="What You Need To Safely Treat Water In The Backcountry" />
       </Section>
 
-      <Section num="08" title="Hygiene & Leave No Trace">
-        <Panel title="Backcountry hygiene">
+      <Section num="08" title="Backcountry hygiene">
+        <Panel>
           <ul className="space-y-1.5">
             {HYGIENE_RULES.map((rule) => (
               <li key={rule} className="flex items-start gap-2 text-[12px]">
@@ -181,18 +202,6 @@ export default function OverviewPage() {
               </li>
             ))}
           </ul>
-        </Panel>
-        <Panel title="Wilderness Pledge · 5 areas">
-          <div className="space-y-2">
-            {LNT_AREAS.map((area) => (
-              <div key={area.area}>
-                <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">
-                  {area.area}
-                </div>
-                <p className="text-[12px] mt-0.5">{area.rule}</p>
-              </div>
-            ))}
-          </div>
         </Panel>
       </Section>
     </Page>
