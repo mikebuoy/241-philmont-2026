@@ -160,7 +160,7 @@ export default function OverviewPage() {
         <StepList steps={DINNER_STEPS} />
         <p className="text-[12px] text-ink-muted">
           Full cook method, stove safety, and equipment →{" "}
-          <Link href="/reference/cooking" className="underline hover:text-ink">
+          <Link href="/reference/skills" className="underline hover:text-ink">
             Cooking
           </Link>
         </p>
@@ -170,16 +170,16 @@ export default function OverviewPage() {
         <StepList steps={NIGHTLY_BRIEF_STEPS} />
         <p className="text-[12px] text-ink-muted">
           Full smellables list, hang system, and bear bag procedures →{" "}
-          <Link href="/reference/bear-bag" className="underline hover:text-ink">
-            Bear Bag
+          <Link href="/reference/skills" className="underline hover:text-ink">
+            Skills
           </Link>
         </p>
       </Section>
 
       <p className="text-[12px] text-ink-muted">
         Water treatment, crew setup, and hygiene →{" "}
-        <Link href="/reference/cooking" className="underline hover:text-ink">
-          Cooking &amp; Water
+        <Link href="/reference/skills" className="underline hover:text-ink">
+          Skills
         </Link>
       </p>
     </Page>

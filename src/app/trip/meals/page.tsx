@@ -5,7 +5,7 @@ import { Box } from "@/components/primitives/Box";
 import { Panel } from "@/components/primitives/Panel";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { SubNav } from "@/components/nav/SubNav";
-import { REFERENCE_SUB } from "@/components/nav/navItems";
+import { TRIP_SUB } from "@/components/nav/navItems";
 import { getItinerary } from "@/lib/itinerary";
 import type { TrailMeal } from "@/lib/itinerary";
 
@@ -67,11 +67,11 @@ export default async function MealsPage() {
 
   return (
     <Page
-      eyebrow="Reference"
+      eyebrow="My Trek"
       title="Meals"
       meta="Trek meal schedule · Allergens"
     >
-      <SubNav items={REFERENCE_SUB} />
+      <SubNav items={TRIP_SUB} />
 
       <Section num="01" title="Meal numbering">
         <Panel>

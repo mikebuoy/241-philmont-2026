@@ -12,8 +12,9 @@ import {
   COOK_EQUIPMENT,
 } from "@/data/cooking";
 import { WATER_SYSTEM } from "@/data/food";
+import { SMELLABLES } from "@/data/safety";
 
-export const metadata: Metadata = { title: "Cooking & Water" };
+export const metadata: Metadata = { title: "Skills" };
 
 function VideoEmbed({ id, title }: { id: string; title: string }) {
   return (
@@ -33,12 +34,12 @@ function VideoEmbed({ id, title }: { id: string; title: string }) {
   );
 }
 
-export default function CookingPage() {
+export default function SkillsPage() {
   return (
     <Page
       eyebrow="Reference"
-      title="Cooking & Water"
-      meta="Stove · Method · Equipment · Water"
+      title="Skills"
+      meta="Cooking · Water · Bear Bag"
     >
       <SubNav items={REFERENCE_SUB} />
 
@@ -123,6 +124,7 @@ export default function CookingPage() {
           </table>
         </div>
       </Section>
+
       <Section num="04" title="Water purification">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Every water source at Philmont must be treated before drinking — springs, streams, and wells included.
@@ -196,6 +198,57 @@ export default function CookingPage() {
         </Panel>
       </Section>
 
+      <Section num="06" title="Bear bag & smellables">
+        <Box variant="danger">
+          <strong>Deodorant is not allowed in the Philmont backcountry.</strong>{" "}
+          Philmont ranger staff will check. This is not a suggestion.
+        </Box>
+        <Panel title="Required in bear bag · every night">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
+            {SMELLABLES.requiredInBearBag.map((s) => (
+              <li key={s} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Panel title="Prohibited in backcountry">
+          <ul className="space-y-1.5">
+            {SMELLABLES.prohibitedInBackcountry.map((s) => (
+              <li key={s} className="flex items-start gap-2 text-[12px]">
+                <span className="text-danger-text mt-0.5 shrink-0">✕</span>
+                <span className="font-medium">{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Box variant="warn">
+          <strong>If it has a scent or could attract an animal, it goes in the bear bag.</strong>{" "}
+          When in doubt, hang it. {SMELLABLES.note}
+        </Box>
+        <Panel title="Bear hang system">
+          <ul className="space-y-2 text-[12px]">
+            <li>
+              <strong className="text-ink">Ropes.</strong>{" "}
+              <span className="text-ink-muted">Two issued ropes — 100 ft × ¼" nylon. <strong>¼" diameter mandatory.</strong> No Dyneema substitution. This is a Philmont spec.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Bags.</strong>{" "}
+              <span className="text-ink-muted">4 woven polypropylene bags issued at HQ. Distributed across the crew to balance loads.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Carabiners.</strong>{" "}
+              <span className="text-ink-muted">Locking, climbing-rated. Crew-supplied — Philmont does not issue these.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Timing.</strong>{" "}
+              <span className="text-ink-muted">Hang every smellable before crew sleeps. Last duty of the day — everyone helps.</span>
+            </li>
+          </ul>
+        </Panel>
+        <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
+      </Section>
     </Page>
   );
 }

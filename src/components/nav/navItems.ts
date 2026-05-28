@@ -22,6 +22,7 @@ export const TRIP_SUB = [
   { href: "/trip/overview",   label: "Overview" },
   { href: "/trip/itinerary",  label: "Itinerary" },
   { href: "/trip/logistics",  label: "Logistics" },
+  { href: "/trip/meals",      label: "Meals" },
   { href: "/trip/training",   label: "Training" },
 ];
 
@@ -40,8 +41,6 @@ export const CREW_SUB = [
 export const REFERENCE_SUB = [
   { href: "/reference/overview",  label: "Overview" },
   { href: "/reference/on-trail",  label: "On Trail" },
-  { href: "/reference/cooking",   label: "Cooking & Water" },
-  { href: "/reference/bear-bag",  label: "Bear Bag" },
+  { href: "/reference/skills",    label: "Skills" },
   { href: "/reference/safety",    label: "Safety" },
-  { href: "/reference/meals",     label: "Meals" },
 ];
