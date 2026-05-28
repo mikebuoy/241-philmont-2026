@@ -132,7 +132,32 @@ export default function ReferenceGearPage() {
         </div>
       </Section>
 
-      <Section num="06" title="Heaviest single items">
+      <Section num="06" title="Pack & fit videos">
+        <div className="space-y-3">
+          <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+            <iframe
+              src="https://www.youtube.com/embed/MA9nSJ7RuYY"
+              title="How to Pack a Backpack"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+          <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
+            <iframe
+              src="https://www.youtube.com/embed/V8OMUn-tFoY"
+              title="How to Fit a Backpack"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        </div>
+      </Section>
+
+      <Section num="07" title="Heaviest single items">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}

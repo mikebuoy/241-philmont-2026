@@ -6,16 +6,16 @@ import { Panel } from "@/components/primitives/Panel";
 import { Stat } from "@/components/primitives/Stat";
 import { SubNav } from "@/components/nav/SubNav";
 import { REFERENCE_SUB } from "@/components/nav/navItems";
-import { ALTITUDE } from "@/data/safety";
+import { ALTITUDE, LIGHTNING, EMERGENCY_PROCEDURES, WILDFIRE_RULES } from "@/data/safety";
 
-export const metadata: Metadata = { title: "Altitude & Safety" };
+export const metadata: Metadata = { title: "Safety" };
 
-export default function AltitudePage() {
+export default function SafetyPage() {
   return (
     <Page
       eyebrow="Reference"
-      title="Altitude & Safety"
-      meta="AMS · defenses · critical descents"
+      title="Safety"
+      meta="Altitude · Lightning · Emergency"
     >
       <SubNav items={REFERENCE_SUB} />
 
@@ -40,7 +40,7 @@ export default function AltitudePage() {
           />
         </div>
         <Box variant="info">
-          <strong>You'll step off the plane at 6,500 ft.</strong> Then climb
+          <strong>You&apos;ll step off the plane at 6,500 ft.</strong> Then climb
           to 12,441 ft by Trail Day 5. Hydration starts before you fly.
         </Box>
       </Section>
@@ -65,10 +65,7 @@ export default function AltitudePage() {
         <Panel>
           <ol className="space-y-2">
             {ALTITUDE.defenses.map((d, i) => (
-              <li
-                key={d}
-                className="flex items-start gap-3 text-[12px]"
-              >
+              <li key={d} className="flex items-start gap-3 text-[12px]">
                 <span className="font-mono text-[10px] text-ink-muted bg-surface-2 border border-border-strong rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                   {i + 1}
                 </span>
@@ -103,7 +100,7 @@ export default function AltitudePage() {
         </div>
         <Box variant="danger">
           <strong>Trekking poles + good ankle support are non-negotiable on
-          Trail Day 11.</strong> 6,870 ft of descent in one day. Don't skip
+          Trail Day 11.</strong> 6,870 ft of descent in one day. Don&apos;t skip
           the poles to save weight.
         </Box>
       </Section>
@@ -115,6 +112,81 @@ export default function AltitudePage() {
           happens. Treatment is straightforward when caught early — descent,
           rest, hydration.
         </Box>
+      </Section>
+
+      <Section num="06" title="Lightning & weather">
+        <Box variant="danger">
+          <strong>{LIGHTNING.simpleRule}</strong>
+        </Box>
+        <Panel title="Watch for">
+          <ul className="space-y-1.5">
+            {LIGHTNING.watchFor.map((w) => (
+              <li key={w} className="flex items-start gap-2 text-[12px]">
+                <span className="text-warn-text mt-0.5 shrink-0">▸</span>
+                <span>{w}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Panel title="Crew rules — non-negotiable">
+          <ul className="space-y-1.5">
+            {LIGHTNING.crewRules.map((r) => (
+              <li key={r} className="flex items-start gap-2 text-[12px]">
+                <span className="text-danger-text mt-0.5 shrink-0">▸</span>
+                <span className="font-medium">{r}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Panel title="If caught in lightning">
+          <ul className="space-y-1.5">
+            {LIGHTNING.position.map((p) => (
+              <li key={p} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </Section>
+
+      <Section num="07" title="Emergency procedures">
+        <Box variant="warn">
+          <strong>Rule of four:</strong> {EMERGENCY_PROCEDURES.ruleOfFour}
+        </Box>
+        <Panel title="Common Philmont injuries">
+          <ul className="space-y-1.5">
+            {EMERGENCY_PROCEDURES.commonInjuries.map((inj) => (
+              <li key={inj} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{inj}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Panel title="Escalation">
+          <ul className="space-y-1.5">
+            {EMERGENCY_PROCEDURES.escalation.map((e) => (
+              <li key={e} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{e}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </Section>
+
+      <Section num="08" title="Wildfire safety">
+        <Panel>
+          <ul className="space-y-1.5">
+            {WILDFIRE_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       </Section>
     </Page>
   );

@@ -1,6 +1,6 @@
 # Project Status — Tooth of Time
 
-_Last updated: 2026-05-27_
+_Last updated: 2026-05-27 (evening)_
 
 This is a living doc. Update it at the end of every session before closing. The next session reads this first.
 
@@ -35,7 +35,16 @@ This is a living doc. Update it at the end of every session before closing. The 
 - **`/crew/roster`**, **`/crew/weights`**, **`/crew/gear-check`**, **`/crew/gear`** — All crew dashboards
   - Roster shows WFA, CPR, and required medical form status. The MED column displays `ABC` green when received and red when missing.
 
-- **`/reference/*`** — All reference pages, PWA-cached
+- **`/reference/*`** — Restructured from 5 to 6 pages: Trek · Duties · On Trail · In Camp · Safety · Gear
+  - `/reference/trek` — NEW: Big picture, crew roles, development phases (Forming→Adjourning), Arrowhead requirements, medical recheck, burro, trading posts, cell/electronics
+  - `/reference/duty` — UPDATED: Added Patrol Method, Crew Roles (from trek data), Ranger Release Standard sections before existing duty types
+  - `/reference/on-trail` — NEW: Pace & breaks, caterpillar technique, navigation + video, foot care, hiking etiquette
+  - `/reference/in-camp` — NEW: Absorbs Cooking + Bear Bag; morning sequence, campsite setup, cook method, bear hang, water, hygiene/LNT, evening/nightly brief — all with videos
+  - `/reference/safety` — NEW: Absorbs Altitude; AMS, defenses, critical descents, lightning, emergency, wildfire
+  - `/reference/gear` — UPDATED: Added Pack & Fit videos section
+  - Old routes `/reference/altitude`, `/reference/cooking`, `/reference/bear-bag` are deleted (404 cleanly)
+  - `/reference` now redirects to `/reference/trek`
+  - `tsc --noEmit` clean
 
 - **`/admin/*`** — Roster editor, gear editor, itinerary editor
   - Admin roster uses a compact one-row-per-member table with narrow status columns and icon-only row actions.
@@ -61,6 +70,7 @@ Run `supabase/migration-crew-med-form.sql` in the Supabase SQL editor to add `cr
 
 ## Next Up
 
+- Verify reference section on localhost: all 6 sub-nav items, all videos, all sections
 - Consider print layout for `/trip/itinerary` (full itinerary on one page)
 
 ---

@@ -37,9 +37,10 @@ export const CREW_SUB = [
 ];
 
 export const REFERENCE_SUB = [
-  { href: "/reference/gear", label: "Gear" },
-  { href: "/reference/duty", label: "Duties" },
-  { href: "/reference/cooking", label: "Cooking" },
-  { href: "/reference/bear-bag", label: "Bear Bag" },
-  { href: "/reference/altitude", label: "Altitude & Safety" },
+  { href: "/reference/trek",     label: "Trek" },
+  { href: "/reference/duty",     label: "Duties" },
+  { href: "/reference/on-trail", label: "On Trail" },
+  { href: "/reference/in-camp",  label: "In Camp" },
+  { href: "/reference/safety",   label: "Safety" },
+  { href: "/reference/gear",     label: "Gear" },
 ];

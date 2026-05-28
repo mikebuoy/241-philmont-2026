@@ -1,4 +1,4 @@
 import { redirect } from "next/navigation";
 export default function ReferenceIndex() {
-  redirect("/reference/gear");
+  redirect("/reference/trek");
 }

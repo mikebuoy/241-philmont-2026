@@ -51,6 +51,56 @@ export const SMELLABLES = {
   note: "Philmont ranger staff will check. This is not a suggestion.",
 } as const;
 
+export const LIGHTNING = {
+  watchFor: [
+    "Cumulus clouds building rapidly, especially over peaks and ridges, starting mid-morning",
+    "Darkening sky to the west or southwest",
+    "Distant thunder — if you hear it, lightning is already close enough to be dangerous",
+    "Hair standing up, skin tingling, or metal gear buzzing — get off the ridge immediately",
+  ],
+  crewRules: [
+    "Off Baldy summit by 11:00 AM, no later than 12:00 — no exceptions",
+    "Off the Tooth summit and exposed ridge by 11:00 AM, no later than 12:00 — no exceptions",
+    "Turn around if weather makes the summit unsafe — there is no negotiating this",
+  ],
+  position: [
+    "Get off exposed ridges, peaks, and open ground",
+    "Get away from lone trees, tall objects, wire fences, and metal equipment",
+    "Do not shelter under a cliff or in a shallow cave — ground current can travel through rock",
+    "Spread the crew out at least 30 feet apart so one strike does not take out multiple people",
+    "Lightning position: crouch low on the balls of your feet, feet together, hands over ears — do not lie flat",
+    "A lightning victim is not carrying a charge — it is safe to touch them and begin first aid",
+  ],
+  simpleRule: "If you can hear thunder, you are in the danger zone. Move to lower elevation and away from exposed terrain.",
+} as const;
+
+export const EMERGENCY_PROCEDURES = {
+  ruleOfFour: "If someone needs help: one person treats the injured, two go for help, one stays with the injured person.",
+  commonInjuries: [
+    "Sprains and strains — most common backcountry injury",
+    "Blisters — almost entirely preventable with early treatment",
+    "Acute Mountain Sickness (AMS) — see Altitude section",
+    "Dehydration — drink before you feel thirsty",
+    "Upper respiratory infections — common at altitude",
+    "Gastrointestinal issues — often from improper food handling or water treatment",
+  ],
+  escalation: [
+    "Notify Crew Leader and Lead Advisor early — do not push through silently",
+    "Use the crew first aid kit for minor issues; advisor carries the full crew kit",
+    "Use staffed camps and radios for serious problems — staff can contact Philmont HQ",
+    "For life-safety emergencies: stabilize, send two people for help, one stays with the patient",
+  ],
+} as const;
+
+export const WILDFIRE_RULES = [
+  "Follow all fire restrictions in effect — check with staff at each camp",
+  "Use established fire rings only when fires are permitted",
+  "Hold a match until it stops smoking, break it, step on it — do not toss matches",
+  "Never leave a flame unattended",
+  "Report smoke or suspected fire to the nearest staffed camp immediately",
+  "Do not attempt to fight a wildfire as a crew",
+] as const;
+
 export type Waypoint = {
   name: string;
   elevation: number;
