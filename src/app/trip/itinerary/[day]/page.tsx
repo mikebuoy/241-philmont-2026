@@ -261,6 +261,11 @@ export default async function DayDetailPage({
                     )}
                   </div>
                 )}
+                {d.scheduleNote && (
+                  <Box variant="warn" className="mt-3">
+                    {d.scheduleNote}
+                  </Box>
+                )}
               </>
             ),
           });
@@ -379,8 +384,8 @@ export default async function DayDetailPage({
           });
         }
 
-        // 7. Notes (dry camp protocol + operational notes + food pickup)
-        if (d.notes || d.foodPickup || d.flags.dryCamp) {
+        // 7. Notes (dry camp protocol + food pickup)
+        if (d.foodPickup || d.flags.dryCamp) {
           sections.push({
             title: "Notes",
             render: () => (
@@ -392,13 +397,6 @@ export default async function DayDetailPage({
                     bag eaten as camp dinner. No-cook breakfast the next
                     morning. Carry 1–2L water into camp.
                   </Box>
-                )}
-                {d.notes && (
-                  <Panel>
-                    <p className="text-[12px] text-ink leading-relaxed">
-                      {d.notes}
-                    </p>
-                  </Panel>
                 )}
                 {d.foodPickup && (
                   <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em]">

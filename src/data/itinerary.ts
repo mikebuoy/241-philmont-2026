@@ -54,8 +54,6 @@ export type ItineraryDay = {
   foodPickup: string | null;
   /** Programs and events */
   programs: string[];
-  /** Free-text operational notes */
-  notes: string;
   /** Critical flags surface visual emphasis on the day card */
   flags: {
     dryCamp?: boolean;
@@ -76,6 +74,7 @@ export type ItineraryDay = {
   // ---- Daily schedule (null for non-trail days) ----
   wake: string | null;
   onTrail: string | null;
+  scheduleNote: string | null;
 
   // ---- Rich narrative content ----
   whatToExpect: string;
@@ -452,7 +451,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: null,
     foodPickup: null,
     programs: [],
-    notes: "Hydrate on the plane — cabin air is extremely dry. Avoid alcohol. Being well-hydrated before stepping off at 6,500 ft makes a real difference on Day 1.",
     flags: {},
 
     twilight: null,
@@ -461,6 +459,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: null,
     wake: "Arrive at Scout hut 4:20 AM",
     onTrail: null,
+    scheduleNote: null,
 
     whatToExpect: "This is a travel and arrival day. The goal is to arrive safely, keep gear together, hydrate, eat, and get sleep. The trek starts before we ever hit the trail because how we handle travel affects the next two weeks.",
     plannedActivities: [
@@ -520,7 +519,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: null,
     foodPickup: null,
     programs: ["Phillips Museum visit"],
-    notes: "Light activity. Hydrate. Adjust to elevation.",
     flags: {},
 
     twilight: null,
@@ -529,6 +527,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: null,
     wake: null,
     onTrail: null,
+    scheduleNote: null,
 
     whatToExpect: "This is our setup day. We will learn more about Philmont, continue adjusting to altitude, and get medical recheck completed before official Day 1 so Tuesday is less crowded.",
     plannedActivities: [
@@ -582,7 +581,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 6500,
     foodPickup: "HQ",
     programs: ["Opening Campfire"],
-    notes: "Gear issue, food pickup, crew gear distribution.",
     flags: {},
 
     twilight: "5:10 AM",
@@ -591,6 +589,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:50 PM",
     wake: "Base Camp schedule",
     onTrail: null,
+    scheduleNote: null,
 
     whatToExpect: "This is the official start. It will feel busy. We will move between check-in stops, confirm paperwork, finish gear issue, get food, complete shakedown, and attend the opening campfire.",
     plannedActivities: [
@@ -655,7 +654,6 @@ export const ITINERARY: ItineraryDay[] = [
       "Ranger Training",
       "Fire Ecology & Wildlife Conservation @ Cimarroncita (passthrough)",
     ],
-    notes: "Departs Ute Park Trailhead. First trail day.",
     flags: {},
 
     twilight: "5:10 AM",
@@ -664,6 +662,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:50 PM",
     wake: "4:30 AM (or as directed by Ranger)",
     onTrail: "5:30 AM (bus to trailhead)",
+    scheduleNote: "Check out of tent city no later than 8:30 AM and report to the Welcome Center at your scheduled departure time.",
 
     whatToExpect: "This is our first day on trail. The mileage is short, but the goal is not speed. The goal is learning the Philmont way so we can run our own trek safely from Day 4 forward.",
     plannedActivities: [
@@ -718,7 +717,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 9200,
     foodPickup: null,
     programs: [],
-    notes: "DRY CAMP — no water source. Cook and eat dinner at last water source during lunch stop. Cold lunch bag eaten as camp dinner. No-cook breakfast next morning. Carry 1–2L water in.",
     flags: { dryCamp: true },
 
     twilight: "5:11 AM",
@@ -727,6 +725,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:50 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is the first real climbing day. Santa Claus is a dry camp with no services. We need to carry the right water and get camp systems right.",
     plannedActivities: [
@@ -780,7 +779,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 9300,
     foodPickup: null,
     programs: ["Challenge Course Program"],
-    notes: "First staffed camp.",
     flags: {},
 
     twilight: "5:11 AM",
@@ -789,6 +787,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:51 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is the transition from Ranger-led startup to crew-led expedition. Head of Dean gives us a challenge course program. The bigger test is whether we can now run the trek ourselves.",
     plannedActivities: [
@@ -843,7 +842,6 @@ export const ITINERARY: ItineraryDay[] = [
       "Bent, St. Vrain & Company @ Miranda (passthrough)",
       "Baldy Hike Prep",
     ],
-    notes: "Baldy summit tomorrow — prep crew tonight.",
     flags: {},
 
     twilight: "5:11 AM",
@@ -852,6 +850,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:51 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is a move toward Baldy country. We pass Miranda and prepare for the biggest summit day of the trek. Tonight is Baldy prep night.",
     plannedActivities: [
@@ -907,7 +906,6 @@ export const ITINERARY: ItineraryDay[] = [
       "Claude Mining & Milling Company @ French Henry (optional)",
       "Baldy Mining District @ Baldy Town (passthrough)",
     ],
-    notes: "Highest point on trek. Mileage/elevation assumes no optional routes taken. Layover — same camp as Day 4.",
     flags: { summit: true },
 
     twilight: "5:11 AM",
@@ -916,6 +914,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:51 PM",
     wake: "3:45–4:00 AM — earlier for Baldy",
     onTrail: "5:30 AM",
+    scheduleNote: "Crew rule: off Baldy summit by 11:00 AM, no later than 12:00. Weather timing drives the decision.",
 
     whatToExpect: "This is Baldy day. Baldy Mountain stands at 12,441 feet. It is a layover camp, but not a rest day. We summit and return to Black Horse Creek. Weather timing is the main planning factor. There is no tree cover above timberline.",
     plannedActivities: [
@@ -975,7 +974,6 @@ export const ITINERARY: ItineraryDay[] = [
       "Continental Tie & Lumber Company",
       "Campfire Show",
     ],
-    notes: "BURRO PICKUP. Mandatory — this is a burro packing itinerary.",
     flags: { burroPickup: true },
 
     twilight: "5:11 AM",
@@ -984,6 +982,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:51 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is burro pickup and Pueblano day. We leave Baldy country, pick up our burro at Miranda Burro Pens, and arrive at one of Philmont's classic logging camps.",
     plannedActivities: [
@@ -1042,7 +1041,6 @@ export const ITINERARY: ItineraryDay[] = [
       "Cantina",
       "Campfire Show",
     ],
-    notes: "BURRO DROP-OFF. Conservation project 2:00pm. Showers may be available.",
     flags: { burroDropoff: true, conservation: true },
 
     twilight: "5:12 AM",
@@ -1050,7 +1048,8 @@ export const ITINERARY: ItineraryDay[] = [
     sunset: "8:21 PM",
     dark: "8:52 PM",
     wake: "4:30 AM",
-    onTrail: "5:30 AM — this is a time-critical day",
+    onTrail: "5:30 AM",
+    scheduleNote: "Time-critical day. Sioux conservation must start at 2:00 PM. Ponil food pickup and evening program depend on hitting this window.",
 
     whatToExpect: "This is the logistics-crunch day. We need to move well, drop off the burro, complete conservation at Sioux at 2:00 PM, pick up food at Ponil, and still enjoy the Ponil campfire show.",
     plannedActivities: [
@@ -1106,7 +1105,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 7800,
     foodPickup: null,
     programs: ["Rock Climbing Program"],
-    notes: "Showers may be available.",
     flags: {},
 
     twilight: "5:12 AM",
@@ -1115,6 +1113,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:52 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is a hard hiking day followed by rock climbing. We need an early start so the crew arrives with energy and enough time for the program. Rock climbing is staff-supervised at Dean Cow, which is one of Philmont's designated climbing camps.",
     plannedActivities: [
@@ -1165,7 +1164,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 7500,
     foodPickup: null,
     programs: ["Shotgun Program @ Harlan (passthrough)"],
-    notes: "Longest mileage day except final day. Strong day.",
     flags: { longestDay: true },
 
     twilight: "5:12 AM",
@@ -1174,6 +1172,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:52 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is one of the biggest mileage and elevation days after Baldy. Vaca is a trail camp, so the crew must be ready to take care of itself.",
     plannedActivities: [
@@ -1225,7 +1224,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 7600,
     foodPickup: null,
     programs: ["Western Lore Program", "Chuckwagon Dinner", "Campfire Show"],
-    notes: "Showers may be available.",
     flags: {},
 
     twilight: "5:13 AM",
@@ -1234,6 +1232,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:52 PM",
     wake: "4:30 AM",
     onTrail: "5:30 AM",
+    scheduleNote: null,
 
     whatToExpect: "This is the final staffed backcountry camp. Clarks Fork is a reward day if we move well and arrive with time to enjoy it.",
     plannedActivities: [
@@ -1287,7 +1286,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: 6500,
     foodPickup: null,
     programs: ["Tooth of Time — 9,003 ft", "Hike in to Base", "Closing Campfire"],
-    notes: "Longest and hardest day. 6,870 ft of descent. Ankle support critical.",
     flags: { hardestDescent: true },
 
     twilight: "5:13 AM",
@@ -1296,6 +1294,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: "8:52 PM",
     wake: "3:30–4:00 AM — earlier for Tooth of Time",
     onTrail: "5:35 AM",
+    scheduleNote: "Summit Tooth early and get off exposed areas by 11:00 AM.",
 
     whatToExpect: "This is the big finish. It is the longest official mileage day and the largest listed elevation gain and loss of the trek. We climb the Tooth of Time and hike into Base Camp.",
     plannedActivities: [
@@ -1351,7 +1350,6 @@ export const ITINERARY: ItineraryDay[] = [
     elevation: null,
     foodPickup: null,
     programs: ["Golden Corral AYCE — eat everything"],
-    notes: "Depart Philmont. Stop at Golden Corral for the traditional all-you-can-eat post-trek meal. Fly home.",
     flags: {},
 
     twilight: null,
@@ -1360,6 +1358,7 @@ export const ITINERARY: ItineraryDay[] = [
     dark: null,
     wake: "Base Camp schedule",
     onTrail: null,
+    scheduleNote: null,
 
     whatToExpect: "Travel-home day. We leave tired, proud, and probably ready for real food and a real shower.",
     plannedActivities: [

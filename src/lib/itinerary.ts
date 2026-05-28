@@ -38,7 +38,6 @@ type Row = {
   cum_loss: number | null;
   elevation: number | null;
   food_pickup: string | null;
-  notes: string | null;
   flags: ItineraryDay["flags"] | null;
   programs: string[] | null;
   gpx_path: string | null;
@@ -54,6 +53,7 @@ type Row = {
   // Schedule
   wake: string | null;
   on_trail: string | null;
+  schedule_note: string | null;
 
   // Rich narrative
   what_to_expect: string | null;
@@ -94,7 +94,7 @@ function rowToDay(r: Row, meals: Map<string, TrailMeal>): ItineraryDayFull {
     cumLoss: r.cum_loss,
     elevation: r.elevation,
     foodPickup: r.food_pickup,
-    notes: r.notes ?? "",
+
     flags: r.flags ?? {},
     programs: r.programs ?? [],
 
@@ -104,6 +104,7 @@ function rowToDay(r: Row, meals: Map<string, TrailMeal>): ItineraryDayFull {
     dark: r.dark,
     wake: r.wake,
     onTrail: r.on_trail,
+    scheduleNote: r.schedule_note,
 
     whatToExpect: r.what_to_expect ?? "",
     plannedActivities: r.planned_activities ?? [],

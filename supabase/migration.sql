@@ -172,6 +172,7 @@ alter table public.itinerary_days
   -- Daily schedule (null for non-trail days)
   add column if not exists wake                     text,
   add column if not exists on_trail                 text,
+  add column if not exists schedule_note            text,
 
   -- Rich narrative content
   add column if not exists what_to_expect           text,

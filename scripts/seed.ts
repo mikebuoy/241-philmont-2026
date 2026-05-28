@@ -62,7 +62,6 @@ async function seedItinerary() {
       cum_loss: d.cumLoss,
       elevation: d.elevation,
       food_pickup: d.foodPickup,
-      notes: d.notes,
       flags: d.flags,
       programs: d.programs,
       gpx_path: gpx ? `${d.iso}.gpx` : null,
@@ -78,6 +77,7 @@ async function seedItinerary() {
       // Schedule
       wake: d.wake ?? null,
       on_trail: d.onTrail ?? null,
+      schedule_note: d.scheduleNote ?? null,
 
       // Rich narrative
       what_to_expect: d.whatToExpect || null,
