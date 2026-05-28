@@ -19,8 +19,9 @@ export function isActive(pathname: string, item: NavItem): boolean {
 }
 
 export const TRIP_SUB = [
+  { href: "/trip/overview",  label: "Overview" },
   { href: "/trip/itinerary", label: "Itinerary" },
-  { href: "/trip/training", label: "Training" },
+  { href: "/trip/training",  label: "Training" },
 ];
 
 export const PACK_SUB = [
@@ -37,7 +38,6 @@ export const CREW_SUB = [
 ];
 
 export const REFERENCE_SUB = [
-  { href: "/reference/trek",     label: "Trek" },
   { href: "/reference/on-trail", label: "On Trail" },
   { href: "/reference/in-camp",  label: "In Camp" },
   { href: "/reference/safety",   label: "Safety" },
