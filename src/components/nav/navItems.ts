@@ -41,5 +41,4 @@ export const REFERENCE_SUB = [
   { href: "/reference/on-trail", label: "On Trail" },
   { href: "/reference/in-camp",  label: "In Camp" },
   { href: "/reference/safety",   label: "Safety" },
-  { href: "/reference/gear",     label: "Gear" },
 ];
