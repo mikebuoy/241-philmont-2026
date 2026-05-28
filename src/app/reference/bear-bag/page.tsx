@@ -85,10 +85,7 @@ export default function BearBagPage() {
             </li>
           </ul>
         </Panel>
-        <div className="space-y-3">
-          <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
-          <VideoEmbed id="4IkonO_XkPU" title="Low Impact Bear Bag Hang" />
-        </div>
+        <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
       </Section>
     </Page>
   );

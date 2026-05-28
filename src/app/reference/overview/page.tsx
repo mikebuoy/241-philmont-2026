@@ -13,11 +13,8 @@ import {
   CAMPSITE_STEPS,
   DINNER_STEPS,
   NIGHTLY_BRIEF_STEPS,
-  WATER_PURIFICATION,
-  HYGIENE_RULES,
   type SequenceStep,
 } from "@/data/incamp";
-import { WATER_SYSTEM } from "@/data/food";
 
 export const metadata: Metadata = { title: "In Camp" };
 
@@ -80,7 +77,7 @@ export default function OverviewPage() {
     <Page
       eyebrow="Reference"
       title="Overview"
-      meta="Routine · Water · Hygiene"
+      meta="Routine · Sequences · Camp"
     >
       <SubNav items={REFERENCE_SUB} />
 
@@ -179,75 +176,12 @@ export default function OverviewPage() {
         </p>
       </Section>
 
-      <Section num="07" title="Water purification">
-        <Panel>
-          <ul className="space-y-1.5">
-            {WATER_PURIFICATION.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-        <Panel title="Crew setup">
-          <p className="text-[12px] text-ink-muted mb-3">
-            {WATER_SYSTEM.totalFilterPaths} independent filter paths — redundancy by design.
-          </p>
-          <ul className="space-y-2 mb-3">
-            {WATER_SYSTEM.filters.map((f) => (
-              <li key={f.item} className="flex items-start gap-3 text-[12px]">
-                <span className="font-mono text-[10px] text-ink-muted bg-surface-2 border border-border rounded px-1 py-0.5 shrink-0">×{f.qty}</span>
-                <div>
-                  <span className="font-medium">{f.item}</span>
-                  <span className="text-ink-muted"> · {f.weightOz} oz · {f.notes}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="text-[12px] text-ink-muted">{WATER_SYSTEM.supplemental}</p>
-        </Panel>
-        <Panel title="Daily targets">
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="bg-surface-2 rounded p-2 text-center">
-              <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-0.5">Daily target</div>
-              <div className="text-[13px] font-semibold">{WATER_SYSTEM.dailyTargetL}</div>
-            </div>
-            <div className="bg-surface-2 rounded p-2 text-center">
-              <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-0.5">Standard carry</div>
-              <div className="text-[13px] font-semibold">{WATER_SYSTEM.standardCarryL}</div>
-            </div>
-            <div className="bg-surface-2 rounded p-2 text-center">
-              <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-0.5">Extended carry</div>
-              <div className="text-[13px] font-semibold">{WATER_SYSTEM.extendedCarryL}</div>
-            </div>
-          </div>
-          <ul className="space-y-1.5">
-            <li className="flex items-start gap-2 text-[12px]">
-              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-              <span>{WATER_SYSTEM.hydrationCue}</span>
-            </li>
-            <li className="flex items-start gap-2 text-[12px]">
-              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-              <span>{WATER_SYSTEM.electrolyteGuidance}</span>
-            </li>
-          </ul>
-        </Panel>
-        <VideoEmbed id="GZAiUVfpDuI" title="What You Need To Safely Treat Water In The Backcountry" />
-      </Section>
-
-      <Section num="08" title="Backcountry hygiene">
-        <Panel>
-          <ul className="space-y-1.5">
-            {HYGIENE_RULES.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      </Section>
+      <p className="text-[12px] text-ink-muted">
+        Water treatment, crew setup, and hygiene →{" "}
+        <Link href="/reference/cooking" className="underline hover:text-ink">
+          Cooking &amp; Water
+        </Link>
+      </p>
     </Page>
   );
 }
