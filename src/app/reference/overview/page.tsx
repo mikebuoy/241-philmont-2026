@@ -121,7 +121,15 @@ export default function OverviewPage() {
         <VideoEmbed id="BPnwAUhQjMA" title="How To Set Up A Campsite — Philmont" />
       </Section>
 
-      <Section num="05" title="Water purification">
+      <Section num="05" title="Dinner & evening">
+        <StepList steps={DINNER_STEPS} />
+      </Section>
+
+      <Section num="06" title="Nightly brief">
+        <StepList steps={NIGHTLY_BRIEF_STEPS} />
+      </Section>
+
+      <Section num="07" title="Water purification">
         <Panel>
           <ul className="space-y-1.5">
             {WATER_PURIFICATION.map((rule) => (
@@ -135,7 +143,7 @@ export default function OverviewPage() {
         <VideoEmbed id="GZAiUVfpDuI" title="What You Need To Safely Treat Water In The Backcountry" />
       </Section>
 
-      <Section num="06" title="Hygiene & Leave No Trace">
+      <Section num="08" title="Hygiene & Leave No Trace">
         <Panel title="Backcountry hygiene">
           <ul className="space-y-1.5">
             {HYGIENE_RULES.map((rule) => (
@@ -158,14 +166,6 @@ export default function OverviewPage() {
             ))}
           </div>
         </Panel>
-      </Section>
-
-      <Section num="07" title="Dinner & evening">
-        <StepList steps={DINNER_STEPS} />
-      </Section>
-
-      <Section num="08" title="Nightly brief">
-        <StepList steps={NIGHTLY_BRIEF_STEPS} />
       </Section>
     </Page>
   );
