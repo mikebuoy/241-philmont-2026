@@ -30,15 +30,15 @@ export const PACK_SUB = [
 ];
 
 export const CREW_SUB = [
-  { href: "/crew/roster", label: "Roster" },
-  { href: "/crew/weights", label: "Pack Weights" },
+  { href: "/crew/roster",    label: "Roster" },
+  { href: "/crew/weights",   label: "Pack Weights" },
   { href: "/crew/gear-check", label: "Gear Check" },
-  { href: "/crew/gear", label: "Crew Gear" },
+  { href: "/crew/gear",      label: "Crew Gear" },
+  { href: "/crew/duty",      label: "Duties" },
 ];
 
 export const REFERENCE_SUB = [
   { href: "/reference/trek",     label: "Trek" },
-  { href: "/reference/duty",     label: "Duties" },
   { href: "/reference/on-trail", label: "On Trail" },
   { href: "/reference/in-camp",  label: "In Camp" },
   { href: "/reference/safety",   label: "Safety" },
