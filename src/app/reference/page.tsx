@@ -1,4 +1,4 @@
 import { redirect } from "next/navigation";
 export default function ReferenceIndex() {
-  redirect("/reference/on-trail");
+  redirect("/reference/overview");
 }
