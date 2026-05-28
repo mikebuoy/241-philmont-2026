@@ -180,7 +180,7 @@ export default function CookingPage() {
             </li>
           </ul>
         </Panel>
-        <VideoEmbed id="GZAiUVfpDuI" title="What You Need To Safely Treat Water In The Backcountry" />
+        <VideoEmbed id="NJcPZyVfHnQ" title="Water Purification" />
       </Section>
 
       <Section num="05" title="Backcountry hygiene">
