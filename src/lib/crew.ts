@@ -18,6 +18,7 @@ export type CrewMember = {
   usesPhilmontTent: boolean;
   wfaCertificationStatus: CertificationStatus | null;
   cprCertificationStatus: CertificationStatus | null;
+  medFormReceived: boolean;
   claimedAt: string | null;
   isDisabled: boolean;
 };
@@ -35,6 +36,7 @@ type Row = {
   uses_philmont_tent: boolean | null;
   wfa_certification_status: CertificationStatus | null;
   cpr_certification_status: CertificationStatus | null;
+  med_form_received: boolean | null;
   claimed_at: string | null;
   is_disabled: boolean;
 };
@@ -73,6 +75,7 @@ function rowToMember(r: Row): CrewMember {
     usesPhilmontTent: r.uses_philmont_tent ?? true,
     wfaCertificationStatus: r.wfa_certification_status,
     cprCertificationStatus: r.cpr_certification_status,
+    medFormReceived: r.med_form_received ?? false,
     claimedAt: r.claimed_at,
     isDisabled: r.is_disabled ?? false,
   };

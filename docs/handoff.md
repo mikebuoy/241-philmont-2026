@@ -1,6 +1,6 @@
 # Project Handoff — Tooth of Time (Philmont 2026)
 
-_Last updated: 2026-05-26_
+_Last updated: 2026-05-27_
 
 This doc is for an AI agent (or human) picking up this project cold. Read it first, then check `docs/status.md` for current state before touching code.
 
@@ -13,7 +13,7 @@ This doc is for an AI agent (or human) picking up this project cold. Read it fir
 - **Live URL:** toothoftime.app
 - **Stack:** Next.js 16 App Router · React 19 · TypeScript strict · Tailwind CSS v4 · Supabase (Postgres + Auth) · Vercel
 - **Repo:** `/Users/mbuoy/git-projects/philmont-2026`
-- **Dev:** `npm run dev` → http://localhost:3000
+- **Dev:** `npm run dev` → http://localhost:3000. This intentionally runs `next dev --webpack`; do not use raw `next dev` until the Turbopack reload loop in `docs/gotchas.md` is resolved.
 
 ---
 

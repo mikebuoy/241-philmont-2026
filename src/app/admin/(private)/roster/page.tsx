@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Box } from "@/components/primitives/Box";
-import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { getAllCrewMembersAdmin } from "@/lib/crew";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -11,16 +10,45 @@ import {
   setCrewMemberDisabled,
   unbindCrewMember,
   updateCrewMemberCertification,
+  updateCrewMemberMedForm,
   updateCrewMemberRole,
 } from "./actions";
 import { UnbindButton } from "./UnbindButton";
 import { ResetGearButton } from "./ResetGearButton";
 import { CertificationSelect } from "./CertificationSelect";
+import { MedFormCheckbox } from "./MedFormCheckbox";
 import { RoleSelect } from "./RoleSelect";
 import { StatusSelect } from "./StatusSelect";
 import { DeleteButton } from "./DeleteButton";
 
 export const dynamic = "force-dynamic";
+
+function ClaimedCheck({ claimed }: { claimed: boolean }) {
+  return (
+    <span
+      className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${
+        claimed
+          ? "border-ok-border bg-ok-bg text-ok-text"
+          : "border-border bg-surface-2 text-ink-faint"
+      }`}
+      title={claimed ? "Claimed" : "Unclaimed"}
+      aria-label={claimed ? "Claimed" : "Unclaimed"}
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-3.5 w-3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+    </span>
+  );
+}
 
 export default async function AdminRosterPage() {
   const allMembers = await getAllCrewMembersAdmin();
@@ -84,30 +112,32 @@ export default async function AdminRosterPage() {
                 </span>
               </div>
               <div
-                className="bg-surface border border-border rounded-md overflow-x-auto"
+                className="rounded-md border border-border bg-surface"
                 style={{ borderWidth: "0.5px" }}
               >
-                <table className="w-full text-[12px]">
-                  <thead className="bg-surface-2 border-b border-border">
+                <table className="w-full table-fixed text-[12px]">
+                  <colgroup>
+                    <col className="w-[26%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[9%]" />
+                    <col className="w-[9%]" />
+                    <col className="w-[9%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[15%]" />
+                  </colgroup>
+                  <thead className="border-b border-border bg-surface-2">
                     <tr>
-                      <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Name
-                      </th>
-                      <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Role
-                      </th>
-                      <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Status
-                      </th>
-                      <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Certifications
-                      </th>
-                      <th className="text-left font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Claimed
-                      </th>
-                      <th className="text-right font-mono font-medium text-[10px] uppercase tracking-[0.05em] text-ink-muted px-3 py-2 whitespace-nowrap">
-                        Actions
-                      </th>
+                      {["Name", "Role", "Active", "WFA", "CPR", "MED", "Claimed", "Actions"].map((label) => (
+                        <th
+                          key={label}
+                          className={`px-2 py-2 font-mono text-[9px] font-medium uppercase tracking-[0.05em] text-ink-muted ${
+                            label === "Actions" ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {label}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -117,23 +147,20 @@ export default async function AdminRosterPage() {
                         <tr
                           key={m.id}
                           className={`border-b border-border last:border-0 align-middle ${
-                            m.isDisabled ? "opacity-50" : ""
+                            m.isDisabled ? "opacity-55" : ""
                           }`}
                         >
-                          <td className="px-3 py-2.5">
-                            <div className="font-semibold flex items-center gap-1.5">
+                          <td className="min-w-0 px-2 py-2">
+                            <div className="truncate font-semibold text-ink">
                               {m.name}
-                              {m.isDisabled && (
-                                <StatusBadge tone="neutral">Disabled</StatusBadge>
-                              )}
                             </div>
                             {email && (
-                              <div className="font-mono text-[10px] text-ink-faint mt-0.5">
+                              <div className="mt-0.5 truncate font-mono text-[10px] text-ink-faint">
                                 {email}
                               </div>
                             )}
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-2 py-2">
                             <RoleSelect
                               value={m.role}
                               action={async (role) => {
@@ -142,7 +169,7 @@ export default async function AdminRosterPage() {
                               }}
                             />
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-2 py-2 text-center">
                             <StatusSelect
                               disabled={m.isDisabled}
                               action={async (disabled) => {
@@ -151,35 +178,43 @@ export default async function AdminRosterPage() {
                               }}
                             />
                           </td>
-                          <td className="px-3 py-2.5">
-                            <div className="inline-flex items-start gap-2">
-                              <CertificationSelect
-                                label="WFA"
-                                value={m.wfaCertificationStatus}
-                                action={async (status) => {
-                                  "use server";
-                                  await updateCrewMemberCertification(m.id, "wfa", status);
-                                }}
-                              />
-                              <CertificationSelect
-                                label="CPR"
-                                value={m.cprCertificationStatus}
-                                action={async (status) => {
-                                  "use server";
-                                  await updateCrewMemberCertification(m.id, "cpr", status);
-                                }}
-                              />
-                            </div>
+                          <td className="px-2 py-2">
+                            <CertificationSelect
+                              label="WFA"
+                              showLabel={false}
+                              value={m.wfaCertificationStatus}
+                              action={async (status) => {
+                                "use server";
+                                await updateCrewMemberCertification(m.id, "wfa", status);
+                              }}
+                            />
                           </td>
-                          <td className="px-3 py-2.5">
-                            {m.userId ? (
-                              <StatusBadge tone="ok">CLAIMED</StatusBadge>
-                            ) : (
-                              <StatusBadge tone="neutral">unclaimed</StatusBadge>
-                            )}
+                          <td className="px-2 py-2">
+                            <CertificationSelect
+                              label="CPR"
+                              showLabel={false}
+                              value={m.cprCertificationStatus}
+                              action={async (status) => {
+                                "use server";
+                                await updateCrewMemberCertification(m.id, "cpr", status);
+                              }}
+                            />
                           </td>
-                          <td className="px-3 py-2.5 text-right">
-                            <div className="inline-flex items-center gap-2">
+                          <td className="px-2 py-2">
+                            <MedFormCheckbox
+                              showLabel={false}
+                              value={m.medFormReceived}
+                              action={async (received) => {
+                                "use server";
+                                await updateCrewMemberMedForm(m.id, received);
+                              }}
+                            />
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <ClaimedCheck claimed={!!m.userId} />
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center justify-end gap-1.5">
                               <ResetGearButton
                                 name={m.name}
                                 action={async () => {

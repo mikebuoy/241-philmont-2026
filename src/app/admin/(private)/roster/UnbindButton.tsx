@@ -29,15 +29,37 @@ export function UnbindButton({ name, action }: Props) {
   return (
     <div className="inline-flex flex-col items-end gap-1">
       <button
+        type="button"
         onClick={onClick}
         disabled={pending}
-        className="font-mono text-[11px] uppercase tracking-[0.05em] px-2.5 py-1 text-danger-text border border-danger-border rounded hover:bg-danger-bg disabled:opacity-50 transition-colors"
+        className="inline-flex h-7 w-7 items-center justify-center rounded border border-danger-border text-danger-text hover:bg-danger-bg disabled:opacity-50 transition-colors"
+        title="Unbind sign-in"
+        aria-label={`Unbind ${name}'s sign-in`}
       >
-        {pending ? "Unbinding…" : "Unbind"}
+        <UnlinkIcon />
       </button>
       {error && (
         <span className="text-[10px] text-danger-text font-mono">{error}</span>
       )}
     </div>
+  );
+}
+
+function UnlinkIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+      <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1" />
+      <path d="M4 4l16 16" />
+    </svg>
   );
 }

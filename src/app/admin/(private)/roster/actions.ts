@@ -46,6 +46,23 @@ export async function updateCrewMemberCertification(
   revalidatePath("/crew/roster");
 }
 
+export async function updateCrewMemberMedForm(
+  crewMemberId: string,
+  received: boolean,
+) {
+  if (!(await isCurrentUserAdmin())) throw new Error("Forbidden");
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("crew_members")
+    .update({ med_form_received: received })
+    .eq("id", crewMemberId);
+  if (error) throw new Error(`Medical form update failed: ${error.message}`);
+
+  revalidatePath("/admin/roster");
+  revalidatePath("/crew/roster");
+}
+
 const REVALIDATE_PATHS = [
   "/admin/roster",
   "/crew/roster",
@@ -121,6 +138,7 @@ export async function resetCrewMemberGearList(crewMemberId: string) {
     usesPhilmontTent: true,
     wfaCertificationStatus: null,
     cprCertificationStatus: null,
+    medFormReceived: false,
     claimedAt: row.claimed_at,
     isDisabled: false,
   };

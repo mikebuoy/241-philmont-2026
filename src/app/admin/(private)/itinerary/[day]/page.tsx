@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getItinerary } from "@/lib/itinerary";
 import { isoToSlug } from "@/data/itinerary";
+import type { CampType } from "@/data/itinerary";
 import { saveDay } from "./actions";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { SaveButton } from "@/components/admin/SaveButton";
@@ -19,6 +20,170 @@ const FLAG_OPTIONS: { key: string; label: string }[] = [
   { key: "longestDay", label: "Longest day" },
   { key: "hardestDescent", label: "Hardest descent" },
 ];
+
+const CAMP_TYPE_OPTIONS: { value: CampType; label: string }[] = [
+  { value: "travel", label: "Travel" },
+  { value: "acclimation", label: "Acclimation" },
+  { value: "base", label: "Base" },
+  { value: "trail", label: "Trail" },
+  { value: "staffed", label: "Staffed" },
+  { value: "dry", label: "Dry Camp" },
+  { value: "layover", label: "Layover" },
+];
+
+const INPUT_CLASS =
+  "w-full text-[12px] bg-surface-2 border border-border rounded px-3 py-2";
+const TEXTAREA_CLASS = `${INPUT_CLASS} leading-relaxed resize-y`;
+const MONO_TEXTAREA_CLASS = `${TEXTAREA_CLASS} font-mono`;
+const READ_ONLY_CLASS =
+  "min-h-[35px] w-full text-[12px] bg-bg border border-border rounded px-3 py-2 text-ink-muted whitespace-pre-wrap";
+
+function lines(value: string[]) {
+  return value.join("\n");
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] block mb-2">
+      {children}
+    </span>
+  );
+}
+
+function ReadOnlyField({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className={`${READ_ONLY_CLASS} ${mono ? "font-mono" : ""}`}>
+        {value === null || value === undefined || value === "" ? "—" : value}
+      </div>
+    </div>
+  );
+}
+
+function LightText({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  return (
+    <div>
+      <dt className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+        {label}
+      </dt>
+      <dd className="mt-0.5 text-[13px] text-ink">{value || "—"}</dd>
+    </div>
+  );
+}
+
+function TextField({
+  label,
+  name,
+  defaultValue,
+  required,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string | null | undefined;
+  required?: boolean;
+}) {
+  return (
+    <label className="block">
+      <FieldLabel>{label}</FieldLabel>
+      <input
+        type="text"
+        name={name}
+        defaultValue={defaultValue ?? ""}
+        required={required}
+        className={INPUT_CLASS}
+      />
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  name,
+  defaultValue,
+  step = "1",
+}: {
+  label: string;
+  name: string;
+  defaultValue: number | null | undefined;
+  step?: string;
+}) {
+  return (
+    <label className="block">
+      <FieldLabel>{label}</FieldLabel>
+      <input
+        type="number"
+        name={name}
+        defaultValue={defaultValue ?? ""}
+        step={step}
+        className={`${INPUT_CLASS} font-mono`}
+      />
+    </label>
+  );
+}
+
+function TextAreaField({
+  label,
+  name,
+  defaultValue,
+  rows = 4,
+  mono = false,
+  hint,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string;
+  rows?: number;
+  mono?: boolean;
+  hint?: string;
+}) {
+  return (
+    <label className="block">
+      <FieldLabel>{label}</FieldLabel>
+      {hint && <p className="text-[11px] text-ink-faint mb-2">{hint}</p>}
+      <textarea
+        name={name}
+        rows={rows}
+        defaultValue={defaultValue}
+        className={mono ? MONO_TEXTAREA_CLASS : TEXTAREA_CLASS}
+      />
+    </label>
+  );
+}
+
+function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className="bg-surface border border-border rounded-lg p-4 space-y-4"
+      style={{ borderWidth: "0.5px" }}
+    >
+      <h2 className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
 
 export default async function EditDayPage({
   params,
@@ -55,74 +220,150 @@ export default async function EditDayPage({
       </header>
 
       <form action={saveAction} className="space-y-6">
-        {/* Label */}
-        <section
-          className="bg-surface border border-border rounded-lg p-4"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <label className="block">
-            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] block mb-2">
-              Label
-            </span>
-            <input
-              type="text"
-              name="label"
-              defaultValue={d.label}
-              placeholder="e.g. Ute Park to Cimarroncita"
-              className="w-full text-[12px] bg-surface-2 border border-border rounded px-3 py-2"
-            />
-          </label>
-        </section>
+        <FormSection title="Day identity">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <TextField label="Label" name="label" defaultValue={d.label} required />
+            <TextField label="Camp / location" name="camp" defaultValue={d.camp} required />
+            <TextField label="Food pickup" name="food_pickup" defaultValue={d.foodPickup} />
+            <label className="block">
+              <FieldLabel>Camp type</FieldLabel>
+              <select
+                name="type"
+                defaultValue={d.type}
+                className={INPUT_CLASS}
+                required
+              >
+                {CAMP_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </FormSection>
 
-        {/* Notes */}
-        <section
-          className="bg-surface border border-border rounded-lg p-4"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <label className="block">
-            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] block mb-2">
-              Notes
-            </span>
-            <textarea
-              name="notes"
-              rows={4}
-              defaultValue={d.notes}
-              placeholder="Notes for the crew on this day…"
-              className="w-full text-[12px] bg-surface-2 border border-border rounded px-3 py-2 leading-relaxed resize-y"
+        <FormSection title="Trail metrics">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <NumberField
+              label="Miles"
+              name="miles"
+              defaultValue={d.miles}
+              step="0.1"
             />
-          </label>
-        </section>
+            <NumberField label="Camp elev ft" name="elevation" defaultValue={d.elevation} />
+            <NumberField label="Gain ft" name="gain" defaultValue={d.gain} />
+            <NumberField label="Loss ft" name="loss" defaultValue={d.loss} />
+          </div>
+        </FormSection>
 
-        {/* Programs */}
-        <section
-          className="bg-surface border border-border rounded-lg p-4"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <label className="block">
-            <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] block mb-2">
-              Activities &amp; Programs
-            </span>
-            <p className="text-[11px] text-ink-faint mb-2">
-              One per line. Order shown is the order they&apos;ll appear.
-            </p>
-            <textarea
-              name="programs"
-              rows={6}
-              defaultValue={d.programs.join("\n")}
-              placeholder="Ranger Training&#10;Fire Ecology &amp; Wildlife Conservation @ Cimarroncita (passthrough)"
-              className="w-full text-[12px] bg-surface-2 border border-border rounded px-3 py-2 leading-relaxed resize-y font-mono"
+        <FormSection title="Schedule and light">
+          <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3">
+            <LightText label="Civil twilight" value={d.twilight} />
+            <LightText label="Sunrise" value={d.sunrise} />
+            <LightText label="Sunset" value={d.sunset} />
+            <LightText label="Dark" value={d.dark} />
+          </dl>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <TextField label="Wake" name="wake" defaultValue={d.wake} />
+            <TextField label="On trail" name="on_trail" defaultValue={d.onTrail} />
+          </div>
+          {d.scheduleNote && (
+            <ReadOnlyField label="Schedule note" value={d.scheduleNote} />
+          )}
+        </FormSection>
+
+        <FormSection title="Narrative">
+          <TextAreaField
+            label="What to expect"
+            name="what_to_expect"
+            defaultValue={d.whatToExpect}
+            rows={5}
+          />
+        </FormSection>
+
+        <FormSection title="Activities and programs">
+          <TextAreaField
+            label="Planned activities"
+            name="planned_activities"
+            defaultValue={lines(d.plannedActivities)}
+            rows={6}
+            mono
+            hint="One per line. These appear before programs."
+          />
+          <TextAreaField
+            label="Programs"
+            name="programs"
+            defaultValue={lines(d.programs)}
+            rows={5}
+            mono
+            hint="One per line. Order shown is the order they'll appear."
+          />
+          <TextAreaField
+            label="Opportunities"
+            name="opportunistic_activities"
+            defaultValue={lines(d.opportunisticActivities)}
+            rows={4}
+            mono
+            hint="One per line. These appear under Opportunities."
+          />
+        </FormSection>
+
+        <FormSection title="Meals">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <ReadOnlyField label="Breakfast code" value={d.mealBreakfast} mono />
+            <ReadOnlyField label="Lunch code" value={d.mealLunch} mono />
+            <ReadOnlyField label="Dinner code" value={d.mealDinner} mono />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <TextAreaField
+              label="Breakfast note"
+              name="meal_breakfast_note"
+              defaultValue={d.mealBreakfastNote ?? ""}
+              rows={3}
             />
-          </label>
-        </section>
+            <TextAreaField
+              label="Lunch note"
+              name="meal_lunch_note"
+              defaultValue={d.mealLunchNote ?? ""}
+              rows={3}
+            />
+            <TextAreaField
+              label="Dinner note"
+              name="meal_dinner_note"
+              defaultValue={d.mealDinnerNote ?? ""}
+              rows={3}
+            />
+          </div>
+        </FormSection>
+
+        <FormSection title="Crew notes">
+          <TextAreaField
+            label="Crew notes"
+            name="crew_notes"
+            defaultValue={lines(d.crewNotes)}
+            rows={5}
+            mono
+            hint="One per line."
+          />
+          <TextAreaField
+            label="Crew leader watch"
+            name="crew_leader_watch"
+            defaultValue={lines(d.crewLeaderWatch)}
+            rows={5}
+            mono
+            hint="One per line."
+          />
+          <TextAreaField
+            label="Crew leader focus"
+            name="crew_leader_focus"
+            defaultValue={d.crewLeaderFocus}
+            rows={4}
+          />
+        </FormSection>
 
         {/* Flags */}
-        <section
-          className="bg-surface border border-border rounded-lg p-4"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em] mb-3">
-            Badges
-          </p>
+        <FormSection title="Badges">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {FLAG_OPTIONS.map((f) => {
               const checked =
@@ -144,17 +385,10 @@ export default async function EditDayPage({
               );
             })}
           </div>
-        </section>
+        </FormSection>
 
         {/* GPX */}
-        <section
-          className="bg-surface border border-border rounded-lg p-4 space-y-3"
-          style={{ borderWidth: "0.5px" }}
-        >
-          <p className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.08em]">
-            GPX file
-          </p>
-
+        <FormSection title="GPX file">
           {d.gpx ? (
             <div className="bg-ok-bg text-ok-text rounded-md px-3 py-2 text-[11px] font-mono flex items-center justify-between gap-2">
               <span>{d.gpx.path}</span>
@@ -214,7 +448,7 @@ export default async function EditDayPage({
               <span>Remove existing GPX file on save</span>
             </label>
           )}
-        </section>
+        </FormSection>
 
         {/* Cancel + Save */}
         <div className="flex items-center justify-between gap-3 pt-2 flex-wrap">

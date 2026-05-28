@@ -132,6 +132,7 @@ One row per person on the roster. `user_id` is null until the person signs in an
 | `uses_philmont_tent` | `boolean` | default `true`; `false` = personal 1P tent |
 | `wfa_certification_status` | `text` | `null` · `certified` · `not_certified` · `tbd` |
 | `cpr_certification_status` | `text` | `null` · `certified` · `not_certified` · `tbd` |
+| `med_form_received` | `boolean` | default `false`; admin marks received BSA medical form parts A/B/C |
 | `is_disabled` | `boolean` | default `false`; hides member from normal views |
 | `updated_at` | `timestamptz` | Auto-touched by trigger on update |
 

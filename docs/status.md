@@ -33,16 +33,25 @@ This is a living doc. Update it at the end of every session before closing. The 
 - **`/trip/training`** — Training plan
 
 - **`/crew/roster`**, **`/crew/weights`**, **`/crew/gear-check`**, **`/crew/gear`** — All crew dashboards
+  - Roster shows WFA, CPR, and required medical form status. The MED column displays `ABC` green when received and red when missing.
 
 - **`/reference/*`** — All reference pages, PWA-cached
 
 - **`/admin/*`** — Roster editor, gear editor, itinerary editor
+  - Admin roster uses a compact one-row-per-member table with narrow status columns and icon-only row actions.
+  - Daily itinerary editor exposes editable public day fields. Calculated fields are either hidden because they already appear in the header or are read-only context: weekday/date labels, Philmont/trail day numbers, cumulative metrics, sun/light times, and meal codes.
 
 - **Auth + claim flow** — Sign-in → claim → personalized session
+
+- **Local dev server** — `npm run dev` runs Next.js in Webpack mode (`next dev --webpack`) to avoid a Turbopack localhost reload loop on admin itinerary edit pages. See `docs/gotchas.md`.
 
 ---
 
 ## In Progress / Broken
+
+**Turbopack local dev loop — worked around:**
+
+Do not use raw `next dev` for local verification. It can repeatedly reload `/admin/itinerary/[day]` and make auth controls appear to flicker, with terminal panics mentioning `/admin/(private)/roster/page` and `Next.js package not found`. `npm run dev` now uses Webpack and was verified to stabilize the edit page.
 
 **Itinerary enrichment — awaiting DB migration + seed run (code complete, build passing):**
 
@@ -51,6 +60,10 @@ New data (day schedule, light table, what-to-expect, meals, crew notes, crew lea
 2. Run `npx tsx scripts/seed.ts` from project root
 
 The app degrades gracefully before migration — existing itinerary pages work fine, new sections just don't appear.
+
+**Crew medical form flag — awaiting DB migration:**
+
+Run `supabase/migration-crew-med-form.sql` in the Supabase SQL editor to add `crew_members.med_form_received`. Until that migration is applied, the roster pages that read or update the MED field can fail with a missing-column error.
 
 ---
 

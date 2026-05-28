@@ -8,6 +8,7 @@ import {
   isCurrentUserAdmin,
 } from "@/lib/supabase/admin";
 import { isoToSlug } from "@/data/itinerary";
+import type { CampType } from "@/data/itinerary";
 
 const FLAG_KEYS = [
   "dryCamp",
@@ -18,6 +19,47 @@ const FLAG_KEYS = [
   "longestDay",
   "hardestDescent",
 ] as const;
+
+const CAMP_TYPES: CampType[] = [
+  "travel",
+  "acclimation",
+  "base",
+  "trail",
+  "staffed",
+  "dry",
+  "layover",
+];
+
+function requiredText(formData: FormData, key: string): string {
+  const value = String(formData.get(key) ?? "").trim();
+  if (!value) throw new Error(`${key} is required`);
+  return value;
+}
+
+function optionalText(formData: FormData, key: string): string | null {
+  const value = String(formData.get(key) ?? "").trim();
+  return value || null;
+}
+
+function optionalNumber(formData: FormData, key: string): number | null {
+  const value = String(formData.get(key) ?? "").trim();
+  if (!value) return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) throw new Error(`${key} must be a number`);
+  return parsed;
+}
+
+function optionalInteger(formData: FormData, key: string): number | null {
+  const value = optionalNumber(formData, key);
+  return value == null ? null : Math.trunc(value);
+}
+
+function lines(formData: FormData, key: string): string[] {
+  return String(formData.get(key) ?? "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export async function saveDay(iso: string, formData: FormData) {
   // Auth + admin gate
@@ -36,15 +78,9 @@ export async function saveDay(iso: string, formData: FormData) {
     if (formData.get(`flag_${k}`) === "on") flags[k] = true;
   }
 
-  // Parse programs from textarea (one per line)
-  const programsRaw = String(formData.get("programs") ?? "");
-  const programs = programsRaw
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const type = requiredText(formData, "type") as CampType;
+  if (!CAMP_TYPES.includes(type)) throw new Error("Invalid camp type");
 
-  const label = String(formData.get("label") ?? "").trim();
-  const notes = String(formData.get("notes") ?? "");
   const gpxPartial = formData.get("gpx_partial") === "on";
   const gpxNote = String(formData.get("gpx_note") ?? "");
   const removeGpx = formData.get("remove_gpx") === "on";
@@ -73,10 +109,27 @@ export async function saveDay(iso: string, formData: FormData) {
 
   // Update row (use admin client to bypass RLS — auth already verified above)
   const patch: Record<string, unknown> = {
-    ...(label ? { label } : {}),
-    notes,
+    label: requiredText(formData, "label"),
+    camp: requiredText(formData, "camp"),
+    type,
+    miles: optionalNumber(formData, "miles"),
+    gain: optionalInteger(formData, "gain"),
+    loss: optionalInteger(formData, "loss"),
+    elevation: optionalInteger(formData, "elevation"),
+    food_pickup: optionalText(formData, "food_pickup"),
     flags,
-    programs,
+    programs: lines(formData, "programs"),
+    wake: optionalText(formData, "wake"),
+    on_trail: optionalText(formData, "on_trail"),
+    what_to_expect: optionalText(formData, "what_to_expect"),
+    planned_activities: lines(formData, "planned_activities"),
+    opportunistic_activities: lines(formData, "opportunistic_activities"),
+    crew_notes: lines(formData, "crew_notes"),
+    crew_leader_watch: lines(formData, "crew_leader_watch"),
+    crew_leader_focus: optionalText(formData, "crew_leader_focus"),
+    meal_breakfast_note: optionalText(formData, "meal_breakfast_note"),
+    meal_lunch_note: optionalText(formData, "meal_lunch_note"),
+    meal_dinner_note: optionalText(formData, "meal_dinner_note"),
     updated_at: new Date().toISOString(),
     updated_by: user.email,
   };
@@ -106,13 +159,14 @@ export async function saveDay(iso: string, formData: FormData) {
     }
   }
 
+  const slug = isoToSlug(iso);
+
   // Revalidate admin pages so the list reflects updates immediately
   revalidatePath("/admin/itinerary");
-  revalidatePath(`/admin/itinerary/${iso}`);
+  revalidatePath(`/admin/itinerary/${slug}`);
 
   // Revalidate the public pages so they regenerate with fresh data
   // on the next request (which will be the redirect below).
-  const slug = isoToSlug(iso);
   revalidatePath("/trip/itinerary");
   revalidatePath(`/trip/itinerary/${slug}`);
 

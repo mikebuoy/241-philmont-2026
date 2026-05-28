@@ -36,7 +36,7 @@ export function RoleSelect({ value, action }: Props) {
         value={current}
         disabled={pending}
         onChange={(e) => onChange(e.target.value as CrewRole)}
-        className="rounded border border-border bg-surface px-2 py-1 font-mono text-[11px] text-ink disabled:opacity-50"
+        className="w-[112px] rounded border border-border bg-surface px-2 py-1 font-mono text-[10px] text-ink disabled:opacity-50"
         aria-label="Role"
       >
         {ROLES.map((r) => (

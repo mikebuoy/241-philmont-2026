@@ -7,9 +7,10 @@ type Props = {
   label: string;
   value: CertificationStatus | null;
   action: (status: CertificationStatus | null) => Promise<void>;
+  showLabel?: boolean;
 };
 
-export function CertificationSelect({ label, value, action }: Props) {
+export function CertificationSelect({ label, value, action, showLabel = true }: Props) {
   const [currentValue, setCurrentValue] = useState<CertificationStatus | "">(value ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -31,15 +32,18 @@ export function CertificationSelect({ label, value, action }: Props) {
 
   return (
     <label className="inline-flex flex-col gap-1">
-      <span className="font-mono text-[9px] uppercase tracking-[0.05em] text-ink-faint">
-        {label}
-      </span>
+      {showLabel && (
+        <span className="font-mono text-[9px] uppercase tracking-[0.05em] text-ink-faint">
+          {label}
+        </span>
+      )}
       <select
         value={currentValue}
         disabled={pending}
         onChange={(e) => onChange(e.target.value as CertificationStatus | "")}
-        className="rounded border border-border bg-surface px-2 py-1 font-mono text-[11px] text-ink disabled:opacity-50"
+        className="w-[62px] rounded border border-border bg-surface px-1.5 py-1 font-mono text-[10px] text-ink disabled:opacity-50"
         aria-label={`${label} certification status`}
+        title={`${label} certification status`}
       >
         <option value="">Blank</option>
         <option value="certified">Yes</option>

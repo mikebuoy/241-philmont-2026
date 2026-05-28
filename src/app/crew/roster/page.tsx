@@ -33,6 +33,7 @@ type WeightInfo = {
   usesPhilmontTent: boolean;
   wfaCertificationStatus: CertificationStatus | null;
   cprCertificationStatus: CertificationStatus | null;
+  medFormReceived: boolean;
 };
 
 export const metadata: Metadata = {
@@ -112,6 +113,7 @@ export default async function RosterPage() {
                               usesPhilmontTent: m.usesPhilmontTent,
                               wfaCertificationStatus: m.wfaCertificationStatus,
                               cprCertificationStatus: m.cprCertificationStatus,
+                              medFormReceived: m.medFormReceived,
                             }}
                           />
                         ))}
@@ -138,6 +140,7 @@ export default async function RosterPage() {
                               usesPhilmontTent: m.usesPhilmontTent,
                               wfaCertificationStatus: m.wfaCertificationStatus,
                               cprCertificationStatus: m.cprCertificationStatus,
+                              medFormReceived: m.medFormReceived,
                             }}
                           />
                         ))}
@@ -238,6 +241,21 @@ function CertificationCell({
   );
 }
 
+function MedFormCell({ received }: { received: boolean | undefined }) {
+  const styles = received
+    ? "bg-ok-bg text-ok-text border-ok-border"
+    : "bg-danger-bg text-danger-text border-danger-border";
+
+  return (
+    <span
+      className={`font-mono text-[9px] py-0.5 px-1 rounded border inline-flex w-full items-center justify-center ${styles}`}
+      title={`Medical form: ${received ? "received" : "missing"}`}
+    >
+      ABC
+    </span>
+  );
+}
+
 function RosterHeader() {
   return (
     <div
@@ -249,6 +267,7 @@ function RosterHeader() {
       <span className="min-w-2 flex-1" aria-hidden="true" />
       <span className="w-9 shrink-0 text-center">WFA</span>
       <span className="w-9 shrink-0 text-center">CPR</span>
+      <span className="w-9 shrink-0 text-center">MED</span>
       <span className="w-12 shrink-0 text-right">Est Wgt</span>
     </div>
   );
@@ -288,6 +307,9 @@ function RosterRow({
         </span>
         <span className="w-9 shrink-0">
           <CertificationCell label="CPR" status={weight?.cprCertificationStatus} />
+        </span>
+        <span className="w-9 shrink-0">
+          <MedFormCell received={weight?.medFormReceived} />
         </span>
         <span className="w-12 shrink-0">
           <PackWeightBadge weight={weight} />

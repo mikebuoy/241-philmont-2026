@@ -27,19 +27,16 @@ export function StatusSelect({ disabled: initialDisabled, action }: Props) {
   }
 
   return (
-    <div className="inline-flex flex-col gap-1">
-      <select
-        value={isDisabled ? "disabled" : "enabled"}
+    <div className="inline-flex flex-col items-center gap-1">
+      <input
+        type="checkbox"
+        checked={!isDisabled}
         disabled={pending}
-        onChange={(e) => onChange(e.target.value === "disabled")}
-        className={`rounded border border-border bg-surface px-2 py-1 font-mono text-[11px] disabled:opacity-50 ${
-          isDisabled ? "text-danger-text" : "text-ink"
-        }`}
-        aria-label="Member status"
-      >
-        <option value="enabled">Enabled</option>
-        <option value="disabled">Disabled</option>
-      </select>
+        onChange={(e) => onChange(!e.target.checked)}
+        className="h-4 w-4 accent-ink disabled:opacity-50"
+        aria-label={isDisabled ? "Mark member active" : "Mark member disabled"}
+        title={isDisabled ? "Member disabled. Click to mark active." : "Member active. Click to disable."}
+      />
       {error && (
         <span className="max-w-28 text-[10px] text-danger-text font-mono">{error}</span>
       )}

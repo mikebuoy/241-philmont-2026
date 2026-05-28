@@ -11,6 +11,9 @@ Non-obvious things that have caused problems or wasted time. Read before working
 **This is Next.js 16, not the version in your training data.**  
 APIs, file conventions, and routing may differ significantly. Read `node_modules/next/dist/docs/` before writing App Router code. `AGENTS.md` repeats this warning.
 
+**Use `npm run dev`, not raw `next dev`.**
+As of 2026-05-27, `npm run dev` intentionally runs `next dev --webpack`. The default Next.js 16 Turbopack dev server caused a localhost reload loop on admin itinerary edit pages: the page loaded with `200`, then repeatedly refreshed, the sign-in/sign-out UI appeared to flicker, and the terminal printed `Failed to write app endpoint /admin/(private)/roster/page` with `Next.js package not found`. This was not an auth failure — the admin route was returning `200`. If you see this again, stop all dev servers and restart with `npm run dev`; do not start the app with `next dev` directly.
+
 **`force-dynamic` pages don't get auto-injected OG images.**  
 Next.js does not inject route-level `opengraph-image.png` into metadata for `force-dynamic` pages. You must set `openGraph.images` explicitly in the page's `metadata` export. Affected pages: `crew/weights`, `crew/gear-check`, `crew/roster`, `pack/gear`, `pack/calculator`. See `docs/ARCHITECTURE.md §13`.
 
