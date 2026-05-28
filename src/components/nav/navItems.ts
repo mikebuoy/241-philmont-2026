@@ -34,7 +34,6 @@ export const CREW_SUB = [
   { href: "/crew/weights",   label: "Pack Weights" },
   { href: "/crew/gear-check", label: "Gear Check" },
   { href: "/crew/gear",      label: "Crew Gear" },
-  { href: "/crew/duty",      label: "Duties" },
 ];
 
 export const REFERENCE_SUB = [
