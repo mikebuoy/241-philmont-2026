@@ -79,8 +79,18 @@ export default async function CrewGearPage() {
         canCheckCrew2={canCheckCrew2}
         myCrewId={me?.crewId}
         aboveHeader={
-          <div key="subnav" className="print:hidden">
+          <div className="print:hidden">
             <SubNav items={CREW_SUB} />
+            <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border mt-3" style={{ borderWidth: "0.5px" }}>
+              <iframe
+                src="https://www.youtube.com/embed/ZORN2Co9A5k"
+                title="Philmont Gear Overview"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
           </div>
         }
       />
