@@ -34,16 +34,31 @@ export const ALTITUDE = {
 export const SMELLABLES = {
   requiredInBearBag: [
     "All food and snacks",
-    "Toothpaste and floss",
+    "Toothpaste and toothbrush",
     "Sunscreen and lip balm",
     "Insect repellent",
-    "Soap and hand sanitizer",
+    "Soap and shampoo",
     "Trash and food wrappers",
     "Chapstick",
     "Scented lotion or wipes",
     "Any scented medication",
     "Empty food bags",
     "Gum and candy",
+    "Feminine hygiene products",
+    "Extra batteries",
+    "Foot powder",
+    "Personal first aid kit",
+  ],
+  oopsBag: [
+    "Today's remaining meals",
+    "Yum yum bag",
+    "Food strainer and scraper",
+    "Trash",
+    "Micro-pure tablets",
+    "Crew first aid kit",
+    "Medicine and inhalers",
+    "Unwashed dishes and squishy bowls",
+    "Personal smellables needed tonight",
   ],
   prohibitedInBackcountry: [
     "Deodorant — NOT ALLOWED in Philmont backcountry",
@@ -139,38 +154,57 @@ export const WAYPOINTS: Waypoint[] = [
 
 export const BEAR_HANG_STEPS: { title: string; items: string[] }[] = [
   {
-    title: "Collect all smellables",
+    title: "Sort smellables into bags",
     items: [
-      "Pull everything smellable from tents, packs, and personal gear before dark",
-      "Use the four issued bags — nothing stays in tents overnight",
+      "Main bags: everything not needed tonight — food, toiletries, trash, empty bags",
+      "Oops bag: tonight's needs only — see the oops bag list; keep it light enough for two people to raise and lower",
+      "Each crew member loads personal smellables into their ditty bag",
     ],
   },
   {
-    title: "Sort and balance the load",
+    title: "Move to the bear cable",
     items: [
-      "Crew gear in one bag (dining fly, stoves, ropes), food in another, personal smellables in the remaining two",
-      "Distribute heavy items across bags — no single bag should be too heavy to haul",
+      "Bring all bear bags, both ropes, and the carabiner",
+      "Find two trees that do not support the cable for tie-off",
+      "Stand on the tie-off side — clear the area below the cable before throwing",
     ],
   },
   {
-    title: "Clip carabiners",
+    title: "Throw the first rope over",
     items: [
-      "Attach a locking carabiner to each loaded bag",
-      "Gate locked — verify before raising",
+      "Loosely coil one rope starting from the center knot",
+      "Throw the coiled end over the cable — rope weight is enough, do not add rocks or carabiners",
     ],
   },
   {
-    title: "Hang on the bear cable",
+    title: "Attach bags with a lark's head",
     items: [
-      "Use the bear cable provided at the campsite",
-      "All bags must hang clear of the ground — verify height before walking away",
+      "Find the center knot; create a loop on one side; reach through, grab the hanging strands, pull your fist out",
+      "Twist the top of the bag through the loop; tighten the knot close to the bag",
+      "Balance weight on both sides before clipping",
     ],
   },
   {
-    title: "Walk the Bearmuda Triangle before sleep",
+    title: "Set up the oops line",
     items: [
-      "Confirm nothing smellable remains on the ground or in tent areas",
-      "Every crew member accounts for their personal smellables",
+      "Clip the load-bearing carabiner to the loop",
+      "Thread the second rope halfway through the carabiner from the center knot",
+      "This line raises and lowers independently — no need to drop all bags to access the oops bag",
+    ],
+  },
+  {
+    title: "Raise and tie off",
+    items: [
+      "Multiple crew members on both loose ends raise the bags together",
+      "Wrap the rope around the tie-off tree three times, placing sticks between rope and bark to protect the tree",
+      "Coil the remaining rope and slide it under the line — do not tie a knot",
+    ],
+  },
+  {
+    title: "Verify before sleep",
+    items: [
+      "Bags at least 10 feet off the ground and 6 feet from the nearest tree",
+      "Every crew member checks packs and pockets for smellables",
     ],
   },
 ];

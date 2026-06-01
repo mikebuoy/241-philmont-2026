@@ -111,19 +111,32 @@ export default function SkillsPage() {
           <strong>If it has a scent or could attract an animal, it goes in the bear bag.</strong>{" "}
           When in doubt, hang it. {SMELLABLES.note}
         </Box>
+        <Panel title="The oops bag · tonight's needs">
+          <p className="text-[12px] text-ink-muted mb-2 leading-relaxed">
+            Keep the oops bag light — it gets raised and lowered independently. Everything else goes in the main bags before you leave the Bearmuda Triangle.
+          </p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
+            {SMELLABLES.oopsBag.map((s) => (
+              <li key={s} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
         <Panel title="Bear hang system · gear">
           <ul className="space-y-2 text-[12px]">
             <li>
               <strong className="text-ink">Ropes.</strong>{" "}
-              <span className="text-ink-muted">Two issued ropes — 100 ft × ¼" nylon. <strong>¼" diameter mandatory.</strong> No Dyneema substitution. This is a Philmont spec.</span>
+              <span className="text-ink-muted">Two issued ropes — 100 ft × ¼" nylon. <strong>¼" diameter mandatory.</strong> Smaller diameter ropes fray on the cable and are harder to hoist. This is a Philmont spec.</span>
             </li>
             <li>
               <strong className="text-ink">Bags.</strong>{" "}
-              <span className="text-ink-muted">4 woven polypropylene bags issued at HQ. Distributed across the crew to balance loads.</span>
+              <span className="text-ink-muted">4 woven polypropylene bags issued at HQ. Crew smellables in the main bags; personal smellables in each crew member's ditty bag.</span>
             </li>
             <li>
-              <strong className="text-ink">Carabiners.</strong>{" "}
-              <span className="text-ink-muted">Locking, climbing-rated. Crew-supplied — Philmont does not issue these.</span>
+              <strong className="text-ink">Carabiner.</strong>{" "}
+              <span className="text-ink-muted">One load-bearing carabiner. Crew-supplied — Philmont does not issue these.</span>
             </li>
           </ul>
         </Panel>
