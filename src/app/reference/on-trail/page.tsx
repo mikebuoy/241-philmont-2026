@@ -25,7 +25,7 @@ export default function OnTrailPage() {
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Hiking etiquette">
+      <Section num="01" title="Hiking etiquette" id="etiquette">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Good trail behavior is mostly instinct — stay together, communicate, respect the people around you. The rule crews most often miss is crew separation.
         </p>
@@ -68,7 +68,7 @@ export default function OnTrailPage() {
         </Panel>
       </Section>
 
-      <Section num="02" title="Navigation">
+      <Section num="02" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Philmont trails are well-marked but junctions are easy to miss when you are tired and moving fast. The Navigator reads the map before each segment, not after a wrong turn. When in doubt, stop — a wrong junction costs an hour minimum.
         </p>
@@ -94,7 +94,7 @@ export default function OnTrailPage() {
         </div>
       </Section>
 
-      <Section num="03" title="Pace & breaks">
+      <Section num="03" title="Pace & breaks" id="pace">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Pace is set by the slowest person, not the fastest. A crew that fragments on trail is a crew that loses time at every water source, junction, and camp arrival. Structured breaks keep energy even and prevent the bonk that kills the afternoon.
         </p>
@@ -124,7 +124,7 @@ export default function OnTrailPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Caterpillar technique">
+      <Section num="04" title="Caterpillar technique" id="caterpillar">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           On steep climbs with a full pack, stopping and restarting is more costly than slowing to a crawl. The caterpillar keeps every hiker moving continuously while letting the crew stay bunched and the back half catch up.
         </p>
@@ -161,7 +161,7 @@ export default function OnTrailPage() {
         </a>
       </Section>
 
-      <Section num="05" title="Foot care">
+      <Section num="05" title="Foot care" id="foot-care">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Foot care is mostly prep work. Get it right before departure and you won't think about your feet on trail. Broken-in boots and trimmed nails matter more than anything you can do after a blister forms.
         </p>

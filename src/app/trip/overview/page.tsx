@@ -24,7 +24,7 @@ export default function TrekOverviewPage() {
     >
       <SubNav items={TRIP_SUB} />
 
-      <Section num="01" title="Trek overview">
+      <Section num="01" title="Trek overview" id="overview">
         <div className="space-y-2">
           <p className="text-[14px] font-semibold leading-snug">{BIG_PICTURE.headline}</p>
           <p className="text-[12px] text-ink-muted leading-relaxed">{BIG_PICTURE.activities}</p>
@@ -41,7 +41,7 @@ export default function TrekOverviewPage() {
         </Panel>
       </Section>
 
-      <Section num="02" title="The Philmont experience">
+      <Section num="02" title="The Philmont experience" id="experience">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Watch before departure if you haven&apos;t already.
         </p>
@@ -60,7 +60,7 @@ export default function TrekOverviewPage() {
         </div>
       </Section>
 
-      <Section num="03" title="Earn The Arrowhead Award">
+      <Section num="03" title="Earn The Arrowhead Award" id="arrowhead">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           The Philmont Arrowhead is one of the most recognized awards in Scouting — earned only by those who complete a full Philmont backcountry trek and meet every standard along the way. Not everyone who goes to Philmont earns it. We will.
         </p>
@@ -90,7 +90,7 @@ export default function TrekOverviewPage() {
         </Box>
       </Section>
 
-      <Section num="04" title="Wilderness Pledge">
+      <Section num="04" title="Wilderness Pledge" id="pledge">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           The Wilderness Pledge is how Philmont protects its land. Every crew member takes it before entering the backcountry and is expected to live it every day on trail. It is not a formality — it is the standard.
         </p>
@@ -108,7 +108,7 @@ export default function TrekOverviewPage() {
         </Panel>
       </Section>
 
-      <Section num="05" title="BSA 50-Miler Award">
+      <Section num="05" title="BSA 50-Miler Award" id="fifty-miler">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Our trek is 81 miles — enough to qualify every crew member for the BSA 50-Miler Award. This is a national Scouting recognition for completing a 50-mile journey under human power with a conservation project. We will earn it on this trek.
         </p>

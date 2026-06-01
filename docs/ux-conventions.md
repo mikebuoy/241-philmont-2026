@@ -44,6 +44,8 @@ Named content block within a page. Heading is 13px uppercase, font-semibold, tra
 
 `num` is optional — use it when sections benefit from numbering (reference pages). Omit on action-heavy pages.
 
+`id` is optional — add it to make a section deep-linkable. The URL updates to `#<id>` as the user scrolls past the section. Treat these slugs as stable permalinks: once a link has been shared, do not rename the slug (heading text is free to change). Use short, lowercase, hyphenated slugs (e.g. `cooking`, `bear-bag`, `check-in`).
+
 ### `<Panel>`
 White card with 0.5px border, rounded-lg, p-4. Use for grouped data that needs visual containment. Optional `title` renders as a mono uppercase label above children.
 

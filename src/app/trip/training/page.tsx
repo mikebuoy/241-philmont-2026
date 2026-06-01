@@ -34,7 +34,7 @@ export default function TrainingPage() {
         volume. Train your hydration before you train your legs.
       </Box>
 
-      <Section num="01" title="Timeline">
+      <Section num="01" title="Timeline" id="timeline">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           The window between now and June 14 is short. Hit these blocks and you&apos;ll show up ready.
         </p>
@@ -80,7 +80,7 @@ export default function TrainingPage() {
         </ol>
       </Section>
 
-      <Section num="02" title="Notes for the crew">
+      <Section num="02" title="Notes for the crew" id="crew-notes">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Three things to sort out before the May 16 shakedown.
         </p>

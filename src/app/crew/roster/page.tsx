@@ -83,7 +83,7 @@ export default async function RosterPage() {
     >
       <SubNav items={CREW_SUB} />
 
-      <Section num="01" title="The Patrol Method">
+      <Section num="01" title="The Patrol Method" id="patrol-method">
         <Panel>
           <p className="text-[12px] text-ink-muted leading-relaxed">
             {PATROL_METHOD_NOTE}
@@ -91,7 +91,7 @@ export default async function RosterPage() {
         </Panel>
       </Section>
 
-      <Section num="02" title="Sister crews">
+      <Section num="02" title="Sister crews" id="sister-crews">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {crewGroups.map((crew) => {
             const youth = crew.members.filter((m) =>
@@ -166,7 +166,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Crew roles">
+      <Section num="04" title="Crew roles" id="roles">
         <div className="space-y-2">
           {CREW_ROLES.map((role) => (
             <div
@@ -188,7 +188,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Duty types">
+      <Section num="05" title="Duty types" id="duties">
         <div className="space-y-2">
           {DUTY_ROLES.map((d) => (
             <div
@@ -208,7 +208,7 @@ export default async function RosterPage() {
         </div>
       </Section>
 
-      <Section num="06" title="Rotation principle">
+      <Section num="06" title="Rotation principle" id="rotation">
         <Box variant="ok">
           <strong>By Trail Day 3, every scout has run every role.</strong>{" "}
           Cook, clean up, fill water, navigate, hang the bear bag. The crew
@@ -216,7 +216,7 @@ export default async function RosterPage() {
         </Box>
       </Section>
 
-      <Section num="07" title="Ranger release standard">
+      <Section num="07" title="Ranger release standard" id="ranger-release">
         <p className="text-[12px] text-ink-muted mb-3">
           The Philmont Ranger stays with the crew through Trail Day 3. Before
           leaving, they verify the crew can operate independently. This is the
@@ -239,7 +239,7 @@ export default async function RosterPage() {
         </Box>
       </Section>
 
-      <Section num="08" title="Crew development">
+      <Section num="08" title="Crew development" id="development">
         <Box variant="info">
           <strong>Advisor lens.</strong> These phases describe what to expect
           as the crew evolves over the trek. Approximate timing varies by crew.

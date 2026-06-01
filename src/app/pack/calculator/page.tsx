@@ -54,7 +54,7 @@ export default async function CalculatorPage() {
         for the body-weight tiers.
       </Box>
 
-      <Section num="01" title="Participant guidelines">
+      <Section num="01" title="Participant guidelines" id="guidelines">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
@@ -111,7 +111,7 @@ export default async function CalculatorPage() {
         </Box>
       </Section>
 
-      <Section num="02" title="Planning rules">
+      <Section num="02" title="Planning rules" id="planning">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}
@@ -145,7 +145,7 @@ export default async function CalculatorPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Body weight reference · 100–200 lbs">
+      <Section num="04" title="Body weight reference · 100–200 lbs" id="weight-ref">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}

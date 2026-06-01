@@ -242,7 +242,7 @@ export default async function CrewWeightsPage() {
     >
       <SubNav items={CREW_SUB} />
 
-      <Section num="01" title="Weight summary">
+      <Section num="01" title="Weight summary" id="summary">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3">
           {([
             ["#d4edda", "#155724", "On target (≤20%)"],
@@ -346,7 +346,7 @@ export default async function CrewWeightsPage() {
         </div>
       </Section>
 
-      <Section num="02" title="Column guide">
+      <Section num="02" title="Column guide" id="columns">
         <div
           className="bg-surface border border-border rounded-md overflow-hidden"
           style={{ borderWidth: "0.5px" }}

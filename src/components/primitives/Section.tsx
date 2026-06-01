@@ -3,12 +3,13 @@ import type { ReactNode } from "react";
 type SectionProps = {
   num?: string;
   title: string;
+  id?: string;
   children: ReactNode;
 };
 
-export function Section({ num, title, children }: SectionProps) {
+export function Section({ num, title, id, children }: SectionProps) {
   return (
-    <section>
+    <section id={id}>
       <div className="flex items-baseline gap-2.5 section-rule pb-1.5 mb-4">
         {num && (
           <span className="font-mono text-[11px] text-ink-muted shrink-0">

@@ -25,7 +25,7 @@ export default function TrekLogisticsPage() {
     >
       <SubNav items={TRIP_SUB} />
 
-      <Section num="01" title="Arrival & check-in">
+      <Section num="01" title="Arrival & check-in" id="check-in">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four days of prep before the trek starts. Medical recheck, gear check,
           food issue, and Ranger orientation all happen here. Show up ready and
@@ -52,7 +52,7 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="02" title="Medical recheck">
+      <Section num="02" title="Medical recheck" id="medical">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Medical recheck clears every person for the backcountry. Philmont does
           not bend on these standards. Come prepared.
@@ -116,7 +116,7 @@ export default function TrekLogisticsPage() {
         </p>
       </Section>
 
-      <Section num="03" title="The burro">
+      <Section num="03" title="The burro" id="burro">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           The crew picks up a burro on Trail Day 7 and manages it through Trail Day 9. It carries a share of the crew&apos;s gear — and earns the same care as any crew member.
         </p>
@@ -152,7 +152,7 @@ export default function TrekLogisticsPage() {
         </Panel>
       </Section>
 
-      <Section num="04" title="Trading posts">
+      <Section num="04" title="Trading posts" id="trading-posts">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four trading posts along the route. Stock up on snacks, patches, and anything you&apos;ve run short on.
         </p>
@@ -180,7 +180,7 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Cell service & electronics">
+      <Section num="05" title="Cell service & electronics" id="cell-service">
         <Box variant="warn">
           <strong>{TREK_LOGISTICS.cellService.summary}</strong>
         </Box>
@@ -206,7 +206,7 @@ export default function TrekLogisticsPage() {
           </ul>
         </Panel>
       </Section>
-      <Section num="06" title="Food resupply">
+      <Section num="06" title="Food resupply" id="food-resupply">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Food is issued in buddy-pair bags at three points during the trek. Weights below are for planning — actual bag weights may vary slightly.
         </p>
@@ -248,7 +248,7 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="07" title="Dry camp">
+      <Section num="07" title="Dry camp" id="dry-camp">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           One camp on this trek has no water on-site. Fill everything you&apos;re carrying before you arrive — there&apos;s no source until the next morning.
         </p>

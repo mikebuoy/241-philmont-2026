@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ScrollSpy } from "@/components/ui/ScrollSpy";
 
 type PageProps = {
   eyebrow?: string;
@@ -16,6 +17,7 @@ type PageProps = {
 export function Page({ eyebrow, title, meta, action, headerRight, titleRight, children }: PageProps) {
   return (
     <div className="max-w-[900px] mx-auto px-6 pt-8 pb-16">
+      <ScrollSpy />
       <header className="border-b-2 border-ink pb-4 mb-6">
         {(eyebrow || headerRight || action) && (
           <div className="flex items-center justify-between gap-3 mb-1">

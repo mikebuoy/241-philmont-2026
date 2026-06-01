@@ -73,7 +73,7 @@ export default async function MealsPage() {
     >
       <SubNav items={TRIP_SUB} />
 
-      <Section num="01" title="Meal numbering">
+      <Section num="01" title="Meal numbering" id="numbering">
         <Panel>
           <p className="text-[12px] leading-relaxed">
             Meal numbers are based on calendar date, not trek day. Every crew
@@ -96,7 +96,7 @@ export default async function MealsPage() {
         </Box>
       </Section>
 
-      <Section num="02" title="Trek meal schedule">
+      <Section num="02" title="Trek meal schedule" id="schedule">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Meal codes at a glance — all 11 trail days.
         </p>
@@ -143,7 +143,7 @@ export default async function MealsPage() {
         </div>
       </Section>
 
-      <Section num="03" title="Full meal details">
+      <Section num="03" title="Full meal details" id="meals">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Everything in each day&apos;s bag, broken out by meal.
         </p>
@@ -175,7 +175,7 @@ export default async function MealsPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Allergen guide">
+      <Section num="04" title="Allergen guide" id="allergens">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Major allergens in the 2026 trail menu. Read this if any crew member has a dietary restriction.
         </p>

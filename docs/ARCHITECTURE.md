@@ -515,12 +515,26 @@ These are the only approved building blocks. Do not create ad-hoc wrappers aroun
 | Component | Props | Purpose |
 |-----------|-------|---------|
 | `Page` | `title`, `eyebrow`, `meta?`, `action?`, `titleRight?` | Page header + wrapper |
-| `Section` | `num?`, `title`, `children` | Content section with ruled header |
+| `Section` | `num?`, `title`, `id?`, `children` | Content section with ruled header; `id` makes it deep-linkable |
 | `Panel` | `title?`, `children`, `className?` | Card container |
 | `Box` | `variant` (`info`·`ok`·`warn`·`danger`), `children` | Callout/alert box |
 | `Stat` | `value`, `label`, `tone?` (`default`·`gain`·`loss`) | Single metric display |
 | `StatusBadge` | `tone`, `children`, `className?` | Inline status pill |
 | `PrintButton` | — | Client "Print" button (hidden from page flow) |
+
+### Scroll Spy / Deep Linking (`src/hooks/useScrollSpy.ts`, `src/components/ui/ScrollSpy.tsx`)
+
+`<Page>` mounts a null-rendering `<ScrollSpy />` client component that runs `useScrollSpy()` on every page automatically. The hook queries all `section[id]` elements, observes them with an `IntersectionObserver`, and calls `history.replaceState()` to update the URL hash as sections enter the top 30% of the viewport. Scrolling to `scrollY < 50` clears the hash back to the bare pathname.
+
+To make a section deep-linkable, pass a stable slug as the `id` prop on `<Section>`. Treat slugs as permalinks — changing them breaks shared links.
+
+```tsx
+<Section num="02" title="The cook method · 7 steps" id="cooking">
+```
+
+Produces URL: `/reference/skills#cooking`. Incoming links with a matching hash scroll there automatically (native browser behavior). Sections without an `id` are ignored by the observer.
+
+All 59 addressable sections across 12 pages have ids defined. See plan or page source for the full slug mapping.
 
 ### Nav (`src/components/nav/`)
 

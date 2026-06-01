@@ -43,7 +43,7 @@ export default function SkillsPage() {
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Stove safety">
+      <Section num="01" title="Stove safety" id="stove">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Seven rules. All of them apply every time stoves are on.
         </p>
@@ -62,7 +62,7 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="02" title="The cook method · 7 steps">
+      <Section num="02" title="The cook method · 7 steps" id="cooking">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Philmont&apos;s cook method is a 7-step system. Follow it in order, every meal.
         </p>
@@ -98,7 +98,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="03" title="Cook equipment">
+      <Section num="03" title="Cook equipment" id="equipment">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           What the crew is bringing and why.
         </p>
@@ -134,7 +134,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Water purification">
+      <Section num="04" title="Water purification" id="water">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Every water source at Philmont must be treated before drinking — springs, streams, and wells included.
         </p>
@@ -194,7 +194,7 @@ export default function SkillsPage() {
         <VideoEmbed id="NJcPZyVfHnQ" title="Water Purification" />
       </Section>
 
-      <Section num="05" title="Backcountry hygiene">
+      <Section num="05" title="Backcountry hygiene" id="hygiene">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four rules. Simple and non-negotiable.
         </p>
@@ -210,7 +210,7 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="06" title="Bear bag & smellables">
+      <Section num="06" title="Bear bag & smellables" id="bear-bag">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Every smellable out of tents, every night. No exceptions.
         </p>
@@ -224,16 +224,6 @@ export default function SkillsPage() {
               <li key={s} className="flex items-start gap-2 text-[12px]">
                 <span className="text-ok-text mt-0.5 shrink-0">▸</span>
                 <span>{s}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-        <Panel title="Prohibited in backcountry">
-          <ul className="space-y-1.5">
-            {SMELLABLES.prohibitedInBackcountry.map((s) => (
-              <li key={s} className="flex items-start gap-2 text-[12px]">
-                <span className="text-danger-text mt-0.5 shrink-0">✕</span>
-                <span className="font-medium">{s}</span>
               </li>
             ))}
           </ul>

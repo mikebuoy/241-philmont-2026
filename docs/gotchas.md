@@ -105,4 +105,14 @@ Before the `trail_meals` table exists, `fetchMealsMap()` returns an empty `Map` 
 
 ---
 
+---
+
+## Scroll Spy / Deep Linking
+
+**`Section` `id` slugs are permalinks — do not rename them after sharing.**  
+The URL hash updates as users scroll (e.g. `/reference/skills#cooking`). If you rename a slug (e.g. `id="cooking"` → `id="cook-method"`), any previously shared link breaks silently — the browser just loads the page at the top. Heading text (`title` prop) is free to change without consequence. Only the `id` slug is the permalink.
+
+**Use `IntersectionObserver` for scroll spy, not scroll events for position tracking.**  
+`useScrollSpy` uses `IntersectionObserver` with `rootMargin: '0px 0px -70% 0px'`. Do not switch this to a scroll-position polling approach — it's expensive and unnecessary. The one exception: a lightweight passive `scroll` listener clears the hash when `scrollY < 50` (detecting "back at top"), which `IntersectionObserver` alone can't reliably do at the very top of the page.
+
 **See also:** `docs/status.md` · `docs/handoff.md` · `docs/ux-conventions.md`

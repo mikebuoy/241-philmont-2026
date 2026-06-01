@@ -19,7 +19,7 @@ export default function SafetyPage() {
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Elevation context">
+      <Section num="01" title="Elevation context" id="elevation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           You&apos;ll step off the plane at 6,500 ft and summit at 12,441. Your body adjusts — here&apos;s the context.
         </p>
@@ -48,7 +48,7 @@ export default function SafetyPage() {
         </Box>
       </Section>
 
-      <Section num="02" title="Acute Mountain Sickness (AMS)">
+      <Section num="02" title="Acute Mountain Sickness (AMS)" id="ams">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Altitude affects everyone — fit or not. Know the symptoms before Trail Day 1.
         </p>
@@ -67,7 +67,7 @@ export default function SafetyPage() {
         </Panel>
       </Section>
 
-      <Section num="03" title="Defenses">
+      <Section num="03" title="Defenses" id="defenses">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Five habits that keep AMS manageable.
         </p>
@@ -85,7 +85,7 @@ export default function SafetyPage() {
         </Panel>
       </Section>
 
-      <Section num="04" title="Critical descents">
+      <Section num="04" title="Critical descents" id="descents">
         <p className="text-[12px] text-ink-muted">
           Descent destroys knees and ankles more than climbing destroys legs.
           Two days demand serious attention.
@@ -114,7 +114,7 @@ export default function SafetyPage() {
         </Box>
       </Section>
 
-      <Section num="05" title="Speak up early">
+      <Section num="05" title="Speak up early" id="speak-up">
         <Box variant="ok">
           <strong>If you have symptoms, tell your Crew Leader or an
           advisor.</strong> Pushing through silently is how serious AMS
@@ -123,7 +123,7 @@ export default function SafetyPage() {
         </Box>
       </Section>
 
-      <Section num="06" title="Lightning & weather">
+      <Section num="06" title="Lightning & weather" id="lightning">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           New Mexico afternoon storms build fast. When you hear thunder, move.
         </p>
@@ -162,7 +162,7 @@ export default function SafetyPage() {
         </Panel>
       </Section>
 
-      <Section num="07" title="Emergency procedures">
+      <Section num="07" title="Emergency procedures" id="emergency">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Know the protocol before you need it.
         </p>
@@ -191,7 +191,7 @@ export default function SafetyPage() {
         </Panel>
       </Section>
 
-      <Section num="08" title="Wildfire safety">
+      <Section num="08" title="Wildfire safety" id="wildfire">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Philmont has fire restrictions year-round. Follow them without exception.
         </p>

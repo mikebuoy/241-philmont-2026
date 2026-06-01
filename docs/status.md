@@ -1,6 +1,6 @@
 # Project Status — Tooth of Time
 
-_Last updated: 2026-05-27 (evening)_
+_Last updated: 2026-06-01_
 
 This is a living doc. Update it at the end of every session before closing. The next session reads this first.
 
@@ -53,6 +53,8 @@ This is a living doc. Update it at the end of every session before closing. The 
 - **Auth + claim flow** — Sign-in → claim → personalized session
 
 - **Local dev server** — `npm run dev` runs Next.js in Webpack mode (`next dev --webpack`) to avoid a Turbopack localhost reload loop on admin itinerary edit pages. See `docs/gotchas.md`.
+
+- **Scroll spy / deep linking** — URL hash updates as user scrolls through sections. 59 sections across 12 pages are addressable. Shared links (e.g. `/reference/skills#cooking`) scroll directly to that section on load. Scrolling to top clears the hash. `useScrollSpy` hook + `ScrollSpy` null component mount automatically via `<Page>`. See `docs/ARCHITECTURE.md` §11 and `docs/ux-conventions.md`.
 
 ---
 

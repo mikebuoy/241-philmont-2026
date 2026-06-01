@@ -61,7 +61,7 @@ export default async function ItineraryIndexPage() {
         Tap any day for trail metrics, map, elevation profile, and activities.
       </p>
 
-      <Section num="01" title="Pre-trek · arrival">
+      <Section num="01" title="Pre-trek · arrival" id="pre-trek">
         <ul className="space-y-1.5">
           {preTrek.map((d) => (
             <DayRow key={d.iso} day={d} />
@@ -69,7 +69,7 @@ export default async function ItineraryIndexPage() {
         </ul>
       </Section>
 
-      <Section num="02" title="Philmont Trek · 12 days">
+      <Section num="02" title="Philmont Trek · 12 days" id="trek">
         <ul className="space-y-1.5">
           {onTrek.map((d) => (
             <DayRow key={d.iso} day={d} />
@@ -77,7 +77,7 @@ export default async function ItineraryIndexPage() {
         </ul>
       </Section>
 
-      <Section num="03" title="Post-trek · return">
+      <Section num="03" title="Post-trek · return" id="post-trek">
         <ul className="space-y-1.5">
           {postTrek.map((d) => (
             <DayRow key={d.iso} day={d} />

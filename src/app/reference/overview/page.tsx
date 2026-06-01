@@ -87,7 +87,7 @@ export default function OverviewPage() {
         eating well, and sleeping enough to do it again the next day.
       </p>
 
-      <Section num="01" title="Wake and sleep timing">
+      <Section num="01" title="Wake and sleep timing" id="timing">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Early starts are the single biggest factor in a good day. Leaving
           before or at sunrise means cooler hiking, getting to staffed camps
@@ -116,7 +116,7 @@ export default function OverviewPage() {
         <p className="text-[12px] text-ink-muted">{LIGHT_SLEEP.headlampNote}</p>
       </Section>
 
-      <Section num="02" title="Morning sequence">
+      <Section num="02" title="Morning sequence" id="morning">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Five steps from 4:30 AM to hiking. In order, every day.
         </p>
@@ -149,14 +149,14 @@ export default function OverviewPage() {
         </Panel>
       </Section>
 
-      <Section num="03" title="Arriving at staffed camps">
+      <Section num="03" title="Arriving at staffed camps" id="staffed-camps">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           What to do the moment you walk into a staffed camp — in order.
         </p>
         <StepList steps={STAFFED_CAMP_STEPS} />
       </Section>
 
-      <Section num="04" title="Campsite setup">
+      <Section num="04" title="Campsite setup" id="campsite">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           How to set up a proper backcountry camp. This order matters.
         </p>
@@ -164,7 +164,7 @@ export default function OverviewPage() {
         <VideoEmbed id="BPnwAUhQjMA" title="How To Set Up A Campsite — Philmont" />
       </Section>
 
-      <Section num="05" title="Dinner & evening">
+      <Section num="05" title="Dinner & evening" id="dinner">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Dinner is a system. Run it the same way every night.
         </p>
@@ -177,7 +177,7 @@ export default function OverviewPage() {
         </p>
       </Section>
 
-      <Section num="06" title="Nightly brief">
+      <Section num="06" title="Nightly brief" id="nightly-brief">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           End every day with a clear plan for the next one.
         </p>
