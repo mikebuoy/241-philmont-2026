@@ -89,9 +89,9 @@ export default function SkillsPage() {
         <VideoEmbed id="BPnwAUhQjMA" title="How To Set Up A Campsite — Philmont" />
       </Section>
 
-      <Section num="02" title="Bear bag & smellables" id="bear-bag">
+      <Section num="02" title="Smellables" id="smellables">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Every smellable out of tents, every night. No exceptions.
+          Anything with a scent goes up. Every crew member loads their personal smellables into a ditty bag before leaving camp.
         </p>
         <Box variant="danger">
           <strong>Deodorant is not allowed in the Philmont backcountry.</strong>{" "}
@@ -113,7 +113,7 @@ export default function SkillsPage() {
         </Box>
         <Panel title="The oops bag · tonight's needs">
           <p className="text-[12px] text-ink-muted mb-2 leading-relaxed">
-            Keep the oops bag light — it gets raised and lowered independently. Everything else goes in the main bags before you leave the Bearmuda Triangle.
+            Keep the oops bag light — it raises and lowers independently so you can access tonight's items without dropping everything. All other smellables go in the main bags before you leave the Bearmuda Triangle.
           </p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
             {SMELLABLES.oopsBag.map((s) => (
@@ -124,7 +124,13 @@ export default function SkillsPage() {
             ))}
           </ul>
         </Panel>
-        <Panel title="Bear hang system · gear">
+      </Section>
+
+      <Section num="03" title="Hanging the bear bag" id="bear-bag">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Philmont campsites use a cable system. Two crew members run the hang — everyone else pulls.
+        </p>
+        <Panel title="Gear">
           <ul className="space-y-2 text-[12px]">
             <li>
               <strong className="text-ink">Ropes.</strong>{" "}
@@ -144,7 +150,7 @@ export default function SkillsPage() {
         <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
       </Section>
 
-      <Section num="03" title="Stove safety" id="stove">
+      <Section num="04" title="Stove safety" id="stove">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Seven rules. All of them apply every time stoves are on.
         </p>
@@ -163,7 +169,7 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="04" title="The cook method · 7 steps" id="cooking">
+      <Section num="05" title="The cook method · 7 steps" id="cooking">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Philmont&apos;s cook method is a 7-step system. Follow it in order, every meal.
         </p>
@@ -199,7 +205,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Cook equipment" id="equipment">
+      <Section num="06" title="Cook equipment" id="equipment">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           What the crew is bringing and why.
         </p>
@@ -235,7 +241,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="06" title="Water purification" id="water">
+      <Section num="07" title="Water purification" id="water">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Every water source at Philmont must be treated before drinking — springs, streams, and wells included.
         </p>
@@ -295,7 +301,7 @@ export default function SkillsPage() {
         <VideoEmbed id="NJcPZyVfHnQ" title="Water Purification" />
       </Section>
 
-      <Section num="07" title="Backcountry hygiene" id="hygiene">
+      <Section num="08" title="Backcountry hygiene" id="hygiene">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four rules. Simple and non-negotiable.
         </p>
@@ -311,7 +317,7 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="08" title="Navigation" id="navigation">
+      <Section num="09" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Six rules. A wrong turn at a junction can cost the crew an hour — the Navigator reads the map before each segment, not after.
         </p>
