@@ -171,7 +171,7 @@ export const TRADING_POSTS: TradingPost[] = [
 export const ARRIVAL_SCHEDULE = [
   {
     date: "Sun Jun 14",
-    label: "Departure day",
+    label: "Depart home · Arrive at Philmont",
     desc: "Fly to Albuquerque or drive to Cimarron. Transfer to Philmont. Check in at Villa Philmonte. Do not plan evening activities — rest and stay hydrated.",
   },
   {
@@ -181,7 +181,7 @@ export const ARRIVAL_SCHEDULE = [
   },
   {
     date: "Tue Jun 16",
-    label: "Base Camp HQ day",
+    label: "Base Camp check-in day",
     desc: "Ranger orientation. Gear check and final pack weights. Food issue. Crew and advisor briefings. Eat dinner at the Base Camp dining hall. Early bed — trail starts tomorrow.",
   },
   {
@@ -189,7 +189,123 @@ export const ARRIVAL_SCHEDULE = [
     label: "Trail start · Day 1",
     desc: "Breakfast at the Base Camp dining hall. Ranger leads us to the trailhead. On trail by mid-morning.",
   },
+  {
+    date: "Sat Jun 27",
+    label: "Trail Day 11 · Return to Base Camp",
+    desc: "Final trail day. Crew hikes out and returns to Base Camp. Showers, laundry, and a real meal. Tooth of Time Traders open for gear and patches.",
+  },
+  {
+    date: "Sun Jun 28",
+    label: "Fly home",
+    desc: "Depart Philmont. Transfer to Albuquerque for return flights. Trek complete.",
+  },
 ] as const;
+
+export type BasecampStop = {
+  step: number;
+  title: string;
+  notes: string[];
+};
+
+export const BASECAMP_CHECKIN: {
+  intro: string;
+  arrivalTip: string;
+  stops: BasecampStop[];
+  schedule: { time: string; event: string }[];
+  departureTip: string;
+} = {
+  intro: "The first day at Base Camp is very busy — many stops to complete before you're cleared for the backcountry. The Ranger guides the crew through the entire process.",
+  arrivalTip: "Crews that arrive before 10:00 AM typically complete all Base Camp procedures in a single day.",
+  stops: [
+    {
+      step: 1,
+      title: "Welcome Center",
+      notes: [
+        "Crew Leader and Lead Advisor check in and receive tent assignments",
+        "Ranger meets the crew here immediately after check-in",
+      ],
+    },
+    {
+      step: 2,
+      title: "Drop off gear at tents",
+      notes: [
+        "Everyone carries water, rain gear, and prescription medications for the rest of the day's stops",
+        "Lead Advisor brings any roster changes and payment paperwork",
+        "Crew Leader brings an unmarked overall map and their Crew Leader Fieldbook",
+      ],
+    },
+    {
+      step: 3,
+      title: "Crew photo",
+      notes: [
+        "Can be taken in field uniforms or crew t-shirts",
+        "Extra prints available via the Philmont Photo Archive",
+      ],
+    },
+    {
+      step: 4,
+      title: "Camping Registration",
+      notes: [
+        "Ranger, all Advisors, and Scouts 18+ go inside — rest of crew waits outside",
+        "Outstanding payments made; certifications and IDs checked",
+        "Crew roster turned in",
+      ],
+    },
+    {
+      step: 5,
+      title: "Outfitting Services",
+      notes: [
+        "Receive crew gear: tents, bear bags, bear rope, pots, dining fly, etc.",
+        "Receive food for the first days of the trek",
+        "Purchase fuel for the stove",
+      ],
+    },
+    {
+      step: 6,
+      title: "Medical Recheck",
+      notes: [
+        "All crew members review medical forms with Philmont Infirmary staff",
+        "All prescriptions must be in original labeled containers — including EpiPens and inhalers",
+      ],
+    },
+    {
+      step: 7,
+      title: "Mail Room",
+      notes: ["Pick up any gear shipped to Philmont ahead of time"],
+    },
+    {
+      step: 8,
+      title: "Shakedown",
+      notes: [
+        "Ranger runs a full gear check — necessary gear confirmed for trail, non-essential gear stored at Base Camp",
+      ],
+    },
+    {
+      step: 9,
+      title: "Logistics Trip Plan",
+      notes: [
+        "Crew Leader and Lead Advisor called into Logistics separately",
+        "Receive info on campsites, trails, programs, water sources, and horse rides",
+        "Crew Leader needs unmarked overall map and Crew Leader Fieldbook",
+      ],
+    },
+    {
+      step: 10,
+      title: "Security",
+      notes: ["Receive lockers if the crew did not travel in personal vehicles"],
+    },
+  ],
+  schedule: [
+    { time: "Before 10:00 AM", event: "Arrive at Welcome Center (target)" },
+    { time: "11:30 AM", event: "Lunch — Base Camp Dining Hall" },
+    { time: "4:45 PM", event: "Dinner — Base Camp Dining Hall" },
+    { time: "5:45 PM", event: "Crew Leadership Meetings — Hardesty Casa Center (Crew Leader, Chaplain's Aide, WPG, Advisors)" },
+    { time: "7:00 PM", event: "Chapel Services" },
+    { time: "8:15 PM", event: "Opening Campfire — meet at Welcome Center" },
+    { time: "6:30 AM (next morning)", event: "Breakfast — Base Camp Dining Hall" },
+  ],
+  departureTip: "First buses to the backcountry leave at 8:00 AM; last buses at 3:00 PM. Most crews depart roughly 24 hours after arriving at Philmont.",
+};
 
 export const TREK_LOGISTICS = {
   cellService: {

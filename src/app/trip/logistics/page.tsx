@@ -11,6 +11,7 @@ import {
   TRADING_POSTS,
   TREK_LOGISTICS,
   ARRIVAL_SCHEDULE,
+  BASECAMP_CHECKIN,
 } from "@/data/trek";
 import { RESUPPLY_SCHEDULE, DRY_CAMP } from "@/data/food";
 
@@ -21,15 +22,22 @@ export default function TrekLogisticsPage() {
     <Page
       eyebrow="My Trek"
       title="Logistics"
-      meta="Arrival · Medical · Burro · Gear"
+      meta="Dates · Check-in · Medical · Burro · Gear"
     >
       <SubNav items={TRIP_SUB} />
 
-      <Section num="01" title="Arrival & check-in" id="check-in">
+      <Panel title="Emergency contact">
+        <p className="text-[13px] font-mono font-semibold">
+          {TREK_LOGISTICS.cellService.emergencyNumber}
+        </p>
+        <p className="text-[12px] text-ink-muted mt-1 leading-relaxed">
+          {TREK_LOGISTICS.cellService.emergencyNote}
+        </p>
+      </Panel>
+
+      <Section num="01" title="Important dates" id="important-dates">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Four days of prep before the trek starts. Medical recheck, gear check,
-          food issue, and Ranger orientation all happen here. Show up ready and
-          these days run fast.
+          Key dates from arrival through departure. Four Base Camp days before the trail starts, eleven trail days, then home.
         </p>
         <div className="space-y-2">
           {ARRIVAL_SCHEDULE.map((item) => (
@@ -52,7 +60,65 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="02" title="Medical recheck" id="medical">
+      <Section num="02" title="Basecamp check-in" id="basecamp-checkin">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          {BASECAMP_CHECKIN.intro}
+        </p>
+        <div
+          className="bg-surface border border-border rounded-md px-4 py-3 text-[12px] text-ink-muted"
+          style={{ borderWidth: "0.5px" }}
+        >
+          <strong className="text-ink">Tip:</strong> {BASECAMP_CHECKIN.arrivalTip}
+        </div>
+
+        <div className="space-y-2">
+          {BASECAMP_CHECKIN.stops.map((stop) => (
+            <div
+              key={stop.step}
+              className="bg-surface border border-border rounded-md p-4"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <div className="flex items-baseline gap-3 mb-1.5">
+                <span className="font-mono text-[10px] text-ink-faint bg-surface-2 border border-border rounded-full w-5 h-5 flex items-center justify-center shrink-0">
+                  {stop.step}
+                </span>
+                <h3 className="text-[13px] font-semibold">{stop.title}</h3>
+              </div>
+              <ul className="space-y-1 ml-8">
+                {stop.notes.map((note) => (
+                  <li key={note} className="flex items-start gap-2 text-[12px]">
+                    <span className="text-ink-faint mt-0.5 shrink-0">▸</span>
+                    <span className="text-ink-muted">{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="bg-surface border border-border rounded-md p-4"
+          style={{ borderWidth: "0.5px" }}
+        >
+          <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-muted mb-3">
+            Day Schedule
+          </p>
+          <div className="space-y-2">
+            {BASECAMP_CHECKIN.schedule.map((item) => (
+              <div key={item.time} className="grid grid-cols-[7rem_1fr] gap-2 text-[12px]">
+                <span className="font-mono text-ink-muted whitespace-nowrap">{item.time}</span>
+                <span className="text-ink">{item.event}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          {BASECAMP_CHECKIN.departureTip}
+        </p>
+      </Section>
+
+      <Section num="03" title="Medical recheck" id="medical">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Medical recheck clears every person for the backcountry. Philmont does
           not bend on these standards. Come prepared.
@@ -116,7 +182,7 @@ export default function TrekLogisticsPage() {
         </p>
       </Section>
 
-      <Section num="03" title="The burro" id="burro">
+      <Section num="04" title="The burro" id="burro">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           The crew picks up a burro on Trail Day 7 and manages it through Trail Day 9. It carries a share of the crew&apos;s gear — and earns the same care as any crew member.
         </p>
@@ -152,7 +218,7 @@ export default function TrekLogisticsPage() {
         </Panel>
       </Section>
 
-      <Section num="04" title="Trading posts" id="trading-posts">
+      <Section num="05" title="Trading posts" id="trading-posts">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four trading posts along the route. Stock up on snacks, patches, and anything you&apos;ve run short on.
         </p>
@@ -180,18 +246,10 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="05" title="Cell service & electronics" id="cell-service">
+      <Section num="06" title="Cell service & electronics" id="cell-service">
         <Box variant="warn">
           <strong>{TREK_LOGISTICS.cellService.summary}</strong>
         </Box>
-        <Panel title="Emergency contact">
-          <p className="text-[13px] font-mono font-semibold">
-            {TREK_LOGISTICS.cellService.emergencyNumber}
-          </p>
-          <p className="text-[12px] text-ink-muted mt-1 leading-relaxed">
-            {TREK_LOGISTICS.cellService.emergencyNote}
-          </p>
-        </Panel>
         <Panel title="Electronics">
           <p className="text-[12px] text-ink-muted leading-relaxed mb-3">
             {TREK_LOGISTICS.electronics.summary}
@@ -206,7 +264,7 @@ export default function TrekLogisticsPage() {
           </ul>
         </Panel>
       </Section>
-      <Section num="06" title="Food resupply" id="food-resupply">
+      <Section num="07" title="Food resupply" id="food-resupply">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Food is issued in buddy-pair bags at three points during the trek. Weights below are for planning — actual bag weights may vary slightly.
         </p>
@@ -248,7 +306,7 @@ export default function TrekLogisticsPage() {
         </div>
       </Section>
 
-      <Section num="07" title="Dry camp" id="dry-camp">
+      <Section num="08" title="Dry camp" id="dry-camp">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           One camp on this trek has no water on-site. Fill everything you&apos;re carrying before you arrive — there&apos;s no source until the next morning.
         </p>
