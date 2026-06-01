@@ -13,7 +13,7 @@ import {
   COOK_EQUIPMENT,
 } from "@/data/cooking";
 import { WATER_SYSTEM } from "@/data/food";
-import { SMELLABLES } from "@/data/safety";
+import { SMELLABLES, BEAR_HANG_STEPS } from "@/data/safety";
 import { NAVIGATION_RULES } from "@/data/ontrail";
 
 export const metadata: Metadata = { title: "Skills" };
@@ -111,7 +111,7 @@ export default function SkillsPage() {
           <strong>If it has a scent or could attract an animal, it goes in the bear bag.</strong>{" "}
           When in doubt, hang it. {SMELLABLES.note}
         </Box>
-        <Panel title="Bear hang system">
+        <Panel title="Bear hang system · gear">
           <ul className="space-y-2 text-[12px]">
             <li>
               <strong className="text-ink">Ropes.</strong>{" "}
@@ -125,12 +125,9 @@ export default function SkillsPage() {
               <strong className="text-ink">Carabiners.</strong>{" "}
               <span className="text-ink-muted">Locking, climbing-rated. Crew-supplied — Philmont does not issue these.</span>
             </li>
-            <li>
-              <strong className="text-ink">Timing.</strong>{" "}
-              <span className="text-ink-muted">Hang every smellable before crew sleeps. Last duty of the day — everyone helps.</span>
-            </li>
           </ul>
         </Panel>
+        <StepList steps={BEAR_HANG_STEPS} />
         <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
       </Section>
 
@@ -303,18 +300,22 @@ export default function SkillsPage() {
 
       <Section num="08" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Six rules. The Navigator reads the map before each segment — a wrong junction costs an hour minimum.
+          Six rules. A wrong turn at a junction can cost the crew an hour — the Navigator reads the map before each segment, not after.
         </p>
-        <Panel>
-          <ul className="space-y-1.5">
-            {NAVIGATION_RULES.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <ol className="space-y-2">
+          {NAVIGATION_RULES.map((rule, i) => (
+            <li
+              key={rule}
+              className="bg-surface border border-border rounded-md p-4 flex items-start gap-3"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <div className="font-mono text-[12px] font-semibold bg-ink text-bg w-7 h-7 rounded-full flex items-center justify-center shrink-0">
+                {i + 1}
+              </div>
+              <p className="text-[12px] text-ink-muted leading-relaxed self-center">{rule}</p>
+            </li>
+          ))}
+        </ol>
         <VideoEmbed id="VIh43ViXVY8" title="How To Use A Map & Compass" />
       </Section>
     </Page>

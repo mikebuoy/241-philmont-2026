@@ -136,3 +136,41 @@ export const WAYPOINTS: Waypoint[] = [
   { name: "Clarks Fork", elevation: 7600, uiDay: ["Trail Day 10"], type: "staffed" },
   { name: "Tooth of Time", elevation: 9003, uiDay: ["Trail Day 11"], type: "summit", note: "Iconic Philmont landmark" },
 ];
+
+export const BEAR_HANG_STEPS: { title: string; items: string[] }[] = [
+  {
+    title: "Collect all smellables",
+    items: [
+      "Pull everything smellable from tents, packs, and personal gear before dark",
+      "Use the four issued bags — nothing stays in tents overnight",
+    ],
+  },
+  {
+    title: "Sort and balance the load",
+    items: [
+      "Crew gear in one bag (dining fly, stoves, ropes), food in another, personal smellables in the remaining two",
+      "Distribute heavy items across bags — no single bag should be too heavy to haul",
+    ],
+  },
+  {
+    title: "Clip carabiners",
+    items: [
+      "Attach a locking carabiner to each loaded bag",
+      "Gate locked — verify before raising",
+    ],
+  },
+  {
+    title: "Hang on the bear cable",
+    items: [
+      "Use the bear cable provided at the campsite",
+      "All bags must hang clear of the ground — verify height before walking away",
+    ],
+  },
+  {
+    title: "Walk the Bearmuda Triangle before sleep",
+    items: [
+      "Confirm nothing smellable remains on the ground or in tent areas",
+      "Every crew member accounts for their personal smellables",
+    ],
+  },
+];
