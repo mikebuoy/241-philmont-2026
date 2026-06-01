@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { Box } from "@/components/primitives/Box";
@@ -8,7 +9,6 @@ import { REFERENCE_SUB } from "@/components/nav/navItems";
 import {
   BREAK_TYPES,
   CATERPILLAR_DESC,
-  NAVIGATION_RULES,
   FOOT_CARE,
   HIKING_ETIQUETTE,
   CREW_SEPARATION,
@@ -83,28 +83,34 @@ export default function OnTrailPage() {
 
       <Section num="02" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Philmont trails are well-marked but junctions are easy to miss when you are tired and moving fast. The Navigator reads the map before each segment, not after a wrong turn. When in doubt, stop — a wrong junction costs an hour minimum.
+          One job: keep the crew on the right trail. Orient the map before every segment — a wrong junction costs the crew an hour.
         </p>
         <Panel>
           <ul className="space-y-1.5">
-            {NAVIGATION_RULES.map((rule) => (
-              <li key={rule} className="flex items-start gap-2 text-[12px]">
-                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{rule}</span>
-              </li>
-            ))}
+            <li className="flex items-start gap-2 text-[12px]">
+              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+              <span>Orient the map before leaving camp, at every junction, and any time you&apos;re unsure</span>
+            </li>
+            <li className="flex items-start gap-2 text-[12px]">
+              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+              <span>Identify junctions on the map before you reach them — read ahead, not in the moment</span>
+            </li>
+            <li className="flex items-start gap-2 text-[12px]">
+              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+              <span>Stop when confused. Never guess a junction.</span>
+            </li>
+            <li className="flex items-start gap-2 text-[12px]">
+              <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+              <span>Map lives in a hip belt pocket or top lid — not buried in the pack</span>
+            </li>
           </ul>
         </Panel>
-        <div className="relative w-full aspect-video rounded-md overflow-hidden border border-border" style={{ borderWidth: "0.5px" }}>
-          <iframe
-            src="https://www.youtube.com/embed/VIh43ViXVY8"
-            title="How To Use A Map & Compass"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
-        </div>
+        <p className="text-[12px] text-ink-muted">
+          Map orientation, declination, triangulation, and contour lines →{" "}
+          <Link href="/reference/skills#navigation" className="underline hover:text-ink">
+            Skills · Navigation
+          </Link>
+        </p>
       </Section>
 
       <Section num="03" title="Pace & breaks" id="pace">
