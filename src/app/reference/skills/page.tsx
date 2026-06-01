@@ -5,7 +5,8 @@ import { Box } from "@/components/primitives/Box";
 import { Panel } from "@/components/primitives/Panel";
 import { SubNav } from "@/components/nav/SubNav";
 import { REFERENCE_SUB } from "@/components/nav/navItems";
-import { STOVE_SAFETY, WATER_PURIFICATION, HYGIENE_RULES } from "@/data/incamp";
+import { STOVE_SAFETY, WATER_PURIFICATION, HYGIENE_RULES, CAMPSITE_STEPS } from "@/data/incamp";
+import type { SequenceStep } from "@/data/incamp";
 import {
   COOK_METHOD_STEPS,
   COOK_TEAM_NOTE,
@@ -13,6 +14,7 @@ import {
 } from "@/data/cooking";
 import { WATER_SYSTEM } from "@/data/food";
 import { SMELLABLES } from "@/data/safety";
+import { NAVIGATION_RULES } from "@/data/ontrail";
 
 export const metadata: Metadata = { title: "Skills" };
 
@@ -34,6 +36,42 @@ function VideoEmbed({ id, title }: { id: string; title: string }) {
   );
 }
 
+function StepList({ steps }: { steps: SequenceStep[] }) {
+  return (
+    <ol className="space-y-3">
+      {steps.map((step, i) => (
+        <li
+          key={i}
+          className="bg-surface border border-border rounded-md p-4 flex items-start gap-3"
+          style={{ borderWidth: "0.5px" }}
+        >
+          <div className="font-mono text-[12px] font-semibold bg-ink text-bg w-7 h-7 rounded-full flex items-center justify-center shrink-0">
+            {i + 1}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
+              <h3 className="text-[13px] font-semibold">{step.title}</h3>
+              {step.time && (
+                <span className="font-mono text-[10px] text-ink-muted">
+                  {step.time}
+                </span>
+              )}
+            </div>
+            <ul className="space-y-1">
+              {step.items.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-[12px] text-ink-muted">
+                  <span className="shrink-0 mt-0.5">·</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export default function SkillsPage() {
   return (
     <Page
@@ -43,7 +81,60 @@ export default function SkillsPage() {
     >
       <SubNav items={REFERENCE_SUB} />
 
-      <Section num="01" title="Stove safety" id="stove">
+      <Section num="01" title="Campsite setup" id="campsite">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Five steps. Same order every time — Bearmuda Triangle first, tents last.
+        </p>
+        <StepList steps={CAMPSITE_STEPS} />
+        <VideoEmbed id="BPnwAUhQjMA" title="How To Set Up A Campsite — Philmont" />
+      </Section>
+
+      <Section num="02" title="Bear bag & smellables" id="bear-bag">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Every smellable out of tents, every night. No exceptions.
+        </p>
+        <Box variant="danger">
+          <strong>Deodorant is not allowed in the Philmont backcountry.</strong>{" "}
+          Philmont ranger staff will check. This is not a suggestion.
+        </Box>
+        <Panel title="Required in bear bag · every night">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
+            {SMELLABLES.requiredInBearBag.map((s) => (
+              <li key={s} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Box variant="warn">
+          <strong>If it has a scent or could attract an animal, it goes in the bear bag.</strong>{" "}
+          When in doubt, hang it. {SMELLABLES.note}
+        </Box>
+        <Panel title="Bear hang system">
+          <ul className="space-y-2 text-[12px]">
+            <li>
+              <strong className="text-ink">Ropes.</strong>{" "}
+              <span className="text-ink-muted">Two issued ropes — 100 ft × ¼" nylon. <strong>¼" diameter mandatory.</strong> No Dyneema substitution. This is a Philmont spec.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Bags.</strong>{" "}
+              <span className="text-ink-muted">4 woven polypropylene bags issued at HQ. Distributed across the crew to balance loads.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Carabiners.</strong>{" "}
+              <span className="text-ink-muted">Locking, climbing-rated. Crew-supplied — Philmont does not issue these.</span>
+            </li>
+            <li>
+              <strong className="text-ink">Timing.</strong>{" "}
+              <span className="text-ink-muted">Hang every smellable before crew sleeps. Last duty of the day — everyone helps.</span>
+            </li>
+          </ul>
+        </Panel>
+        <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
+      </Section>
+
+      <Section num="03" title="Stove safety" id="stove">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Seven rules. All of them apply every time stoves are on.
         </p>
@@ -62,7 +153,7 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="02" title="The cook method · 7 steps" id="cooking">
+      <Section num="04" title="The cook method · 7 steps" id="cooking">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Philmont&apos;s cook method is a 7-step system. Follow it in order, every meal.
         </p>
@@ -98,7 +189,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="03" title="Cook equipment" id="equipment">
+      <Section num="05" title="Cook equipment" id="equipment">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           What the crew is bringing and why.
         </p>
@@ -134,7 +225,7 @@ export default function SkillsPage() {
         </div>
       </Section>
 
-      <Section num="04" title="Water purification" id="water">
+      <Section num="06" title="Water purification" id="water">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Every water source at Philmont must be treated before drinking — springs, streams, and wells included.
         </p>
@@ -194,7 +285,7 @@ export default function SkillsPage() {
         <VideoEmbed id="NJcPZyVfHnQ" title="Water Purification" />
       </Section>
 
-      <Section num="05" title="Backcountry hygiene" id="hygiene">
+      <Section num="07" title="Backcountry hygiene" id="hygiene">
         <p className="text-[12px] text-ink-muted leading-relaxed">
           Four rules. Simple and non-negotiable.
         </p>
@@ -210,49 +301,21 @@ export default function SkillsPage() {
         </Panel>
       </Section>
 
-      <Section num="06" title="Bear bag & smellables" id="bear-bag">
+      <Section num="08" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Every smellable out of tents, every night. No exceptions.
+          Six rules. The Navigator reads the map before each segment — a wrong junction costs an hour minimum.
         </p>
-        <Box variant="danger">
-          <strong>Deodorant is not allowed in the Philmont backcountry.</strong>{" "}
-          Philmont ranger staff will check. This is not a suggestion.
-        </Box>
-        <Panel title="Required in bear bag · every night">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4">
-            {SMELLABLES.requiredInBearBag.map((s) => (
-              <li key={s} className="flex items-start gap-2 text-[12px]">
+        <Panel>
+          <ul className="space-y-1.5">
+            {NAVIGATION_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
                 <span className="text-ok-text mt-0.5 shrink-0">▸</span>
-                <span>{s}</span>
+                <span>{rule}</span>
               </li>
             ))}
           </ul>
         </Panel>
-        <Box variant="warn">
-          <strong>If it has a scent or could attract an animal, it goes in the bear bag.</strong>{" "}
-          When in doubt, hang it. {SMELLABLES.note}
-        </Box>
-        <Panel title="Bear hang system">
-          <ul className="space-y-2 text-[12px]">
-            <li>
-              <strong className="text-ink">Ropes.</strong>{" "}
-              <span className="text-ink-muted">Two issued ropes — 100 ft × ¼" nylon. <strong>¼" diameter mandatory.</strong> No Dyneema substitution. This is a Philmont spec.</span>
-            </li>
-            <li>
-              <strong className="text-ink">Bags.</strong>{" "}
-              <span className="text-ink-muted">4 woven polypropylene bags issued at HQ. Distributed across the crew to balance loads.</span>
-            </li>
-            <li>
-              <strong className="text-ink">Carabiners.</strong>{" "}
-              <span className="text-ink-muted">Locking, climbing-rated. Crew-supplied — Philmont does not issue these.</span>
-            </li>
-            <li>
-              <strong className="text-ink">Timing.</strong>{" "}
-              <span className="text-ink-muted">Hang every smellable before crew sleeps. Last duty of the day — everyone helps.</span>
-            </li>
-          </ul>
-        </Panel>
-        <VideoEmbed id="DN2y50oUcS8" title="How To Hang A Bear Bag" />
+        <VideoEmbed id="VIh43ViXVY8" title="How To Use A Map & Compass" />
       </Section>
     </Page>
   );
