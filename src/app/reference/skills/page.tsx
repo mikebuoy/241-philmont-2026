@@ -14,7 +14,7 @@ import {
 } from "@/data/cooking";
 import { WATER_SYSTEM } from "@/data/food";
 import { SMELLABLES, BEAR_HANG_STEPS } from "@/data/safety";
-import { NAVIGATION_RULES } from "@/data/ontrail";
+import { NAVIGATION_RULES, MAP_ORIENTATION_STEPS, TRIANGULATION_STEPS, CONTOUR_LINE_RULES } from "@/data/ontrail";
 
 export const metadata: Metadata = { title: "Skills" };
 
@@ -319,8 +319,45 @@ export default function SkillsPage() {
 
       <Section num="09" title="Navigation" id="navigation">
         <p className="text-[12px] text-ink-muted leading-relaxed">
-          Six rules. A wrong turn at a junction can cost the crew an hour — the Navigator reads the map before each segment, not after.
+          Orient the map before every segment. Triangulate to find your position. Read contour lines to know what&apos;s coming.
         </p>
+
+        <div className="space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.05em] text-ink-muted">Map orientation</p>
+          <Box variant="info">
+            <strong>Philmont declination: 8° east.</strong> Set your compass dial to 352° and leave it there for the entire trek.
+          </Box>
+        </div>
+        <StepList steps={MAP_ORIENTATION_STEPS} />
+
+        <div className="space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.05em] text-ink-muted">Triangulation</p>
+          <p className="text-[12px] text-ink-muted leading-relaxed">
+            Three bearings to three landmarks. Where the lines converge is where you are.
+          </p>
+        </div>
+        <StepList steps={TRIANGULATION_STEPS} />
+
+        <div className="space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.05em] text-ink-muted">Contour lines</p>
+          <p className="text-[12px] text-ink-muted leading-relaxed">
+            The map shows you what the terrain does before you&apos;re in it. Use it.
+          </p>
+        </div>
+        <Panel>
+          <ul className="space-y-1.5">
+            {CONTOUR_LINE_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <div className="space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.05em] text-ink-muted">Navigator rules</p>
+        </div>
         <ol className="space-y-2">
           {NAVIGATION_RULES.map((rule, i) => (
             <li

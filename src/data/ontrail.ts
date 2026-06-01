@@ -42,12 +42,76 @@ export const CATERPILLAR_DESC = {
 } as const;
 
 export const NAVIGATION_RULES = [
-  "Orient the map before leaving camp — confirm the route with Crew Leader and Lead Advisor",
-  "Read contour lines to understand elevation changes before they happen",
-  "Identify trail junctions on the map before you reach them",
-  "Stop when confused — never guess a junction. Guessing wrong costs miles.",
-  "Keep the crew together. No one hikes alone. Rule of four applies.",
+  "Orient the map before leaving camp, at every junction, and any time you're unsure — never navigate from an unoriented map",
+  "Identify junctions on the map before you reach them — the Navigator reads ahead, not in the moment",
+  "Stop when confused. Never guess a junction — a wrong turn costs the crew an hour.",
+  "Before moving out, ask 'Is anybody not ready?' — a single 'no' gets missed in a chorus of 'yes'",
+  "Keep spacing to 8–10 feet — together enough to stay as a unit, spread enough to catch a wrong turn at a junction",
   "Map lives in a hip belt pocket or top lid — not buried in the pack",
+] as const;
+
+export const MAP_ORIENTATION_STEPS: { title: string; items: string[] }[] = [
+  {
+    title: "Set declination compensation",
+    items: [
+      "Turn the compass dial to align 352° with the base plate arrow",
+      "Philmont's declination is 8° east — leave this setting for the entire trek",
+    ],
+  },
+  {
+    title: "Align compass to map",
+    items: [
+      "Place the compass on the map with the base plate aligned to the lines of longitude",
+    ],
+  },
+  {
+    title: "Rotate until red in the shed",
+    items: [
+      "Turn the map (with compass on it) until the red magnetic needle points to the N on the dial",
+      "The map now matches your actual surroundings — use it to decide which trail to take",
+    ],
+  },
+];
+
+export const TRIANGULATION_STEPS: { title: string; items: string[] }[] = [
+  {
+    title: "Orient the map",
+    items: [
+      "Red in the shed before anything else — triangulation only works on an oriented map",
+    ],
+  },
+  {
+    title: "Shoot a bearing to a landmark",
+    items: [
+      "Point the compass at a distinct, identifiable feature you can also find on the map — a peak, a mesa",
+      "Turn the dial until the red needle aligns with the shed",
+      "Read the bearing off the dial (example: Baldy Mountain at 200°)",
+    ],
+  },
+  {
+    title: "Draw the line on the map",
+    items: [
+      "Place a corner of the compass on the landmark's location on the map",
+      "Rotate the compass until the magnetic needle aligns with the shed",
+      "Draw a line from the landmark along the compass edge — you're somewhere on this line",
+    ],
+  },
+  {
+    title: "Shoot two more bearings",
+    items: [
+      "Repeat with two more identifiable landmarks",
+      "Where two lines intersect is your approximate position",
+      "A third bearing creates a triangle — the smaller the triangle, the better your fix",
+    ],
+  },
+];
+
+export const CONTOUR_LINE_RULES = [
+  "Contour lines show elevation — lines close together mean steep terrain; far apart means gradual",
+  "V-shapes pointing uphill indicate a valley or stream; V-shapes pointing downhill indicate a ridge",
+  "Closed circles indicate peaks; check the legend for the contour interval",
+  "Before each segment, count contour crossings to estimate total elevation gain or loss",
+  "If you're gaining elevation but your trail on the map doesn't cross contour lines, you're on the wrong trail",
 ] as const;
 
 export const FOOT_CARE = {
