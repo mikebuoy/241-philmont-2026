@@ -6,24 +6,24 @@ export type BreakType = {
 
 export const BREAK_TYPES: BreakType[] = [
   {
-    name: "2-minute break",
-    duration: "2 min",
+    name: "5-minute break",
+    duration: "≤5 min",
     rules: [
       "Standing rest only — packs stay on",
       "Water and a quick snack",
-      "No sitting, no pack removal",
+      "No sitting, no pack removal — lactic acid hasn't built up yet, so restarting is easy",
       "Crew Leader calls it and restarts it",
     ],
   },
   {
     name: "20-minute break",
-    duration: "20 min",
+    duration: "≥20 min",
     rules: [
       "Packs off, real rest, real food",
-      "Set a timer the moment the break starts",
-      "Call a 2-minute warning so everyone has packs on and is ready",
-      "The break ends when the Crew Leader says it ends — not when the last person decides to stand up",
-      "Whoever calls the break owns the restart",
+      "After 20 minutes, lactic acid fully dissipates and muscles move freely again — worth the investment",
+      "Breaks lasting 6–19 minutes are the worst option: lactic acid builds but doesn't clear, and the restart is brutal",
+      "Set a timer the moment the break starts; call a 2-minute warning",
+      "The break ends when the Crew Leader says — not when the last person decides to stand",
     ],
   },
 ];
@@ -130,24 +130,40 @@ export const FOOT_CARE = {
 } as const;
 
 export const HIKING_ETIQUETTE = [
-  "Single file on trail",
-  "Crew stays together — no one hikes alone",
-  "Pace is set by the crew, not the fastest Scout",
-  "Short, controlled breaks on schedule",
-  "Clear communication front to back when stopping, turning, or hazard ahead",
-  "Yield to uphill hikers on narrow trail",
+  "Keep 8–10 feet between crew members — close enough to stay together, spread enough to see hazards and enjoy the views",
+  "Put slower crew members near the front so they can communicate directly with the navigator and pace-setter",
+  "Never step on the critical edge — the downhill (outside) edge of the trail. Stepping on it erodes the trail. Take breaks on the uphill side.",
+  "Uphill crew has the right of way — the crew hiking downhill steps off trail to let them pass",
+  "Pack animals and cavalcade crews always have the right of way — follow directions from the Horseman or Wrangler",
+  "Crew stays together at all junctions — a fragmented crew at a junction is how search-and-rescue operations start",
 ] as const;
 
 export const CREW_SEPARATION = {
-  rule: "Philmont requires a minimum 10–12 minute gap between crews on trail at all times. This is not a suggestion — it is how Philmont keeps the trail uncrowded and the backcountry experience what it should be for every crew out there.",
+  rule: "Maintain separation between crews on trail. If you're closing on a crew ahead of you, slow down or take a break — do not push through.",
   passing: [
-    "A faster crew that wants to pass must ask the slower crew for permission — do not push through",
-    "The slower crew is expected to yield: step off trail, let the faster crew through, then take a mandatory 20-minute rest before continuing",
-    "If you are the faster crew, ask the Crew Leader of the other crew directly and politely",
-    "If you are the slower crew and asked to yield, comply — do not argue the point on trail",
+    "Close on a crew ahead: take a 5-minute break and let the gap grow",
+    "Close on them a second time: take another 5-minute break",
+    "Close on them a third time: ask the Crew Leader of that crew for permission to pass",
+    "Once past: don't stop for at least 45 minutes — this prevents leapfrogging and frustration for both crews",
+  ],
+  beingPassed: [
+    "If a crew asks to pass you, comply — they've likely approached twice already without saying anything",
+    "Once they've passed, take a 5-minute break to open up the gap",
   ],
   selfCheck: [
     "If you can see another crew ahead of you, you are too close — slow down or take an unscheduled break",
-    "Do not tailgate. A compressed trail creates crowding at water sources, campsites, and program areas",
+    "Do not tailgate. Compressed crews create crowding at water sources, campsites, and program areas",
   ],
 } as const;
+
+export const STREAM_CROSSING_RULES = [
+  "Cross streams and bridges one person at a time",
+  "Unbuckle your hip belt and sternum strap before crossing — if you fall in, you need to escape your pack quickly",
+  "Navigator continues 30 feet up the trail and waits; last person to cross calls 'All across'",
+  "Navigator asks 'Is anybody not ready?' before the crew moves on",
+] as const;
+
+export const TREKKING_POLE_RULES = [
+  "Use rubber tip covers — exposed metal tips erode trails significantly faster",
+  "Trekking poles reduce knee impact by up to 25% on descent — worth it for anyone with knee concerns",
+] as const;

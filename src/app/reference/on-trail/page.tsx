@@ -12,6 +12,8 @@ import {
   FOOT_CARE,
   HIKING_ETIQUETTE,
   CREW_SEPARATION,
+  STREAM_CROSSING_RULES,
+  TREKKING_POLE_RULES,
 } from "@/data/ontrail";
 
 export const metadata: Metadata = { title: "On Trail" };
@@ -44,10 +46,21 @@ export default function OnTrailPage() {
             {CREW_SEPARATION.rule}
           </p>
           <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-2">
-            Passing protocol
+            When you're faster
           </div>
           <ul className="space-y-1.5 mb-4">
             {CREW_SEPARATION.passing.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.05em] mb-2">
+            When you're being passed
+          </div>
+          <ul className="space-y-1.5 mb-4">
+            {CREW_SEPARATION.beingPassed.map((rule) => (
               <li key={rule} className="flex items-start gap-2 text-[12px]">
                 <span className="text-ink-muted mt-0.5 shrink-0">▸</span>
                 <span>{rule}</span>
@@ -190,6 +203,42 @@ export default function OnTrailPage() {
           blister that develops costs you the rest of the day and several trail
           days after. Stop early.
         </Box>
+      </Section>
+
+      <Section num="06" title="Stream crossings" id="stream-crossings">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Four rules. The unbuckle rule is the one crews skip — don&apos;t.
+        </p>
+        <Panel>
+          <ul className="space-y-1.5">
+            {STREAM_CROSSING_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+        <Box variant="warn">
+          <strong>Unbuckle hip belt and sternum strap before every crossing.</strong>{" "}
+          A pack that traps you in moving water is a drowning risk. Do it every time, not just when the water looks deep.
+        </Box>
+      </Section>
+
+      <Section num="07" title="Trekking poles" id="trekking-poles">
+        <p className="text-[12px] text-ink-muted leading-relaxed">
+          Rubber tips required. Exposed metal tips are a trail erosion problem — Philmont has seen the data.
+        </p>
+        <Panel>
+          <ul className="space-y-1.5">
+            {TREKKING_POLE_RULES.map((rule) => (
+              <li key={rule} className="flex items-start gap-2 text-[12px]">
+                <span className="text-ok-text mt-0.5 shrink-0">▸</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       </Section>
     </Page>
   );
