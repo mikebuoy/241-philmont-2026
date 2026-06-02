@@ -57,6 +57,7 @@ export function PackingListEditor({
   usesPhilmontTent: initialUsesPhilmontTent,
   categoryOrder: propCategoryOrder,
   isAdmin,
+  isPublic,
   aboveHeader,
   children,
 }: {
@@ -67,6 +68,7 @@ export function PackingListEditor({
   usesPhilmontTent?: boolean;
   categoryOrder?: string[];
   isAdmin?: boolean;
+  isPublic?: boolean;
   /** Renders above the sticky green box (e.g. SubNav). Scrolls away on scroll. */
   aboveHeader?: ReactNode;
   children?: ReactNode;
@@ -82,17 +84,25 @@ export function PackingListEditor({
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("pack");
+  const [showSignInSheet, setShowSignInSheet] = useState(false);
   const [, startTransition] = useTransition();
 
   // First-visit help panel: auto-open once, then remembered as collapsed
   useEffect(() => {
+    if (isPublic) return;
     if (typeof window === "undefined") return;
     const seen = window.localStorage.getItem("pack-gear-howto-seen");
     if (!seen) {
       window.setTimeout(() => setHelpOpen(true), 0);
       window.localStorage.setItem("pack-gear-howto-seen", "1");
     }
-  }, []);
+  }, [isPublic]);
+
+  useEffect(() => {
+    if (!isPublic) return;
+    const t = setTimeout(() => setShowSignInSheet(true), 2000);
+    return () => clearTimeout(t);
+  }, [isPublic]);
 
   // Order categories: prefer server-supplied order (from gear_categories DB), fallback to alpha
   const categoryOrder = useMemo(() => {
@@ -168,6 +178,7 @@ export function PackingListEditor({
       | "isNotPacking",
     value: boolean,
   ) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     patchLocal(itemId, { [flag]: value });
     const dbField = flagToDb(flag);
     startTransition(async () => {
@@ -185,6 +196,7 @@ export function PackingListEditor({
     field: "name" | "qty" | "weightOz",
     value: string | number,
   ) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const dbField =
       field === "weightOz"
         ? ("weight_oz" as const)
@@ -196,6 +208,7 @@ export function PackingListEditor({
   }
 
   async function onAddPersonal(category: string) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const tempId = `temp-${Date.now()}`;
     const optimistic: PackingItem = {
       id: tempId,
@@ -225,11 +238,13 @@ export function PackingListEditor({
   }
 
   function onClearAdvisorNote(itemId: string) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     patchLocal(itemId, { advisorNote: null });
     startTransition(async () => { await clearAdvisorNote(itemId); });
   }
 
   async function onDelete(itemId: string) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     if (!confirm("Delete this item?")) return;
     const backup = items.find((i) => i.id === itemId);
     if (!backup) return;
@@ -251,6 +266,7 @@ export function PackingListEditor({
   }, []);
 
   function onBodyWeightChange(lbs: number | null) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     setBodyWeight(lbs);                                       // immediate UI update
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
     bwSaveTimer.current = setTimeout(() => {
@@ -261,6 +277,7 @@ export function PackingListEditor({
   }
 
   function onActualBaseChange(lbs: number) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     setActualBase(lbs);                                       // immediate UI update
     if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
     actualSaveTimer.current = setTimeout(() => {
@@ -269,6 +286,7 @@ export function PackingListEditor({
   }
 
   function onUsesPhilmontTentChange(v: boolean) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     setUsesPhilmontTent(v);
     startTransition(() => saveUsesPhilmontTent(v));
   }
@@ -307,7 +325,7 @@ export function PackingListEditor({
 
       {/* ───── Sticky totals header ───── */}
       {/* ───── How to use (auto-open first visit; scrolls away) ───── */}
-      <div className="print:hidden bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
+      {!isPublic && (<div className="print:hidden bg-surface border border-border rounded-lg overflow-hidden" style={{ borderWidth: "0.5px" }}>
         <button
           type="button"
           onClick={() => setHelpOpen((o) => !o)}
@@ -381,7 +399,7 @@ export function PackingListEditor({
 
           </div>
         )}
-      </div>
+      </div>)}
 
       {/* ───── Progress bar section — scrolls away ───── */}
       <div className="-mx-6 px-6 pt-3 pb-4 !mb-0 bg-surface print:border print:rounded-lg print:mx-0 print:mb-4">
@@ -529,7 +547,10 @@ export function PackingListEditor({
             <div className="print:hidden flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
-                onClick={() => setMode(isEditMode ? "pack" : "edit")}
+                onClick={() => {
+                  if (isPublic) { setShowSignInSheet(true); return; }
+                  setMode(isEditMode ? "pack" : "edit");
+                }}
                 disabled={adjustOpen}
                 className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-medium font-mono uppercase tracking-[0.05em] bg-surface-2 border border-border hover:bg-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-2"
                 style={{ borderWidth: "0.5px" }}
@@ -544,7 +565,10 @@ export function PackingListEditor({
         {/* ── Settings accordion header ── */}
         <button
           type="button"
-          onClick={() => setAdjustOpen((o) => !o)}
+          onClick={() => {
+            if (isPublic) { setShowSignInSheet(true); return; }
+            setAdjustOpen((o) => !o);
+          }}
           aria-expanded={adjustOpen}
           className={`print:hidden w-full flex items-center justify-between px-6 py-2 border-l-[3px] border-l-hcblue text-[11px] font-mono font-medium transition-colors ${
             adjustOpen
@@ -798,7 +822,7 @@ export function PackingListEditor({
       {children}
 
       {/* ───── Filters ───── */}
-      <div className="print:hidden flex flex-wrap items-center gap-2">
+      {!isPublic && (<div className="print:hidden flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => setHidePacked((v) => !v)}
@@ -838,8 +862,8 @@ export function PackingListEditor({
         >
           ⚑ Flagged only ({flaggedCount})
         </button>
-      </div>
-      {(hidePacked || hideNotPacking || showFlaggedOnly) && (
+      </div>)}
+      {!isPublic && (hidePacked || hideNotPacking || showFlaggedOnly) && (
         <div className="hidden print:flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] text-ink-muted uppercase tracking-[0.06em]">Filtered:</span>
           {hidePacked && (
@@ -895,6 +919,7 @@ export function PackingListEditor({
                     onDelete={() => onDelete(it.id)}
                     isAdmin={isAdmin}
                     onClearAdvisorNote={() => onClearAdvisorNote(it.id)}
+                    isPublic={isPublic}
                   />
                 ))}
                 {isEditMode && (
@@ -949,6 +974,7 @@ export function PackingListEditor({
                     onDelete={() => onDelete(it.id)}
                     isAdmin={isAdmin}
                     onClearAdvisorNote={() => onClearAdvisorNote(it.id)}
+                    isPublic={isPublic}
                   />
                 ))}
                 {isEditMode && (
@@ -966,6 +992,10 @@ export function PackingListEditor({
           );
         })}
       </div>{/* end space-y-4 */}
+
+      {isPublic && showSignInSheet && (
+        <SignInSheet onDismiss={() => setShowSignInSheet(false)} />
+      )}
     </div>
   );
 }
@@ -1006,11 +1036,12 @@ type ItemRowProps = {
   onDelete: () => void;
   isAdmin?: boolean;
   onClearAdvisorNote?: () => void;
+  isPublic?: boolean;
 };
 
-function ItemRow({ item, mode, onToggle, onFieldChange, onDelete, isAdmin, onClearAdvisorNote }: ItemRowProps) {
+function ItemRow({ item, mode, onToggle, onFieldChange, onDelete, isAdmin, onClearAdvisorNote, isPublic }: ItemRowProps) {
   if (mode === "pack") {
-    return <PackRow item={item} onToggle={onToggle} isAdmin={isAdmin} onClearAdvisorNote={onClearAdvisorNote} />;
+    return <PackRow item={item} onToggle={onToggle} isAdmin={isAdmin} onClearAdvisorNote={onClearAdvisorNote} isPublic={isPublic} />;
   }
   return <EditRow item={item} onToggle={onToggle} onFieldChange={onFieldChange} onDelete={onDelete} />;
 }
@@ -1020,11 +1051,13 @@ function PackRow({
   onToggle,
   isAdmin,
   onClearAdvisorNote,
+  isPublic,
 }: {
   item: PackingItem;
   onToggle: ItemRowProps["onToggle"];
   isAdmin?: boolean;
   onClearAdvisorNote?: () => void;
+  isPublic?: boolean;
 }) {
   const isNote = item.isCore && item.isRequired === null;
   const dimmed = item.isNotPacking;
@@ -1050,7 +1083,7 @@ function PackRow({
   return (
     <li className={`px-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
       <div className="flex items-center gap-3 py-2.5">
-        <label className="shrink-0 -m-2 flex h-9 w-9 items-center justify-center cursor-pointer">
+        <label className={`shrink-0 -m-2 flex h-9 w-9 items-center justify-center ${isPublic ? "cursor-default opacity-40" : "cursor-pointer"}`}>
           <input
             type="checkbox"
             checked={item.isPacked}
@@ -1326,5 +1359,47 @@ function FlagButton({
     >
       {label}
     </button>
+  );
+}
+
+function SignInSheet({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 z-50 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)]"
+      style={{
+        borderTop: "2px solid #1E4D6B",
+        animation: "slideUp 250ms ease-out",
+      }}
+    >
+      <style>{`
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+      `}</style>
+      <div className="max-w-[600px] mx-auto px-6 py-5 space-y-3">
+        <div>
+          <p className="font-semibold text-[14px] text-ink">Want to track your actual gear?</p>
+          <p className="text-[13px] text-ink-muted mt-1 leading-snug">
+            This is the crew&apos;s master list. Sign in to see your copy — check things off, add notes, and watch your pack weight.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <a
+            href="/admin/signin?next=/pack/gear"
+            className="inline-flex items-center px-5 py-2 rounded-md bg-hcblue text-white text-[12px] font-semibold font-mono uppercase tracking-[0.05em] hover:opacity-90 transition-opacity"
+          >
+            Sign in
+          </a>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-[12px] text-ink-faint hover:text-ink-muted transition-colors font-mono"
+          >
+            Not now
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
