@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Page } from "@/components/primitives/Page";
 import { Section } from "@/components/primitives/Section";
 import { SubNav } from "@/components/nav/SubNav";
@@ -10,6 +9,7 @@ import { getAllPackingItems, computeTotals } from "@/lib/packing";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { StatusBadge } from "@/components/primitives/StatusBadge";
 import { PrintButton } from "@/components/primitives/PrintButton";
+import { SignInSheetClient } from "@/components/SignInSheetClient";
 
 export const metadata: Metadata = {
   title: "Crew Pack Weights",
@@ -189,11 +189,156 @@ function PackProgress({
   );
 }
 
+type RowData = {
+  m: Awaited<ReturnType<typeof getAllCrewMembers>>[number];
+  bw: number | null;
+  status: NonNullable<ReturnType<typeof getReadiness>>["status"] | null;
+  readiness: ReturnType<typeof getReadiness>;
+  sourceLabel: string;
+};
+
+function WeightSummarySection({
+  crews,
+  rowsByCrew,
+}: {
+  crews: readonly (1 | 2)[];
+  rowsByCrew: (crewId: 1 | 2) => RowData[];
+}) {
+  const dash = <span className="text-ink-faint">—</span>;
+  return (
+    <Section num="01" title="Weight summary" id="summary">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3">
+        {([
+          ["#d4edda", "#155724", "On target (≤20%)"],
+          ["#fff3cd", "#856404", "Above goal (20–25%)"],
+          ["#f8d7da", "#721c24", "Over 25% standard"],
+          ["#dc3545", "#ffffff", "Over 30% hard max"],
+        ] as const).map(([bg, text, label]) => (
+          <span key={label} className="flex items-center gap-1.5 text-[11px]">
+            <span className="inline-block w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: bg }} />
+            <span style={{ color: text === "#ffffff" ? "#721c24" : text }}>{label}</span>
+          </span>
+        ))}
+      </div>
+      <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
+
+      {/* ── DESKTOP TABLES (md+) ── */}
+      <div className="hidden md:block space-y-4">
+        {crews.map((crewId) => (
+          <div key={crewId}>
+            <p className="font-mono text-[14px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-1.5">
+              Crew {crewId}
+            </p>
+            <div
+              className="bg-surface border border-border rounded-md overflow-hidden"
+              style={{ borderWidth: "0.5px" }}
+            >
+              <table className="w-full text-[11px]">
+                <thead className="bg-surface-2 border-b border-border">
+                  <tr>
+                    {[
+                      ["Name",          "text-left"],
+                      ["Body\nWeight",  "text-left"],
+                      ["Pack Progress", "text-left"],
+                    ].map(([label, align]) => (
+                      <th
+                        key={label}
+                        className={`${align} font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight whitespace-pre-line`}
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
+                    <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}>
+                      <td className="px-2.5 py-3 align-top w-[170px]">
+                        {status
+                          ? <StatusBadge tone={status}>{m.name}</StatusBadge>
+                          : <span className="font-medium text-[11px]">{m.name}</span>}
+                      </td>
+                      <td className="px-2.5 py-3 font-mono text-right align-top w-[90px]">{bw != null ? bw : dash}</td>
+                      <td className="px-2.5 py-3">
+                        <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── MOBILE CARDS (< md) ── */}
+      <div className="md:hidden space-y-4">
+        {crews.map((crewId) => (
+          <div key={crewId}>
+            <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-2">
+              Crew {crewId}
+            </p>
+            <div className="space-y-2">
+              {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
+                <div
+                  key={m.id}
+                  className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}
+                  style={{ borderWidth: "0.5px" }}
+                >
+                  <div className="mb-2">
+                    {status
+                      ? <StatusBadge tone={status}>{m.name}</StatusBadge>
+                      : <span className="font-medium text-[13px]">{m.name}</span>}  <span>{bw != null ? bw : "—"} lbs</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
+                    <div/>
+                    <div className="col-span-2 pt-2">
+                      <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
 export default async function CrewWeightsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/admin/signin?next=/crew/weights");
 
+  // ── PUBLIC BRANCH ──────────────────────────────────────────────
+  if (!user) {
+    let members: Awaited<ReturnType<typeof getAllCrewMembers>> = [];
+    try { members = await getAllCrewMembers(); } catch { /* RLS may block for public visitors */ }
+
+    const rows: RowData[] = members.map((m) => ({
+      m,
+      bw: null,
+      status: null,
+      readiness: null,
+      sourceLabel: "Calculated",
+    }));
+    const crews = [1, 2] as const;
+    const rowsByCrew = (crewId: 1 | 2) => rows.filter((r) => r.m.crewId === crewId);
+
+    return (
+      <Page eyebrow="My Crew" title="Pack Weight Readiness" titleRight={<PrintButton />}>
+        <SubNav items={CREW_SUB} />
+        <SignInSheetClient
+          nextUrl="/crew/weights"
+          heading="Sign in to see your crew's pack weights."
+          body="Body weights, pack progress, and weight targets are personal data. Sign in to see the full picture."
+        />
+        <WeightSummarySection crews={crews} rowsByCrew={rowsByCrew} />
+      </Page>
+    );
+  }
+
+  // ── AUTHENTICATED BRANCH ────────────────────────────────────────
   const [members, allItems] = await Promise.all([
     getAllCrewMembers(),
     getAllPackingItems(),
@@ -206,7 +351,7 @@ export default async function CrewWeightsPage() {
     itemsByMember.set(item.crewMemberId, list);
   }
 
-  const rows = members.map((m) => {
+  const rows: RowData[] = members.map((m) => {
     const bw = m.bodyWeightLbs;
     const actualBase = m.actualBaseWeightLbs;
     const memberItems = itemsByMember.get(m.id) ?? [];
@@ -231,8 +376,6 @@ export default async function CrewWeightsPage() {
   const crews = [1, 2] as const;
   const rowsByCrew = (crewId: 1 | 2) => rows.filter((r) => r.m.crewId === crewId);
 
-  const dash = <span className="text-ink-faint">—</span>;
-
   return (
     <Page
       eyebrow="My Crew"
@@ -241,110 +384,7 @@ export default async function CrewWeightsPage() {
       titleRight={<PrintButton />}
     >
       <SubNav items={CREW_SUB} />
-
-      <Section num="01" title="Weight summary" id="summary">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mb-3">
-          {([
-            ["#d4edda", "#155724", "On target (≤20%)"],
-            ["#fff3cd", "#856404", "Above goal (20–25%)"],
-            ["#f8d7da", "#721c24", "Over 25% standard"],
-            ["#dc3545", "#ffffff", "Over 30% hard max"],
-          ] as const).map(([bg, text, label]) => (
-            <span key={label} className="flex items-center gap-1.5 text-[11px]">
-              <span className="inline-block w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: bg }} />
-              <span style={{ color: text === "#ffffff" ? "#721c24" : text }}>{label}</span>
-            </span>
-          ))}
-        </div>
-        <p className="text-[11px] text-ink-muted mb-2">All weights in lbs.</p>
-
-        {/* ── DESKTOP TABLES (md+) ── */}
-        <div className="hidden md:block space-y-4">
-          {crews.map((crewId) => (
-            <div key={crewId}>
-              <p className="font-mono text-[14px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-1.5">
-                Crew {crewId}
-              </p>
-              <div
-                className="bg-surface border border-border rounded-md overflow-hidden"
-                style={{ borderWidth: "0.5px" }}
-              >
-                <table className="w-full text-[11px]">
-                  <thead className="bg-surface-2 border-b border-border">
-                    <tr>
-                      {[
-                        ["Name",          "text-left"],
-                        ["Body\nWeight",  "text-left"],
-                        ["Pack Progress", "text-left"],
-                      ].map(([label, align]) => (
-                        <th
-                          key={label}
-                          className={`${align} font-mono font-medium text-[10px] uppercase tracking-[0.04em] text-ink-muted px-2.5 py-1.5 leading-tight whitespace-pre-line`}
-                        >
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
-                      <tr key={m.id} className={`border-b border-border last:border-0 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}>
-                        <td className="px-2.5 py-3 align-top w-[170px]">
-                          {status
-                            ? <StatusBadge tone={status}>{m.name}</StatusBadge>
-                            : <span className="font-medium text-[11px]">{m.name}</span>}
-                        </td>
-                        <td className="px-2.5 py-3 font-mono text-right align-top w-[90px]">{bw != null ? bw : dash}</td>
-                        <td className="px-2.5 py-3">
-                          <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── MOBILE CARDS (< md) ── */}
-        <div className="md:hidden space-y-4">
-          {crews.map((crewId) => (
-            <div key={crewId}>
-              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted font-semibold mb-2">
-                Crew {crewId}
-              </p>
-              <div className="space-y-2">
-          {rowsByCrew(crewId).map(({ m, bw, status, readiness, sourceLabel }, i) => (
-            <div
-              key={m.id}
-              className={`border border-border rounded-lg p-3 ${i % 2 === 1 ? "bg-surface" : "bg-surface"}`}
-              style={{ borderWidth: "0.5px" }}
-            >
-              <div className="mb-2">
-                {status
-                  ? <StatusBadge tone={status}>{m.name}</StatusBadge>
-                  : <span className="font-medium text-[13px]">{m.name}</span>}  <span>{bw != null ? bw : "—"} lbs</span>             
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px]">
-                {/*}
-                <div className="flex justify-between">
-                  <span className="text-ink-muted">Body Weight</span>
-                  <span>{bw != null ? bw : "—"}</span>
-                </div>
-                */}
-                <div/>
-                <div className="col-span-2 pt-2">
-                  <PackProgress readiness={readiness} sourceLabel={sourceLabel} />
-                </div>
-              </div>
-            </div>
-          ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <WeightSummarySection crews={crews} rowsByCrew={rowsByCrew} />
 
       <Section num="02" title="Column guide" id="columns">
         <div
