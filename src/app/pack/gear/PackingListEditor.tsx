@@ -16,6 +16,7 @@ import {
   saveUsesPhilmontTent,
   clearAdvisorNote,
 } from "./actions";
+import { SignInSheet } from "@/components/SignInSheet";
 
 // Shelter is tracked as an actual packing item, so exclude it from the Trail Load constant
 const BASE_TRAIL_LOAD_LBS = PACK_WEIGHT_CONSTANTS.gearAndFoodLbs - PACK_WEIGHT_CONSTANTS.shelterLbs;
@@ -992,7 +993,7 @@ export function PackingListEditor({
       </div>{/* end space-y-4 */}
 
       {isPublic && showSignInSheet && (
-        <SignInSheet onDismiss={() => setShowSignInSheet(false)} />
+        <SignInSheet nextUrl="/pack/gear" onDismiss={() => setShowSignInSheet(false)} />
       )}
     </div>
   );
@@ -1360,37 +1361,5 @@ function FlagButton({
     >
       {label}
     </button>
-  );
-}
-
-function SignInSheet({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div
-      className="fixed inset-x-0 bottom-0 z-50 bg-surface animate-slide-up border-t-2 border-hcblue shadow-[0_-4px_16px_rgba(0,0,0,0.12)]"
-    >
-      <div className="max-w-[600px] mx-auto px-6 py-5 space-y-3">
-        <div>
-          <p className="font-semibold text-[14px] text-ink">Want to track your actual gear?</p>
-          <p className="text-[13px] text-ink-muted mt-1 leading-snug">
-            This is the crew&apos;s master list. Sign in to see your copy — check things off, add notes, and watch your pack weight.
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <a
-            href="/admin/signin?next=/pack/gear"
-            className="inline-flex items-center px-5 py-2 rounded-md bg-hcblue text-white text-[12px] font-semibold font-mono uppercase tracking-[0.05em] hover:opacity-90 transition-opacity"
-          >
-            Sign in
-          </a>
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="text-[12px] text-ink-faint hover:text-ink-muted transition-colors font-mono"
-          >
-            Not now
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
