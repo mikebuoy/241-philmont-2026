@@ -1091,7 +1091,10 @@ function PackRow({
   return (
     <li className={`px-3 text-[13px] ${dimmed ? "opacity-40" : ""}`}>
       <div className="flex items-center gap-3 py-2.5">
-        <label className={`shrink-0 -m-2 flex h-9 w-9 items-center justify-center ${isPublic ? "cursor-default opacity-40" : "cursor-pointer"}`}>
+        <label
+          className={`shrink-0 -m-2 flex h-9 w-9 items-center justify-center ${isPublic ? "cursor-default opacity-40" : "cursor-pointer"}`}
+          onClick={isPublic ? (e) => { e.preventDefault(); onToggle(item.id, "isPacked", !item.isPacked); } : undefined}
+        >
           <input
             type="checkbox"
             checked={item.isPacked}
