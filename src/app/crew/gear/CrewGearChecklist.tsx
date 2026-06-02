@@ -2,6 +2,7 @@
 
 import React, { type ReactNode, useState, useTransition, useRef, useEffect } from "react";
 import type { CrewGearItem } from "@/lib/crew-gear";
+import { SignInSheet } from "@/components/SignInSheet";
 import {
   toggleCrewGearChecked,
   toggleCrewGearNotTaking,
@@ -22,6 +23,7 @@ export function CrewGearChecklist({
   canCheckCrew2,
   myCrewId,
   aboveHeader,
+  isPublic,
 }: {
   crew1Items: CrewGearItem[];
   crew2Items: CrewGearItem[];
@@ -30,6 +32,7 @@ export function CrewGearChecklist({
   canCheckCrew2: boolean;
   myCrewId: number | undefined;
   aboveHeader?: ReactNode;
+  isPublic?: boolean;
 }) {
   const [activeCrew, setActiveCrew] = useState<1 | 2>(
     myCrewId === 2 ? 2 : 1
@@ -48,6 +51,14 @@ export function CrewGearChecklist({
   // Which item's note editor is open in flag mode
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+
+  const [showSignInSheet, setShowSignInSheet] = useState(false);
+
+  useEffect(() => {
+    if (!isPublic) return;
+    const t = setTimeout(() => setShowSignInSheet(true), 2000);
+    return () => clearTimeout(t);
+  }, [isPublic]);
 
   const activeItems = activeCrew === 1 ? crew1Items : crew2Items;
   const setActiveItems = activeCrew === 1 ? setCrew1Items : setCrew2Items;
@@ -81,6 +92,7 @@ export function CrewGearChecklist({
   const troopChecked = troopAll.filter((i) => i.isChecked).length;
 
   function handleCheck(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     if (!canCheck || item.isNotTaking) return;
     const next = !item.isChecked;
     updateItem(item.id, { isChecked: next });
@@ -92,6 +104,7 @@ export function CrewGearChecklist({
   }
 
   function handleNotTaking(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     if (!isAdmin) return;
     const next = !item.isNotTaking;
     updateItem(item.id, { isNotTaking: next, isChecked: next ? false : item.isChecked });
@@ -108,6 +121,7 @@ export function CrewGearChecklist({
   }
 
   function saveNote(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const trimmed = noteText.trim() || null;
     updateItem(item.id, { notes: trimmed });
     setOpenNoteId(null);
@@ -119,6 +133,7 @@ export function CrewGearChecklist({
   }
 
   function clearNote(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     updateItem(item.id, { notes: null });
     setOpenNoteId(null);
     startTransition(() => {
@@ -129,12 +144,14 @@ export function CrewGearChecklist({
   }
 
   function handleAddItem(supplier: "Philmont Issued" | "Troop Supplied") {
+    if (isPublic) { setShowSignInSheet(true); return; }
     startTransition(async () => {
       await addCustomCrewGearItem(activeCrew, supplier);
     });
   }
 
   function handleDeleteItem(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     setActiveItems((prev) => prev.filter((i) => i.id !== item.id));
     startTransition(() => {
       deleteCustomCrewGearItem(item.id).catch(() =>
@@ -148,6 +165,7 @@ export function CrewGearChecklist({
     field: "name" | "qty" | "weight_oz",
     value: string
   ) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const parsed =
       field === "name" ? value : field === "qty" ? parseInt(value, 10) || 0 : parseFloat(value) || 0;
     updateItem(item.id, { [field === "weight_oz" ? "weightOz" : field]: parsed });
@@ -316,6 +334,15 @@ export function CrewGearChecklist({
           onFieldUpdate={handleFieldUpdate}
         />
       </div>
+
+      {isPublic && showSignInSheet && (
+        <SignInSheet
+          nextUrl="/crew/gear"
+          onDismiss={() => setShowSignInSheet(false)}
+          heading="Sign in to check off crew gear."
+          body="Track which items are ready for each crew. Sign in to see your crew's gear status."
+        />
+      )}
 
       {/* Print: both crews, all items, no filters */}
       <div className="hidden print:block">

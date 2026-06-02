@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Page } from "@/components/primitives/Page";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
@@ -9,6 +8,7 @@ import { getMyCrewMember } from "@/lib/crew";
 import {
   getCrewGearItems,
   seedCrewGearForCrew,
+  type CrewGearItem,
 } from "@/lib/crew-gear";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { CrewGearChecklist } from "./CrewGearChecklist";
@@ -16,7 +16,7 @@ import { PrintButton } from "@/components/primitives/PrintButton";
 
 export const metadata: Metadata = {
   title: "Crew Gear",
-  openGraph: { images: [{ url: "/crew/gear/opengraph-image" }] },
+  openGraph: { images: [{ url: "/crew/gear/opengraph-image.png" }] },
   twitter: { card: "summary_large_image" },
 };
 export const dynamic = "force-dynamic";
@@ -27,7 +27,32 @@ export default async function CrewGearPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/signin?next=/crew/gear");
+  if (!user) {
+    let crew1Items: CrewGearItem[] = [];
+    let crew2Items: CrewGearItem[] = [];
+    try {
+      [crew1Items, crew2Items] = await Promise.all([
+        getCrewGearItems(1),
+        getCrewGearItems(2),
+      ]);
+    } catch { /* admin client likely bypasses RLS but catch in case */ }
+
+    return (
+      <Page eyebrow="My Crew" title="Crew Gear">
+        <div className="print:hidden"><SubNav items={CREW_SUB} /></div>
+        <CrewGearChecklist
+          crew1Items={crew1Items}
+          crew2Items={crew2Items}
+          isAdmin={false}
+          canCheckCrew1={false}
+          canCheckCrew2={false}
+          myCrewId={undefined}
+          isPublic
+          aboveHeader={<div className="print:hidden"><SubNav items={CREW_SUB} /></div>}
+        />
+      </Page>
+    );
+  }
 
   const me = await getMyCrewMember();
 
