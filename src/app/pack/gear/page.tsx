@@ -19,7 +19,7 @@ function coreToPublicItem(core: CoreGearItem): PackingItem {
     crewMemberId: "",
     category: core.category,
     name: core.name,
-    qty: parseInt(core.qty) || 1,
+    qty: parseFloat(core.qty) || 1,
     weightOz: core.weightOz,
     isCore: true,
     isRequired:
