@@ -647,7 +647,11 @@ export function PackingListEditor({
                     />
                     <button
                       type="button"
-                      onClick={() => { setUseActualBase(true); startTransition(() => saveMyBaseWeightMode(true)); }}
+                      onClick={() => {
+                        if (isPublic) { setShowSignInSheet(true); return; }
+                        setUseActualBase(true);
+                        startTransition(() => saveMyBaseWeightMode(true));
+                      }}
                       className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
                         useActualBase ? "text-white" : "text-ink-muted"
                       }`}
@@ -656,7 +660,11 @@ export function PackingListEditor({
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setUseActualBase(false); startTransition(() => saveMyBaseWeightMode(false)); }}
+                      onClick={() => {
+                        if (isPublic) { setShowSignInSheet(true); return; }
+                        setUseActualBase(false);
+                        startTransition(() => saveMyBaseWeightMode(false));
+                      }}
                       className={`relative z-10 px-10 py-1 rounded-full font-mono text-[11px] font-medium whitespace-nowrap transition-colors ${
                         !useActualBase ? "text-white" : "text-ink-muted"
                       }`}
@@ -1087,7 +1095,7 @@ function PackRow({
           <input
             type="checkbox"
             checked={item.isPacked}
-            disabled={item.isNotPacking}
+            disabled={item.isNotPacking || !!isPublic}
             onChange={(e) => onToggle(item.id, "isPacked", e.target.checked)}
             className="accent-ink w-5 h-5 disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Packed"
@@ -1365,18 +1373,8 @@ function FlagButton({
 function SignInSheet({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)]"
-      style={{
-        borderTop: "2px solid #1E4D6B",
-        animation: "slideUp 250ms ease-out",
-      }}
+      className="fixed inset-x-0 bottom-0 z-50 bg-surface animate-slide-up border-t-2 border-hcblue shadow-[0_-4px_16px_rgba(0,0,0,0.12)]"
     >
-      <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
-      `}</style>
       <div className="max-w-[600px] mx-auto px-6 py-5 space-y-3">
         <div>
           <p className="font-semibold text-[14px] text-ink">Want to track your actual gear?</p>

@@ -134,6 +134,17 @@ input[type="number"] {
 }
 
 /* ============================================================
+   Animations
+   ============================================================ */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 250ms ease-out;
+}
+
+/* ============================================================
    Print
    ============================================================ */
 /* Hide scrollbar while keeping scroll functionality */
