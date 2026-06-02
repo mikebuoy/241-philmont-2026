@@ -519,7 +519,7 @@ export function PackWeightCalculator({
           nextUrl="/pack/calculator"
           onDismiss={() => setShowSignInSheet(false)}
           heading="Sign in to save your settings."
-          body="Your body weight and pack weight settings are saved to your profile. Sign in to see your results on your personal packing list."
+          body="Sign in so your body weight and pack weight settings are saved to your profile — they'll carry over to your packing list automatically."
         />
       )}
     </div>

@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   openGraph: { images: [{ url: "/pack/calculator/opengraph-image.png" }] },
   twitter: { card: "summary_large_image" },
 };
+export const dynamic = "force-dynamic";
 
 
 export default async function CalculatorPage() {
