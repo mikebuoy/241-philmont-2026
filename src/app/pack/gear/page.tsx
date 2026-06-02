@@ -7,16 +7,46 @@ import { PACK_SUB } from "@/components/nav/navItems";
 import { createClient } from "@/lib/supabase/server";
 import { getMyCrewMember } from "@/lib/crew";
 import { getPackingItems, seedCoreItemsForCrewMember } from "@/lib/packing";
-import { getGearCategories, getCoreGearDescriptions } from "@/lib/gear";
+import { getGearCategories, getCoreGearDescriptions, getCoreGearItems, type CoreGearItem } from "@/lib/gear";
+import type { PackingItem } from "@/lib/packing-types";
 import { isCurrentUserAdmin } from "@/lib/supabase/admin";
 import { PackingListEditor } from "./PackingListEditor";
 import { PrintButton } from "@/components/primitives/PrintButton";
 
-export const metadata: Metadata = {
-  title: "My Packing List",
-  openGraph: { images: [{ url: "/pack/gear/opengraph-image.png" }] },
-  twitter: { card: "summary_large_image" },
-};
+function coreToPublicItem(core: CoreGearItem): PackingItem {
+  return {
+    id: core.id,
+    crewMemberId: "",
+    category: core.category,
+    name: core.name,
+    qty: parseInt(core.qty) || 1,
+    weightOz: core.weightOz,
+    isCore: true,
+    isRequired:
+      core.required === "Required" ? true :
+      core.required === "Optional" ? false :
+      null,
+    isWorn: core.defaultIsWorn,
+    isConsumable: core.defaultIsConsumable,
+    isSmellable: false,
+    isPacked: false,
+    isNotPacking: core.defaultIsNotPacking,
+    notes: null,
+    advisorNote: null,
+    sortOrder: core.sortOrder,
+    description: core.description || undefined,
+  };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return {
+    title: user ? "My Packing List" : "Philmont Gear List",
+    openGraph: { images: [{ url: "/pack/gear/opengraph-image.png" }] },
+    twitter: { card: "summary_large_image" },
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function PackGearPage() {
@@ -25,7 +55,29 @@ export default async function PackGearPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/signin?next=/pack/gear");
+  if (!user) {
+    const [coreItems, categories] = await Promise.all([
+      getCoreGearItems(),
+      getGearCategories(),
+    ]);
+    const items = coreItems.map(coreToPublicItem);
+    const categoryOrder = categories.map((c) => c.name);
+    return (
+      <Page
+        eyebrow="Crew Gear"
+        title="Philmont Gear List"
+      >
+        <PackingListEditor
+          items={items}
+          bodyWeightLbs={null}
+          useActualBaseWeight={false}
+          categoryOrder={categoryOrder}
+          isPublic
+          aboveHeader={<div key="subnav" className="print:hidden"><SubNav items={PACK_SUB} /></div>}
+        />
+      </Page>
+    );
+  }
 
   const me = await getMyCrewMember();
   if (!me) redirect("/claim?next=/pack/gear");
