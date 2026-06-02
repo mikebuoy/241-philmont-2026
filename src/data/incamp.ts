@@ -85,13 +85,6 @@ export const STAFFED_CAMP_STEPS: SequenceStep[] = [
       "Programs are the point of staffed camps — do not skip or arrive so late the crew misses out",
     ],
   },
-  {
-    title: "Hang bear bags",
-    items: [
-      "Once campsite is assigned, get smellables organized and bear bags hung before cooking or tents",
-      "This is always the first camp task",
-    ],
-  },
 ];
 
 export const CAMPSITE_STEPS: SequenceStep[] = [
@@ -151,6 +144,7 @@ export const DINNER_STEPS: SequenceStep[] = [
       "Cooks set up the kitchen inside the Bearmuda Triangle, near the fire ring",
       "Only cooks inside the kitchen area",
       "Closed-toe shoes required when stoves are on",
+      "Boil-sanitize all dishes, utensils, and pots before serving",
     ],
   },
   {
@@ -169,7 +163,7 @@ export const DINNER_STEPS: SequenceStep[] = [
   {
     title: "Dishwasher cleans up",
     items: [
-      "Wash, rinse, boil-sanitize all dishes, utensils, and pots",
+      "Wash and rinse all dishes, utensils, and pots",
       "Strain food particles into the yum-yum bag — out at next staffed camp",
       "Use the sump correctly",
     ],

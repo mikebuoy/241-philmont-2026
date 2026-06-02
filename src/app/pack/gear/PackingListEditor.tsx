@@ -87,16 +87,6 @@ export function PackingListEditor({
   const [showSignInSheet, setShowSignInSheet] = useState(false);
   const [, startTransition] = useTransition();
 
-  // First-visit help panel: auto-open once, then remembered as collapsed
-  useEffect(() => {
-    if (isPublic) return;
-    if (typeof window === "undefined") return;
-    const seen = window.localStorage.getItem("pack-gear-howto-seen");
-    if (!seen) {
-      window.setTimeout(() => setHelpOpen(true), 0);
-      window.localStorage.setItem("pack-gear-howto-seen", "1");
-    }
-  }, [isPublic]);
 
   useEffect(() => {
     if (!isPublic) return;

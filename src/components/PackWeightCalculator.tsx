@@ -60,13 +60,6 @@ export function PackWeightCalculator({
   const bwSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actualSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const seen = localStorage.getItem("estimator-help-seen");
-    if (!seen) {
-      window.setTimeout(() => setHelpOpen(true), 0);
-      localStorage.setItem("estimator-help-seen", "1");
-    }
-  }, []);
 
   useEffect(() => () => {
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);

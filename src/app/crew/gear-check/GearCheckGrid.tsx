@@ -256,7 +256,7 @@ export function GearCheckGrid({
         ))}
       </div>
 
-      <div className="sticky top-0 z-40 -mx-6 bg-bg shadow-sm print:hidden">
+      <div className="sticky top-0 z-40 -mx-6 bg-white shadow-sm print:hidden">
         {/* Row 1: tabs + legend (desktop) */}
         <div className="flex items-end justify-between px-6 pt-2 pb-0">
           <div className="flex gap-1.5 shrink-0 items-end -mb-px">
@@ -267,7 +267,7 @@ export function GearCheckGrid({
                 onClick={() => setActiveCrew(g.crewId)}
                 className={`px-4 py-1.5 rounded-t-md font-mono text-[12px] font-medium transition-colors border ${
                   activeCrew === g.crewId
-                    ? "relative z-10 border-border border-b-bg bg-bg text-ink font-semibold"
+                    ? "relative z-10 border-border border-b-white bg-white text-ink font-semibold"
                     : "border-border bg-surface-2 text-ink-muted hover:text-ink"
                 }`}
               >
@@ -347,7 +347,7 @@ export function GearCheckGrid({
               </colgroup>
               <tbody>
                 <tr>
-                  <td className="sticky left-0 z-10 bg-bg text-left px-2 py-1 font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted font-normal">
+                  <td className="sticky left-0 z-10 bg-white text-left px-2 py-1 font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted font-normal">
                     Item
                   </td>
                   {activeGrid.members.map((m) => (
@@ -370,7 +370,7 @@ export function GearCheckGrid({
       </div>
 
       {/* Border wrapper — left/right/bottom border continues the tab bar outline */}
-      <div className="-mx-6 border-x border-b border-border rounded-b-md overflow-hidden print:mx-0 print:border-0">
+      <div className="-mx-6 border-x border-b border-border rounded-b-md overflow-hidden bg-white print:mx-0 print:border-0">
 
       {/* Print-only crew label */}
       <div className="hidden print:block font-mono text-[10px] text-ink-muted mb-2 px-6">
@@ -419,7 +419,7 @@ export function GearCheckGrid({
             <tbody>
               {/* Base weight row */}
               <tr>
-                <td className="sticky left-0 bg-bg z-10 px-2 py-1 border-b border-border font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted print:static">
+                <td className="sticky left-0 bg-white z-10 px-2 py-1 border-b border-border font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted print:static">
                   Base Weight
                 </td>
                 {activeGrid.members.map((m) => {
@@ -456,7 +456,7 @@ export function GearCheckGrid({
 
               {/* Est Max weight row */}
               <tr>
-                <td className="sticky left-0 bg-bg z-10 px-2 py-1 border-b border-border font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted print:static">
+                <td className="sticky left-0 bg-white z-10 px-2 py-1 border-b border-border font-mono text-[9px] uppercase tracking-[0.06em] text-ink-muted print:static">
                   Est Max Pack Weight
                 </td>
                 {activeGrid.members.map((m) => {
@@ -497,7 +497,7 @@ export function GearCheckGrid({
                   <tr key={rk}>
                     <td
                       className="sticky left-0 z-10 px-2 py-1 border-b border-border text-left leading-snug print:static"
-                      style={{ backgroundColor: "var(--color-bg)" }}
+                      style={{ backgroundColor: "#ffffff" }}
                     >
                       <span className="font-medium text-[10px]">{row.itemName}</span>
                       {row.isRequired === false && (
