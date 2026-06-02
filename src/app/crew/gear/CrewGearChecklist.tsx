@@ -116,6 +116,7 @@ export function CrewGearChecklist({
   }
 
   function openNote(item: CrewGearItem) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     setOpenNoteId(item.id);
     setNoteText(item.notes ?? "");
   }

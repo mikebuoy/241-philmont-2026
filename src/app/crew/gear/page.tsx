@@ -35,11 +35,10 @@ export default async function CrewGearPage() {
         getCrewGearItems(1),
         getCrewGearItems(2),
       ]);
-    } catch { /* admin client likely bypasses RLS but catch in case */ }
+    } catch { /* getCrewGearItems uses anon client — RLS returns empty rows for unauthenticated users, which is fine */ }
 
     return (
       <Page eyebrow="My Crew" title="Crew Gear">
-        <div className="print:hidden"><SubNav items={CREW_SUB} /></div>
         <CrewGearChecklist
           crew1Items={crew1Items}
           crew2Items={crew2Items}
@@ -48,7 +47,7 @@ export default async function CrewGearPage() {
           canCheckCrew2={false}
           myCrewId={undefined}
           isPublic
-          aboveHeader={<div className="print:hidden"><SubNav items={CREW_SUB} /></div>}
+          aboveHeader={<div key="subnav" className="print:hidden"><SubNav items={CREW_SUB} /></div>}
         />
       </Page>
     );
