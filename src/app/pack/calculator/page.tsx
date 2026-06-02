@@ -8,6 +8,7 @@ import { PACK_SUB } from "@/components/nav/navItems";
 import { PackWeightCalculator } from "@/components/PackWeightCalculator";
 import { PACK_WEIGHT_TABLE, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { getMyCrewMember } from "@/lib/crew";
+import { createClient } from "@/lib/supabase/server";
 import {
   saveMyBodyWeight,
   saveMyActualBaseWeight,
@@ -22,7 +23,10 @@ export const metadata: Metadata = {
 
 
 export default async function CalculatorPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const me = await getMyCrewMember();
+  const isPublic = !user;
   return (
     <Page
       eyebrow="My Pack"
@@ -32,12 +36,13 @@ export default async function CalculatorPage() {
       <SubNav items={PACK_SUB} />
 
       <PackWeightCalculator
-        initialBodyWeight={me?.bodyWeightLbs}
-        onBodyWeightChange={saveMyBodyWeight}
-        initialActualBaseWeight={me?.actualBaseWeightLbs}
-        onActualBaseWeightChange={saveMyActualBaseWeight}
-        initialUsesPhilmontTent={me?.usesPhilmontTent}
-        onUsesPhilmontTentChange={saveUsesPhilmontTent}
+        initialBodyWeight={me?.bodyWeightLbs ?? null}
+        initialActualBaseWeight={me?.actualBaseWeightLbs ?? null}
+        initialUsesPhilmontTent={me?.usesPhilmontTent ?? null}
+        onBodyWeightChange={isPublic ? undefined : saveMyBodyWeight}
+        onActualBaseWeightChange={isPublic ? undefined : saveMyActualBaseWeight}
+        onUsesPhilmontTentChange={isPublic ? undefined : saveUsesPhilmontTent}
+        isPublic={isPublic}
       />
 
       <Box variant="warn">

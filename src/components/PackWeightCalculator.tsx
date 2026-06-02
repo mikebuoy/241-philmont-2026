@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
+import { SignInSheet } from "@/components/SignInSheet";
 
 
 const BASE_ADD_ON_LBS =
@@ -43,6 +44,7 @@ export function PackWeightCalculator({
   onActualBaseWeightChange,
   initialUsesPhilmontTent,
   onUsesPhilmontTentChange,
+  isPublic,
 }: {
   initialBodyWeight?: number | null;
   onBodyWeightChange?: (lbs: number) => void;
@@ -50,16 +52,23 @@ export function PackWeightCalculator({
   onActualBaseWeightChange?: (lbs: number) => void;
   initialUsesPhilmontTent?: boolean | null;
   onUsesPhilmontTentChange?: (usesPhilmontTent: boolean) => void;
+  isPublic?: boolean;
 } = {}) {
   const [bw, setBw] = useState<number>(initialBodyWeight ?? 160);
   const [actual, setActual] = useState<number>(initialActualBaseWeight ?? 18);
   const [usesPhilmontTent, setUsesPhilmontTent] = useState(initialUsesPhilmontTent ?? true);
   const [, startTransition] = useTransition();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [showSignInSheet, setShowSignInSheet] = useState(false);
 
   const bwSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actualSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    if (!isPublic) return;
+    const t = setTimeout(() => setShowSignInSheet(true), 2000);
+    return () => clearTimeout(t);
+  }, [isPublic]);
 
   useEffect(() => () => {
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
@@ -68,6 +77,7 @@ export function PackWeightCalculator({
 
   function handleBwChange(val: number) {
     setBw(val);
+    if (isPublic) setShowSignInSheet(true);
     if (!onBodyWeightChange || val <= 0) return;
     if (bwSaveTimer.current) clearTimeout(bwSaveTimer.current);
     bwSaveTimer.current = setTimeout(() => {
@@ -77,6 +87,7 @@ export function PackWeightCalculator({
 
   function handleActualChange(val: number) {
     setActual(val);
+    if (isPublic) setShowSignInSheet(true);
     if (!onActualBaseWeightChange || val <= 0) return;
     if (actualSaveTimer.current) clearTimeout(actualSaveTimer.current);
     actualSaveTimer.current = setTimeout(() => {
@@ -86,6 +97,7 @@ export function PackWeightCalculator({
 
   function handleUsesPhilmontTentChange(nextUsesPhilmontTent: boolean) {
     setUsesPhilmontTent(nextUsesPhilmontTent);
+    if (isPublic) setShowSignInSheet(true);
     if (!onUsesPhilmontTentChange) return;
     startTransition(() => {
       onUsesPhilmontTentChange(nextUsesPhilmontTent);
@@ -502,6 +514,14 @@ export function PackWeightCalculator({
         </p>
       </div>
 
+      {isPublic && showSignInSheet && (
+        <SignInSheet
+          nextUrl="/pack/calculator"
+          onDismiss={() => setShowSignInSheet(false)}
+          heading="Sign in to save your settings."
+          body="Your body weight and pack weight settings are saved to your profile. Sign in to see your results on your personal packing list."
+        />
+      )}
     </div>
   );
 }
