@@ -16,6 +16,8 @@ import { getAllCrewMembers, type CertificationStatus } from "@/lib/crew";
 import { EditPageButton } from "@/components/admin/EditPageButton";
 import { PrintButton } from "@/components/primitives/PrintButton";
 import { computeTargets, PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
+import { createClient } from "@/lib/supabase/server";
+import { SignInSheetClient } from "@/components/SignInSheetClient";
 
 const BASE_ADD_ON_LBS =
   PACK_WEIGHT_CONSTANTS.foodPerPersonLbs +
@@ -57,6 +59,10 @@ const ROLE_TONE: Record<CrewRole, "issued" | "crew" | "warn" | "neutral"> = {
 };
 
 export default async function RosterPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPublic = !user;
+
   let members: Awaited<ReturnType<typeof getAllCrewMembers>> = [];
   try {
     members = await getAllCrewMembers();
@@ -82,6 +88,13 @@ export default async function RosterPage() {
       titleRight={<PrintButton />}
     >
       <SubNav items={CREW_SUB} />
+      {isPublic && (
+        <SignInSheetClient
+          nextUrl="/crew/roster"
+          heading="Sign in to see the full roster."
+          body="Certification status, pack weights, and sign-in tracking are only visible to crew members."
+        />
+      )}
 
       <Section num="01" title="The Patrol Method" id="patrol-method">
         <Panel>
@@ -92,6 +105,12 @@ export default async function RosterPage() {
       </Section>
 
       <Section num="02" title="Sister crews" id="sister-crews">
+        {isPublic && (
+          <p className="text-[12px] text-ink-muted mb-3">
+            <a href="/admin/signin?next=/crew/roster" className="text-hcblue underline hover:opacity-80">Sign in</a>
+            {" "}to see roster details — certification status, pack weights, and who&apos;s checked in.
+          </p>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {crewGroups.map((crew) => {
             const youth = crew.members.filter((m) =>
