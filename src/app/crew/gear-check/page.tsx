@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Page } from "@/components/primitives/Page";
 import { SubNav } from "@/components/nav/SubNav";
 import { CREW_SUB } from "@/components/nav/navItems";
@@ -33,7 +32,47 @@ export default async function GearCheckPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/admin/signin?next=/crew/gear-check");
+  if (!user) {
+    let members: Awaited<ReturnType<typeof getAllCrewMembers>> = [];
+    try {
+      members = await getAllCrewMembers();
+    } catch { /* fallback to empty */ }
+
+    const sortedMembers = [...members].sort((a, b) => {
+      const ra = ROLE_ORDER[a.role as CrewRole] ?? 99;
+      const rb = ROLE_ORDER[b.role as CrewRole] ?? 99;
+      return ra !== rb ? ra - rb : a.name.localeCompare(b.name);
+    });
+
+    const emptyGrids: CrewGrid[] = ([1, 2] as const).map((crewId) => ({
+      crewId,
+      members: sortedMembers
+        .filter((m) => m.crewId === crewId)
+        .map((m) => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          usesPhilmontTent: m.usesPhilmontTent,
+          baseWeightLbs: null,
+          baseWeightStatus: null,
+          estMaxLbs: null,
+          weightStatus: null,
+        })),
+      rows: [],
+      cells: {},
+    }));
+
+    return (
+      <Page eyebrow="My Crew" title="Gear Check" titleRight={<PrintButton />}>
+        <div className="print:hidden"><SubNav items={CREW_SUB} /></div>
+        <GearCheckGrid
+          grids={emptyGrids}
+          isAdmin={false}
+          isPublic
+        />
+      </Page>
+    );
+  }
 
   const [members, allItems, categories, isAdmin] = await Promise.all([
     getAllCrewMembers(),

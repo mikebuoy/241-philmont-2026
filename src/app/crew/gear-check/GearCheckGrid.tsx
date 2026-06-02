@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CrewRole } from "@/data/roster";
 import { PACK_WEIGHT_CONSTANTS } from "@/data/packWeights";
 import { setAdvisorNote, setPackedState, setCrewMemberBaseWeightSettings } from "./actions";
+import { SignInSheet } from "@/components/SignInSheet";
 
 const PHILMONT_TENT_OZ = PACK_WEIGHT_CONSTANTS.philmontTentOz;
 
@@ -74,9 +75,11 @@ type EditingBaseWeight = {
 export function GearCheckGrid({
   grids,
   isAdmin,
+  isPublic = false,
 }: {
   grids: CrewGrid[];
   isAdmin: boolean;
+  isPublic?: boolean;
 }) {
   const [activeCrew, setActiveCrew] = useState(grids[0]?.crewId ?? 1);
   const activeGrid = grids.find((g) => g.crewId === activeCrew) ?? grids[0];
@@ -98,6 +101,7 @@ export function GearCheckGrid({
   const [tentToggle, setTentToggle] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showSignInSheet, setShowSignInSheet] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const baseWeightInputRef = useRef<HTMLInputElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
@@ -146,7 +150,14 @@ export function GearCheckGrid({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    if (!isPublic) return;
+    const t = setTimeout(() => setShowSignInSheet(true), 2000);
+    return () => clearTimeout(t);
+  }, [isPublic]);
+
   function openEdit(crewId: number, member: { id: string; name: string }, row: GridRow) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const rk = rowKey(row);
     const cell = localCells[crewId]?.[rk]?.[member.id];
     if (!cell) return;
@@ -188,6 +199,7 @@ export function GearCheckGrid({
     member: { id: string; name: string },
     row: GridRow,
   ) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     const rk = rowKey(row);
     const cell = localCells[crewId]?.[rk]?.[member.id];
     if (!cell || cell.isNotPacking) return;
@@ -213,6 +225,7 @@ export function GearCheckGrid({
   }
 
   async function saveBaseWeightSettings(lbs: number | null) {
+    if (isPublic) { setShowSignInSheet(true); return; }
     if (!editingBaseWeight) return;
     setSaving(true);
     setSaveError(null);
@@ -581,6 +594,16 @@ export function GearCheckGrid({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sign-in sheet for unauthenticated visitors */}
+      {isPublic && showSignInSheet && (
+        <SignInSheet
+          nextUrl="/crew/gear-check"
+          onDismiss={() => setShowSignInSheet(false)}
+          heading="Sign in to view the gear check grid."
+          body="See pack status across all crew members. Sign in to check off items and track your crew's readiness."
+        />
       )}
 
       {/* Base weight edit modal */}
